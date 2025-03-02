@@ -17,12 +17,21 @@ struct RecentExpensesSection: View {
     @State private var recentExpenses: [Expense] = []
     
     var body: some View {
-        if !fetchedExpenses.isEmpty {
-            VStack(alignment: .leading, spacing: 12) {
-                Text("Recent expenses")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
-                
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Recent expenses")
+                .font(.subheadline)
+                .foregroundColor(.gray)
+            
+            if fetchedExpenses.isEmpty {
+                // "No expenses this month" message
+                VStack(spacing: 8) {
+                    Text("No expenses this month")
+                        .font(.system(.body, design: .rounded))
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 24)
+                }
+            } else {
                 // Use the cached expenses for rendering
                 ForEach(recentExpenses, id: \.self) { expense in
                     ExpenseRow(
@@ -40,27 +49,27 @@ struct RecentExpensesSection: View {
                         // Empty block - removed unnecessary Divider
                     }
                 }
-                
-                    Divider()
-                    
-                    NavigationLink(value: NavigationDestination.allExpenses) {
-                        Text("View all expenses")
-                            .foregroundColor(.primary)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                    }
             }
-            .padding(12)
-            .frame(maxWidth: .infinity, alignment: .topLeading)
-            .background(Color(UIColor.systemGray6))
-            .cornerRadius(12)
-            .onAppear {
-                // Update the cache on appear
-                updateRecentExpenses()
+            
+            Divider()
+            
+            NavigationLink(value: NavigationDestination.allExpenses) {
+                Text("View all expenses")
+                    .foregroundColor(.primary)
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
-            .onChange(of: fetchedExpenses.count) { _, _ in
-                // Update the cache when expenses count changes
-                updateRecentExpenses()
-            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
+        .background(Color(UIColor.systemGray6))
+        .cornerRadius(12)
+        .onAppear {
+            // Update the cache on appear
+            updateRecentExpenses()
+        }
+        .onChange(of: fetchedExpenses.count) { _, _ in
+            // Update the cache when expenses count changes
+            updateRecentExpenses()
         }
     }
     

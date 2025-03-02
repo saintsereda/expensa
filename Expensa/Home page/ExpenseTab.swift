@@ -44,6 +44,13 @@ struct ExpensesTab: View {
         animation: .default
     ) private var recurringExpenses: FetchedResults<RecurringExpense>
     
+    @FetchRequest(
+        sortDescriptors: [
+            SortDescriptor(\Expense.date, order: .reverse)
+        ],
+        animation: .default
+    ) private var allExpensesEver: FetchedResults<Expense>
+    
     // MARK: - State Objects
     @ObservedObject private var budgetManager = BudgetManager.shared
     @ObservedObject private var expenseManager = ExpenseDataManager.shared
@@ -60,7 +67,7 @@ struct ExpensesTab: View {
         ZStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
-                    if fetchedExpenses.isEmpty {
+                    if allExpensesEver.isEmpty {
                         EmptyExpenseTab()
                             .padding(.top, 60)
                     } else {
