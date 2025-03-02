@@ -66,8 +66,11 @@ class CurrencyConverter {
         async let budgets = context.perform {
             try? context.fetch(Budget.fetchRequest())
         }
+        async let recurringExpenses = context.perform {
+            try? context.fetch(RecurringExpense.fetchRequest())
+        }
         
-        let (fetchedExpenses, fetchedBudgets) = await (expenses ?? [], budgets ?? [])
+        let (fetchedExpenses, fetchedBudgets, fetchedRecurringExpenses) = await (expenses ?? [], budgets ?? [], recurringExpenses ?? [])
         
         // 2. Prepare batch updates
         var updates: [() -> Void] = []
@@ -123,6 +126,32 @@ class CurrencyConverter {
                                 categoryBudget.budgetCurrency = newCurrency
                             }
                         }
+                    }
+                }
+            }
+        }
+        
+        // Process recurring expenses (new code)
+        for recurringExpense in fetchedRecurringExpenses {
+            // Get either the nextDueDate or today's date if it's nil
+            let date = recurringExpense.nextDueDate ?? Date()
+            
+            guard let amount = recurringExpense.amount?.decimalValue,
+                  let currencyCode = recurringExpense.currency,
+                  let sourceCurrency = CurrencyManager.shared.fetchCurrency(withCode: currencyCode) else {
+                continue
+            }
+            
+            // Only process if the currency matches the old default or we need to update the converted amount
+            if currencyCode != newCurrency.code {
+                if let (convertedAmount, _) = convertAmount(
+                    amount,
+                    from: sourceCurrency,
+                    to: newCurrency,
+                    on: date
+                ) {
+                    updates.append {
+                        recurringExpense.convertedAmount = NSDecimalNumber(decimal: convertedAmount)
                     }
                 }
             }
