@@ -1,0 +1,656 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		7064CE9F2CCC51050029BFC0 /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 7064CE9D2CCC51050029BFC0 /* DataModel.xcdatamodeld */; };
+		707031FD2D6CD7530048AE41 /* HighlightedTextEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 707031FC2D6CD7530048AE41 /* HighlightedTextEditor */; };
+		7070321A2D6F8F240048AE41 /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 707032192D6F8F240048AE41 /* ConfettiSwiftUI */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7064CE812CCC509F0029BFC0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7064CE682CCC509D0029BFC0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7064CE6F2CCC509D0029BFC0;
+			remoteInfo = Expensa;
+		};
+		7064CE8B2CCC509F0029BFC0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7064CE682CCC509D0029BFC0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7064CE6F2CCC509D0029BFC0;
+			remoteInfo = Expensa;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		7064CE702CCC509D0029BFC0 /* Expensa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Expensa.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7064CE802CCC509F0029BFC0 /* ExpensaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExpensaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7064CE8A2CCC509F0029BFC0 /* ExpensaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExpensaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7064CE9E2CCC51050029BFC0 /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		7069B0032CDFC36B00805C8E /* Exceptions for "Expensa" folder in "Expensa" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 7064CE6F2CCC509D0029BFC0 /* Expensa */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		7064CE722CCC509D0029BFC0 /* Expensa */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7069B0032CDFC36B00805C8E /* Exceptions for "Expensa" folder in "Expensa" target */,
+			);
+			path = Expensa;
+			sourceTree = "<group>";
+		};
+		7064CE832CCC509F0029BFC0 /* ExpensaTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ExpensaTests;
+			sourceTree = "<group>";
+		};
+		7064CE8D2CCC509F0029BFC0 /* ExpensaUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ExpensaUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7064CE6D2CCC509D0029BFC0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7070321A2D6F8F240048AE41 /* ConfettiSwiftUI in Frameworks */,
+				707031FD2D6CD7530048AE41 /* HighlightedTextEditor in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7064CE7D2CCC509F0029BFC0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7064CE872CCC509F0029BFC0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		7064CE672CCC509D0029BFC0 = {
+			isa = PBXGroup;
+			children = (
+				7064CE9D2CCC51050029BFC0 /* DataModel.xcdatamodeld */,
+				7064CE722CCC509D0029BFC0 /* Expensa */,
+				7064CE832CCC509F0029BFC0 /* ExpensaTests */,
+				7064CE8D2CCC509F0029BFC0 /* ExpensaUITests */,
+				7064CE712CCC509D0029BFC0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7064CE712CCC509D0029BFC0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7064CE702CCC509D0029BFC0 /* Expensa.app */,
+				7064CE802CCC509F0029BFC0 /* ExpensaTests.xctest */,
+				7064CE8A2CCC509F0029BFC0 /* ExpensaUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7064CE6F2CCC509D0029BFC0 /* Expensa */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7064CE942CCC509F0029BFC0 /* Build configuration list for PBXNativeTarget "Expensa" */;
+			buildPhases = (
+				7064CE6C2CCC509D0029BFC0 /* Sources */,
+				7064CE6D2CCC509D0029BFC0 /* Frameworks */,
+				7064CE6E2CCC509D0029BFC0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				7064CE722CCC509D0029BFC0 /* Expensa */,
+			);
+			name = Expensa;
+			packageProductDependencies = (
+				707031FC2D6CD7530048AE41 /* HighlightedTextEditor */,
+				707032192D6F8F240048AE41 /* ConfettiSwiftUI */,
+			);
+			productName = Expensa;
+			productReference = 7064CE702CCC509D0029BFC0 /* Expensa.app */;
+			productType = "com.apple.product-type.application";
+		};
+		7064CE7F2CCC509F0029BFC0 /* ExpensaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7064CE972CCC509F0029BFC0 /* Build configuration list for PBXNativeTarget "ExpensaTests" */;
+			buildPhases = (
+				7064CE7C2CCC509F0029BFC0 /* Sources */,
+				7064CE7D2CCC509F0029BFC0 /* Frameworks */,
+				7064CE7E2CCC509F0029BFC0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7064CE822CCC509F0029BFC0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				7064CE832CCC509F0029BFC0 /* ExpensaTests */,
+			);
+			name = ExpensaTests;
+			packageProductDependencies = (
+			);
+			productName = ExpensaTests;
+			productReference = 7064CE802CCC509F0029BFC0 /* ExpensaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		7064CE892CCC509F0029BFC0 /* ExpensaUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7064CE9A2CCC509F0029BFC0 /* Build configuration list for PBXNativeTarget "ExpensaUITests" */;
+			buildPhases = (
+				7064CE862CCC509F0029BFC0 /* Sources */,
+				7064CE872CCC509F0029BFC0 /* Frameworks */,
+				7064CE882CCC509F0029BFC0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7064CE8C2CCC509F0029BFC0 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				7064CE8D2CCC509F0029BFC0 /* ExpensaUITests */,
+			);
+			name = ExpensaUITests;
+			packageProductDependencies = (
+			);
+			productName = ExpensaUITests;
+			productReference = 7064CE8A2CCC509F0029BFC0 /* ExpensaUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		7064CE682CCC509D0029BFC0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1610;
+				TargetAttributes = {
+					7064CE6F2CCC509D0029BFC0 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					7064CE7F2CCC509F0029BFC0 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 7064CE6F2CCC509D0029BFC0;
+					};
+					7064CE892CCC509F0029BFC0 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = 7064CE6F2CCC509D0029BFC0;
+					};
+				};
+			};
+			buildConfigurationList = 7064CE6B2CCC509D0029BFC0 /* Build configuration list for PBXProject "Expensa" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 7064CE672CCC509D0029BFC0;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				707031FB2D6CD7530048AE41 /* XCRemoteSwiftPackageReference "HighlightedTextEditor" */,
+				707032182D6F8F240048AE41 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 7064CE712CCC509D0029BFC0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7064CE6F2CCC509D0029BFC0 /* Expensa */,
+				7064CE7F2CCC509F0029BFC0 /* ExpensaTests */,
+				7064CE892CCC509F0029BFC0 /* ExpensaUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7064CE6E2CCC509D0029BFC0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7064CE7E2CCC509F0029BFC0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7064CE882CCC509F0029BFC0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		7064CE6C2CCC509D0029BFC0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7064CE9F2CCC51050029BFC0 /* DataModel.xcdatamodeld in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7064CE7C2CCC509F0029BFC0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7064CE862CCC509F0029BFC0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7064CE822CCC509F0029BFC0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7064CE6F2CCC509D0029BFC0 /* Expensa */;
+			targetProxy = 7064CE812CCC509F0029BFC0 /* PBXContainerItemProxy */;
+		};
+		7064CE8C2CCC509F0029BFC0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7064CE6F2CCC509D0029BFC0 /* Expensa */;
+			targetProxy = 7064CE8B2CCC509F0029BFC0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		7064CE922CCC509F0029BFC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 7064CE722CCC509D0029BFC0 /* Expensa */;
+			baseConfigurationReferenceRelativePath = Configuration.xcconfig;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		7064CE932CCC509F0029BFC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 7064CE722CCC509D0029BFC0 /* Expensa */;
+			baseConfigurationReferenceRelativePath = Configuration.xcconfig;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		7064CE952CCC509F0029BFC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Expensa/Expensa.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 24;
+				DEVELOPMENT_ASSET_PATHS = "\"Expensa/Preview Content\"";
+				DEVELOPMENT_TEAM = 4B9JB9B2KQ;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Expensa/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sereda.Expensa;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		7064CE962CCC509F0029BFC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Expensa/Expensa.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 24;
+				DEVELOPMENT_ASSET_PATHS = "\"Expensa/Preview Content\"";
+				DEVELOPMENT_TEAM = 4B9JB9B2KQ;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Expensa/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sereda.Expensa;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		7064CE982CCC509F0029BFC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4B9JB9B2KQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = sereda.ExpensaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Expensa.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Expensa";
+			};
+			name = Debug;
+		};
+		7064CE992CCC509F0029BFC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4B9JB9B2KQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = sereda.ExpensaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Expensa.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Expensa";
+			};
+			name = Release;
+		};
+		7064CE9B2CCC509F0029BFC0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4B9JB9B2KQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = sereda.ExpensaUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Expensa;
+			};
+			name = Debug;
+		};
+		7064CE9C2CCC509F0029BFC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 4B9JB9B2KQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = sereda.ExpensaUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Expensa;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7064CE6B2CCC509D0029BFC0 /* Build configuration list for PBXProject "Expensa" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7064CE922CCC509F0029BFC0 /* Debug */,
+				7064CE932CCC509F0029BFC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7064CE942CCC509F0029BFC0 /* Build configuration list for PBXNativeTarget "Expensa" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7064CE952CCC509F0029BFC0 /* Debug */,
+				7064CE962CCC509F0029BFC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7064CE972CCC509F0029BFC0 /* Build configuration list for PBXNativeTarget "ExpensaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7064CE982CCC509F0029BFC0 /* Debug */,
+				7064CE992CCC509F0029BFC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7064CE9A2CCC509F0029BFC0 /* Build configuration list for PBXNativeTarget "ExpensaUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7064CE9B2CCC509F0029BFC0 /* Debug */,
+				7064CE9C2CCC509F0029BFC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		707031FB2D6CD7530048AE41 /* XCRemoteSwiftPackageReference "HighlightedTextEditor" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kyle-n/HighlightedTextEditor";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.1.2;
+			};
+		};
+		707032182D6F8F240048AE41 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.2;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		707031FC2D6CD7530048AE41 /* HighlightedTextEditor */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 707031FB2D6CD7530048AE41 /* XCRemoteSwiftPackageReference "HighlightedTextEditor" */;
+			productName = HighlightedTextEditor;
+		};
+		707032192D6F8F240048AE41 /* ConfettiSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 707032182D6F8F240048AE41 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
+			productName = ConfettiSwiftUI;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		7064CE9D2CCC51050029BFC0 /* DataModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				7064CE9E2CCC51050029BFC0 /* DataModel.xcdatamodel */,
+			);
+			currentVersion = 7064CE9E2CCC51050029BFC0 /* DataModel.xcdatamodel */;
+			path = DataModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 7064CE682CCC509D0029BFC0 /* Project object */;
+}

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.sereda.Expensa.recurringExpenses</string>
+		<string>com.sereda.Expensa.historicalRatesCleanup</string>
+	</array>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>AddExpenseIntent</string>
+		<string>ConfigurationIntent</string>
+	</array>
+	<key>NSUserNotificationUsageDescription</key>
+	<string>We need notifications permission to send you expense reminders and budget alerts.</string>
+	<key>OPENEXCHANGE_API_KEY</key>
+	<string>$(OPENEXCHANGE_API_KEY)</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>processing</string>
+		<string>fetch</string>
+	</array>
+	<key>com.apple.developer.aps-environment</key>
+	<string>development</string>
+	<key>com.apple.developer.icloud-container-identifiers</key>
+	<array>
+		<string>iCloud.com.sereda.Expensa</string>
+	</array>
+	<key>com.apple.developer.icloud-services</key>
+	<array>
+		<string>CloudKit</string>
+	</array>
+</dict>
+</plist>

@@ -1,0 +1,162 @@
+DEFINE SCHEMA
+
+    RECORD TYPE Category (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE QUERYABLE,
+        budgetLimit     DOUBLE,
+        createdAt       TIMESTAMP QUERYABLE,
+        icon            STRING,
+        id              STRING QUERYABLE,
+        name            STRING QUERYABLE,
+        sortOrder       INT64,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_world"
+    );
+
+    RECORD TYPE Expense (
+        "___createTime"  TIMESTAMP,
+        "___createdBy"   REFERENCE,
+        "___etag"        STRING,
+        "___modTime"     TIMESTAMP,
+        "___modifiedBy"  REFERENCE,
+        "___recordID"    REFERENCE QUERYABLE,
+        amount           DOUBLE,
+        category         REFERENCE QUERYABLE,
+        conversionRate   DOUBLE,
+        convertedAmount  DOUBLE,
+        createdAt        TIMESTAMP QUERYABLE,
+        currency         STRING,
+        date             TIMESTAMP QUERYABLE,
+        id               STRING QUERYABLE,
+        isPaid           INT64,
+        isRecurring      INT64,
+        notes            STRING,
+        recurrenceStatus STRING,
+        recurrenceType   STRING,
+        updatedAt        TIMESTAMP QUERYABLE,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_world"
+    );
+
+    RECORD TYPE CategoryBudget (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE QUERYABLE,
+        budgetAmount    DOUBLE,
+        categoryName    STRING,
+        month           INT64,
+        year            INT64,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_world"
+    );
+
+    RECORD TYPE Currency (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE QUERYABLE,
+        code            STRING,
+        id              STRING QUERYABLE,
+        lastUpdated     TIMESTAMP,
+        name            STRING,
+        symbol          STRING,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_world"
+    );
+
+    RECORD TYPE ExchangeRateHistory (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE QUERYABLE,
+        currencyCode    STRING,
+        id              STRING QUERYABLE,
+        rateDate        TIMESTAMP,
+        rateToUSD       DOUBLE,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_world"
+    );
+
+    RECORD TYPE RecurringExpense (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE QUERYABLE,
+        amount          DOUBLE,
+        convertedAmount DOUBLE,
+        createdAt       TIMESTAMP QUERYABLE,
+        currency        STRING,
+        frequency       STRING,
+        id              STRING QUERYABLE,
+        lastGeneratedDate TIMESTAMP,
+        nextDueDate     TIMESTAMP,
+        notes           STRING,
+        notificationEnabled INT64,
+        status          STRING,
+        updatedAt       TIMESTAMP QUERYABLE,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_world"
+    );
+
+    RECORD TYPE Tag (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE QUERYABLE,
+        color           STRING,
+        createdAt       TIMESTAMP QUERYABLE,
+        id              STRING QUERYABLE,
+        name            STRING QUERYABLE,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_world"
+    );
+
+    RECORD TYPE UserSettings (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE QUERYABLE,
+        id              STRING QUERYABLE,
+        notificationPreferences STRING,
+        theme           STRING,
+        timeZone        STRING,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_world"
+    );
+
+RECORD TYPE Users (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE,
+        roles           LIST<INT64>,
+        GRANT WRITE TO "_creator",
+        GRANT READ TO "_world"
+    );
