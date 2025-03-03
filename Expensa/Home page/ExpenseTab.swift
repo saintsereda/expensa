@@ -83,7 +83,7 @@ struct ExpensesTab: View {
                                 selectedDate: filterManager.selectedDate
                             )
                         }
-                        .padding(.bottom, 24)
+                        .padding(.bottom, 16)
                         
                         VStack(spacing: 16) {
                             UncategorizedExpensesView(context: viewContext)
@@ -118,7 +118,7 @@ struct ExpensesTab: View {
                     Spacer()
                     .frame(height: 80)
                 }
-                .padding(.vertical)
+                .padding(.top, 32)
             }
             
             VStack {
