@@ -107,7 +107,7 @@ struct TotalSpentRow: View {
                 : currencyManager.currencyConverter.formatAmount(amount, currency: defaultCurrency)
             
             Text(formattedText)
-                .font(.system(size: 52, design: .rounded))
+                .font(.system(size: 52, weight: .medium, design: .rounded))
                 .fontWeight(.regular)
                 .foregroundColor(color)
                 // Only animate when necessary
