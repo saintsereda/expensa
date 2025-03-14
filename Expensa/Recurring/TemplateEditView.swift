@@ -299,11 +299,15 @@ struct TemplateEditView: View {
         )
         
         await MainActor.run {
-            if let (converted, _) = conversionResult {
+            // Change from .0 to .amount
+            if let result = conversionResult {
                 convertedAmount = currencyManager.currencyConverter.formatAmount(
-                    converted,
+                    result.amount,
                     currency: defaultCurrency
                 )
+                
+                // You could also display the rate if desired:
+                // let rateString = "Rate: \(result.rate)"
             } else {
                 convertedAmount = nil
             }

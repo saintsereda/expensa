@@ -28,7 +28,6 @@ struct MonthlyTrendView: View {
         VStack(alignment: .leading, spacing: 8) {
             MonthlyTrendChart(data: data)
                 .frame(height: 200)
-                .padding(.horizontal)
         }
         .padding(.vertical)
         .background(Color(UIColor.systemBackground))
@@ -93,14 +92,16 @@ struct ExpensesByCategoryView: View {
     
     // MARK: - Body
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(spacing: 16) {
                 categoryHeader
-                MonthlyTrendView(data: monthlyData)
-                sortingMenu
-                expensesList
+                VStack(spacing: 16) {
+                    MonthlyTrendView(data: monthlyData)
+                    //                sortingMenu
+                    expensesList
+                }
+                .padding(.horizontal, 16)
             }
-            .padding()
         }
         .sheet(item: $selectedExpense) { _ in
             ExpenseDetailView(

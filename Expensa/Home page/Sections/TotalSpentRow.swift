@@ -29,9 +29,6 @@ struct TotalSpentRow: View {
     let expenses: FetchedResults<Expense>
     let selectedDate: Date
     
-    // Remove unused fetch request
-    // @FetchRequest private var expenseChanges: FetchedResults<Expense>
-    
     @FetchRequest private var currentMonthBudget: FetchedResults<Budget>
     
     // Cache the total spent value
@@ -91,7 +88,7 @@ struct TotalSpentRow: View {
     // MARK: - View Components
     @ViewBuilder
     private func titleText(_ info: BudgetInfo?) -> some View {
-        Text(info == nil ? "Spent so far in \(formattedMonth)" : "Total remaining for \(formattedMonth)")
+        Text(info == nil ? "Spent in \(formattedMonth)" : "Remaining for \(formattedMonth)")
             .font(.system(size: 17, weight: .regular, design: .rounded))
             .foregroundColor(.secondary)
     }
@@ -120,6 +117,58 @@ struct TotalSpentRow: View {
         }
     }
     
+    @ViewBuilder
+    private func progressBar(_ info: BudgetInfo?) -> some View {
+        if let info = info, info.amount > 0 {
+            VStack(spacing: 12) {
+                // Progress bar
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        // Background
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color(UIColor.systemGray5))
+                            .frame(height: 6)
+                        
+                        // Progress
+                        let percentage = min(Double(truncating: (totalSpent / info.amount) as NSDecimalNumber), 1.0)
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(totalSpent > info.amount ?
+                                  LinearGradient(
+                                      colors: [.red, .red.opacity(0.8)],
+                                      startPoint: .leading,
+                                      endPoint: .trailing
+                                  ) :
+                                LinearGradient(
+                                    colors: [.blue, .purple.opacity(0.8)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: geometry.size.width * CGFloat(percentage), height: 6)
+                    }
+                }
+                .frame(height: 4)
+                
+                // Labels below the progress bar
+                HStack {
+                    if let defaultCurrency = currencyManager.defaultCurrency {
+                        // Total spent amount (left side)
+                        Text("\(currencyManager.currencyConverter.formatAmount(totalSpent, currency: defaultCurrency)) spent")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        // Budget limit amount (right side)
+                        Text("of \(info.formattedTotal)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .padding(.top, 24)
+        }
+    }
     
     @ViewBuilder
     private func expenseCount() -> some View {
@@ -173,9 +222,12 @@ struct TotalSpentRow: View {
             titleText(info)
             amountText(info)
                 .frame(maxWidth: .infinity, alignment: .center)
-            expenseCount()
+//            expenseCount()
+            
+            // Add progress bar if we have a budget
+            progressBar(info)
+            
         }
-        .padding(.vertical)
         .onAppear {
             // Calculate total once on appear
             updateTotalSpent()

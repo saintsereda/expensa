@@ -89,7 +89,6 @@ struct CategoryButton: View {
                     .font(.system(size: 17, weight: .regular, design: .rounded))
                     .foregroundColor(Color(uiColor: .label))
                     .contentTransition(.numericText())
-                    .animation(.spring(response: 0.4, dampingFraction: 0.95), value: category)
                 
                 Image(systemName: "chevron.right")
                     .foregroundColor(Color(uiColor: .tertiaryLabel))

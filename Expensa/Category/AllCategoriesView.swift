@@ -13,7 +13,7 @@ struct AllCategoriesView: View {
     let fetchedExpenses: FetchedResults<Expense>
     
     var body: some View {
-        ScrollView {
+        ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 12) {
                 ForEach(Array(categorizedExpenses.enumerated()), id: \.element.0) { index, categoryData in
                     CategoryExpensesRow(

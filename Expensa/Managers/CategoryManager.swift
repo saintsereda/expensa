@@ -12,6 +12,9 @@ class CategoryManager: ObservableObject {
     static let shared = CategoryManager()
     private let context: NSManagedObjectContext
     
+    private var cachedFrequentlyUsedCategories: [Category] = []
+    private var lastCacheUpdate = Date(timeIntervalSince1970: 0)
+    
     @Published var categories: [Category] = [] {
         didSet {
             print("📱 Categories updated, count: \(categories.count)")
@@ -75,11 +78,24 @@ class CategoryManager: ObservableObject {
         UserDefaults.standard.set(currentCount + 1, forKey: key)
     }
     
-    func getMostUsedCategories(limit: Int = 3) -> [Category] {
-        return categories.sorted { getUsageCount(for: $0) > getUsageCount(for: $1) }
-            .prefix(limit)
-            .filter { getUsageCount(for: $0) > 0 }
-    }
+        
+        // Update existing method with caching
+        func getMostUsedCategories(limit: Int = 3) -> [Category] {
+            // Return cached result if less than 5 minutes old
+            let cacheAge = Date().timeIntervalSince(lastCacheUpdate)
+            if !cachedFrequentlyUsedCategories.isEmpty && cacheAge < 300 {
+                return cachedFrequentlyUsedCategories
+            }
+            
+            // Calculate and cache result
+            let result = categories.sorted { getUsageCount(for: $0) > getUsageCount(for: $1) }
+                .prefix(limit)
+                .filter { getUsageCount(for: $0) > 0 }
+            
+            cachedFrequentlyUsedCategories = Array(result)
+            lastCacheUpdate = Date()
+            return cachedFrequentlyUsedCategories
+        }
 
     // MARK: - Add Predefined Categories with Icons
     func addPredefinedCategories() {
@@ -103,111 +119,22 @@ class CategoryManager: ObservableObject {
         
         let predefinedCategories: [String: String] = [
             // Housing
-            "Rent": "🏠",
-            "Mortgage": "🏡",
-            "Home Insurance": "🛡️",
-            "Property Taxes": "🏘️",
-            "Maintenance": "🔧",
-            "Utilities": "💡",
-            "Electricity": "⚡",
-            "Water": "🚰",
-            "Gas": "🔥",
-            "Internet": "🌐",
-            "Cable/Satellite TV": "📺",
-            "Trash Service": "🗑️",
-            
-            // Transportation
-            "Public Transport": "🚌",
-            "Taxi/Ride Sharing": "🚕",
-            "Car Payment": "🚗",
-            "Fuel": "⛽",
-            "Parking": "🅿️",
-            "Tolls": "🎫",
-            "Car Maintenance": "🔧",
-            "Car Insurance": "🚘",
-            
-            // Food & Dining
-            "Groceries": "🛒",
-            "Dining Out": "🍽️",
-            "Coffee": "☕",
-            "Snacks": "🍿",
-            "Alcohol": "🍻",
-            "Food Delivery": "🍕",
-            
-            // Personal Care
-            "Personal Care": "💅",
-            "Haircuts": "✂️",
-            "Spa & Massage": "💆",
-            "Cosmetics": "💄",
-            
-            // Health & Wellness
-            "Doctor": "👨‍⚕️",
-            "Dentist": "🦷",
-            "Pharmacy": "💊",
-            "Health Insurance": "🏥",
-            "Fitness/Gym": "🏋️",
-            "Therapy": "🛌",
-            
-            // Entertainment
-            "Movies & Cinema": "🎬",
-            "Gaming": "🎮",
-            "Books": "📚",
-            "Music": "🎵",
-            "Concerts": "🎤",
-            "Streaming Services": "💻",
-            "Netflix": "📺",
-            "Spotify": "🎶",
-            "Amazon Prime": "📦",
-            "Disney+": "🐭",
-            "Apple Music": "🎼",
-            "Hulu": "📺",
-            
-            // Education
-            "Tuition": "🎓",
-            "Books & Supplies": "📖",
-            "Online Courses": "💻",
-            "Student Loans": "📚",
-            
-            // Financial
-            "Investments": "💰",
-            "Insurance": "🛡️",
-            "Loans": "💳",
-            "Credit Card Payments": "💳",
-            "Savings": "💰",
-            "Retirement": "🏖️",
-            "Taxes": "💸",
-            
-            // Family & Care
-            "Childcare": "🍼",
-            "Eldercare": "👴",
-            "Pet Care": "🐶",
-            "Pet Food": "🐾",
-            "Veterinary": "🐕",
-            
-            // Gifts & Donations
-            "Gifts": "🎁",
-            "Charity": "❤️",
-            "Wedding": "💍",
-            "Birthday": "🎂",
-            "Parties": "🎉",
-            
-            // Travel
-            "Flights": "✈️",
-            "Accommodation": "🏨",
-            "Car Rental": "🚙",
-            "Travel Insurance": "🌍",
-            "Vacation": "🏖️",
-            
-            // Miscellaneous
-            "Clothing": "👗",
-            "Electronics": "📱",
-            "Hobbies": "🎨",
-            "Subscriptions": "🔄",
-            "Laundry": "👚",
-            "Home Supplies": "🧹",
-            "Miscellaneous": "🛍️",
-            "Other": "♾️",
-            "No Category": "❓"
+                "Rent": "🏠",
+                "Groceries": "🛒",
+                "Utilities": "💡",
+                "Transportation": "🚗",
+                "Healthcare": "🩺",
+                "Insurance": "🛡️",
+                "Personal Care": "🧴",
+                "Clothing": "👕",
+                "Education": "🎓",
+                "Entertainment": "🎉",
+                "Pets": "🐾",
+                "Gifts & Donations": "🎁",
+                "Debt Repayment": "💳",
+                "Travel": "✈️",
+                "Home Maintenance": "🛠️",
+            "Other": "♾️"
         ]
 
         context.performAndWait {
@@ -475,6 +402,11 @@ class CategoryManager: ObservableObject {
     // MARK: - Fetch All Categories
     func fetchCategories() -> [Category] {
         // Ensure we're on the main thread
+        
+        if !categories.isEmpty {
+            return categories
+        }
+        
         if !Thread.isMainThread {
             return DispatchQueue.main.sync {
                 return self.fetchCategories()

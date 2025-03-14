@@ -69,9 +69,26 @@ struct ExpenseEntryView: View {
     // Add these with other @State variables
     @State private var sourceRate: Decimal?
     @State private var targetRate: Decimal?
+    
+    @State private var hasLoadedStoredRate = false
+    @State private var isInitialSetup = true
+    @State private var storedRate: Decimal? = nil
 
     // Add a new function to update rates
     private func updateRates() {
+        // If we're in edit mode and have loaded a stored rate, skip the rate lookup
+        if isEditMode && hasLoadedStoredRate && selectedCurrency != defaultCurrency {
+            return
+        }
+        
+        // Skip if using default currency
+        if selectedCurrency == defaultCurrency {
+            return
+        }
+        
+        // Otherwise, perform the lookup
+        print("💱 Looking up rate for \(selectedCurrency?.code ?? "unknown") to \(defaultCurrency?.code ?? "unknown")")
+        
         if let selectedCode = selectedCurrency?.code,
            let defaultCode = defaultCurrency?.code,
            let newSourceRate = HistoricalRateManager.shared.getRate(for: selectedCode, on: date),
@@ -109,10 +126,6 @@ struct ExpenseEntryView: View {
         expense != nil
     }
     
-    private var navigationTitle: String {
-        isEditMode ? "Edit expense" : "Add expense"
-    }
-    
     private var saveButtonText: String {
         isEditMode ? "Update" : "Save"
     }
@@ -133,6 +146,7 @@ struct ExpenseEntryView: View {
             CloseButton(
                 icon: "xmark"
             ) {
+                HapticFeedback.play()
                 dismiss()
             }
             Spacer()
@@ -149,10 +163,10 @@ struct ExpenseEntryView: View {
     }
     
     private var formattedAmount: String {
-        formatAmount(amount)
+        formatUserInput(amount)
     }
     
-    private func formatAmount(_ amount: String) -> String {
+    private func formatUserInput(_ amount: String) -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.groupingSeparator = " "
@@ -228,7 +242,7 @@ struct ExpenseEntryView: View {
                        let targetRate = targetRate,
                        let defaultCurrency = defaultCurrency {
                         let rate = targetRate/sourceRate
-                        let rateString = formatAmount(rate.description)
+                        let rateString = formatUserInput(rate.description)
                         let symbol = defaultCurrency.symbol ?? defaultCurrency.code ?? ""
                         let isUSD = defaultCurrency.code == "USD"
                         let formattedRate = isUSD ? "\(symbol)\(rateString)" : "\(rateString) \(symbol)"
@@ -284,7 +298,7 @@ struct ExpenseEntryView: View {
                     amount = "0,"
                 } else {
                     // Otherwise preserve formatting when adding comma
-                    amount = formatAmount(cleanAmount) + ","
+                    amount = formatUserInput(cleanAmount) + ","
                 }
                 showNumberEffect = false
                 lastEnteredDigit = value
@@ -327,7 +341,7 @@ struct ExpenseEntryView: View {
 
         showNumberEffect = false
         lastEnteredDigit = value
-        amount = formatAmount(cleanAmount)
+        amount = formatUserInput(cleanAmount)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
             withAnimation(.easeOut(duration: 0.3)) {
@@ -341,7 +355,7 @@ struct ExpenseEntryView: View {
         
         if !cleanAmount.isEmpty {
             cleanAmount.removeLast()
-            amount = formatAmount(cleanAmount)
+            amount = formatUserInput(cleanAmount)
             HapticFeedback.play()
         }
     }
@@ -352,8 +366,8 @@ struct ExpenseEntryView: View {
             category: selectedCategory,
             isEnabled: isValidInput(),
             onCategoryTap: {
-                HapticFeedback.play()
                 showingCategorySelector = true
+                HapticFeedback.play()
             },
             onSaveTap: {
                 HapticFeedback.play()
@@ -398,20 +412,17 @@ struct ExpenseEntryView: View {
                 .sheet(isPresented: $showingCurrencyPicker) {
                     CurrencyListView(selectedCurrency: $selectedCurrency)
                     .presentationCornerRadius(32)
+//                    .presentationDetents([.medium, .large])
                 }
                 .sheet(isPresented: $showingCategorySelector) {
                     CategorySelectorView(selectedCategory: $selectedCategory)
                         .presentationCornerRadius(32)
                         .environmentObject(categoryManager)
-                        .onAppear {
-                            DispatchQueue.main.async {
-                                categoryManager.reloadCategories()
-                            }
-                        }
                 }
                 .sheet(isPresented: $showingNotesSheet) {
                     NotesModalView(notes: $notes, tempTags: $tempTags)
                         .presentationCornerRadius(32)
+                        .presentationDetents([.medium, .large])
                         .environmentObject(tagManager)
                 }
                 .alert("Error", isPresented: $showingErrorAlert) {
@@ -420,39 +431,36 @@ struct ExpenseEntryView: View {
                     Text(errorMessage)
                 }
                 .onChange(of: selectedCurrency) {
-                    updateRates()
-                    Task { await updateConvertedAmount() }
-                }
-                .onChange(of: date) {
-                    updateRates()
-                    Task {
-                        if isUsingHistoricalRates {
-                            await updateConvertedAmount()
-                        } else {
-                            await updateConvertedAmount()
-                        }
+                    if isInitialSetup { return }
+                    
+                    if isEditMode {
+                        handleEditModeChanges()
+                    } else {
+                        updateRates()
+                        Task { await updateConvertedAmount() }
                     }
                 }
-                .onAppear {
-                    updateRates()
-                    setupInitialData()
-                }
+
                 .onChange(of: date) {
+                    if isInitialSetup { return }
+                    
                     if !canBeRecurring {
                         isRecurring = false
                     }
-                    Task {
-                        if isUsingHistoricalRates {
-                            Task { await updateConvertedAmount() }
-                        } else {
-                            await updateConvertedAmount()
-                        }
+                    
+                    if isEditMode {
+                        handleEditModeChanges()
+                    } else {
+                        updateRates()
+                        Task { await updateConvertedAmount() }
                     }
                 }
+
                 .onChange(of: amount) {
-                    Task {
-                        await updateConvertedAmount()
-                    }
+                    if isInitialSetup { return }
+                    
+                    // Simply recalculate based on whatever rate we have
+                    Task { await updateConvertedAmount() }
                 }
                 .onAppear {
                     setupInitialData()
@@ -473,22 +481,38 @@ struct ExpenseEntryView: View {
     
     // MARK: - Setup Methods
     private func setupInitialData() {
+        isInitialSetup = true
+        
+        if categoryManager.categories.isEmpty {
+            categoryManager.reloadCategories()
+        }
+        
         if let editingExpense = expense {
             setupEditMode(with: editingExpense)
+            
+            // For edit mode, we need to ensure the conversion display is updated
+            // even during initial setup
+            if selectedCurrency != defaultCurrency {
+                Task {
+                    // Use a special flag to bypass the isInitialSetup check
+                    await updateConvertedAmount(bypassInitialSetup: true)
+                }
+            }
         } else {
             setupCreateMode()
         }
         
-        if isUsingHistoricalRates {
-            Task { await updateConvertedAmount() }
-        }
-        
-        // Reset recurrence options when opening the form
+        // Reset recurrence options
         isRecurring = false
         recurringFrequency = "Monthly"
         enableNotifications = true
+        
+        // Clear the setup flag after a short delay to allow state to settle
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            isInitialSetup = false
+        }
     }
-    
+
     private func setupEditMode(with expense: Expense) {
         amount = expense.amount?.stringValue ?? ""
         selectedCategory = expense.category
@@ -505,26 +529,38 @@ struct ExpenseEntryView: View {
         } else {
             selectedCurrency = defaultCurrency
         }
-    }
-    
-    private func setupCreateMode() {
-        if let lastUsedCategoryId = UserDefaults.standard.string(forKey: lastSelectedCategoryKey),
-           let uuid = UUID(uuidString: lastUsedCategoryId) {
-            selectedCategory = categoryManager.fetchCategories().first { $0.id == uuid }
+        
+        // Check for stored rate - this handles normal expenses
+        if selectedCurrency != defaultCurrency,
+           let rate = expense.conversionRate?.decimalValue,
+           rate > 0 {  // Make sure rate is valid
+            // Store the rate
+            storedRate = rate
+            
+            // Set sourceRate and targetRate for UI display
+            sourceRate = 1.0
+            targetRate = rate
+            
+            hasLoadedStoredRate = true
+            print("📊 Using stored conversion rate: \(rate)")
         }
-        
-        selectedCategory = selectedCategory ?? categoryManager.fetchCategories().first
-        selectedCurrency = defaultCurrency
+        // Handle imported expenses without conversion data
+        else if selectedCurrency != defaultCurrency {
+            // Force a fresh lookup of rates for imported expenses
+            hasLoadedStoredRate = false
+            storedRate = nil
+            
+            // Get latest rates right away for this currency
+            updateRates()
+            
+            print("📊 No stored rate found for imported expense, fetching latest rates")
+        }
     }
-    
+
     // MARK: - Currency Conversion Methods
-    private func updateConvertedAmount() async {
-        let cleanAmount = amount
-            .replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: ",", with: ".")
-        
-        guard let amountValue = Decimal(string: cleanAmount),
-              let selectedCurrency = selectedCurrency,
+    // Single unified method for updating converted amount
+    private func updateConvertedAmount(bypassInitialSetup: Bool = false) async {
+        guard let selectedCurrency = selectedCurrency,
               let defaultCurrency = defaultCurrency,
               selectedCurrency != defaultCurrency else {
             await MainActor.run {
@@ -532,18 +568,59 @@ struct ExpenseEntryView: View {
             }
             return
         }
-        
-        let conversionResult = CurrencyConverter.shared.convertAmount(
-            amountValue,
-            from: selectedCurrency,
-            to: defaultCurrency,
-            on: date
-        )
-        
+
+        let cleanedAmount = amount.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: ",", with: ".")
+
+        guard let amountValue = Decimal(string: cleanedAmount) else {
+            await MainActor.run {
+                convertedAmount = nil
+            }
+            return
+        }
+
         await MainActor.run {
-            convertedAmount = conversionResult?.formatted
+            if isEditMode, hasLoadedStoredRate, let storedRate {
+                convertedAmount = currencyManager.currencyConverter.formatAmount(amountValue * storedRate, currency: defaultCurrency)
+            } else if let sourceRate = sourceRate, let targetRate = targetRate {
+                let rate = targetRate / sourceRate
+                convertedAmount = currencyManager.currencyConverter.formatAmount(amountValue * rate, currency: defaultCurrency)
+            } else {
+                if let result = CurrencyConverter.shared.convertAmount(amountValue, from: selectedCurrency, to: defaultCurrency, on: date) {
+                    convertedAmount = result.formatted
+                    sourceRate = result.rate
+                    targetRate = 1.0
+                }
+            }
         }
     }
+    
+    private func handleEditModeChanges() {
+        // Only run in edit mode
+        guard isEditMode else { return }
+        
+        // Reset our flag when certain properties change
+        hasLoadedStoredRate = false
+        
+        // Clear stored rate - we need a new one
+        storedRate = nil
+        
+        // Force a fresh lookup
+        updateRates()
+        Task { await updateConvertedAmount() }
+    }
+    
+    private func setupCreateMode() {
+        if let lastUsedCategoryId = UserDefaults.standard.string(forKey: lastSelectedCategoryKey),
+           let uuid = UUID(uuidString: lastUsedCategoryId) {
+            // Use the in-memory categories instead of fetching again
+            selectedCategory = categoryManager.categories.first { $0.id == uuid }
+        }
+        
+        // Use the in-memory categories instead of fetching again
+        selectedCategory = selectedCategory ?? categoryManager.categories.first
+        selectedCurrency = defaultCurrency
+    }
+
     
     // MARK: - Validation & Save Methods
     private func isValidInput() -> Bool {

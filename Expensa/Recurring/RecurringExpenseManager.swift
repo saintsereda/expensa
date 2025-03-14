@@ -104,7 +104,7 @@ class RecurringExpenseManager: ObservableObject {
         
         if let template = template, Calendar.current.isDateInToday(expenseDate) {
             context.performAndWait {
-                guard let (convertedAmount, _) = CurrencyConverter.shared.convertAmount(
+                guard let conversion = CurrencyConverter.shared.convertAmount(
                     amount,
                     from: sourceCurrency,
                     to: defaultCurrency,
@@ -113,11 +113,14 @@ class RecurringExpenseManager: ObservableObject {
                     print("❌ Currency conversion failed")
                     return
                 }
+                let convertedAmount = conversion.amount
+                let conversionRate = conversion.rate
                 
                 let expense = Expense(context: context)
                 expense.id = UUID()
                 expense.amount = NSDecimalNumber(decimal: amount)
                 expense.convertedAmount = NSDecimalNumber(decimal: convertedAmount)
+                expense.conversionRate = NSDecimalNumber(decimal: conversionRate)
                 expense.category = category
                 expense.date = expenseDate
                 expense.notes = notes
@@ -327,20 +330,21 @@ class RecurringExpenseManager: ObservableObject {
         let expenseDate = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: date)!
         print("Expense date set to: \(expenseDate)")
 
-        guard let (convertedAmount, _) = CurrencyConverter.shared.convertAmount(
+        guard let conversion = CurrencyConverter.shared.convertAmount(
             amount,
             from: sourceCurrency,
             to: defaultCurrency,
-            on: expenseDate  // Use expenseDate for conversion
+            on: expenseDate
         ) else {
             print("❌ Currency conversion failed")
             return
         }
-        
+
         let expense = Expense(context: context)
         expense.id = UUID()
         expense.amount = template.amount
-        expense.convertedAmount = NSDecimalNumber(decimal: convertedAmount)
+        expense.convertedAmount = NSDecimalNumber(decimal: conversion.amount)
+        expense.conversionRate = NSDecimalNumber(decimal: conversion.rate)
         expense.currency = template.currency
         expense.date = expenseDate  // Use expenseDate here
         expense.notes = template.notes

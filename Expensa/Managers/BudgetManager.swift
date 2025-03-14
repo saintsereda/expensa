@@ -66,6 +66,7 @@ class BudgetManager: ObservableObject {
             }
             
             try self.context.save()
+            NotificationCenter.default.post(name: Notification.Name("BudgetUpdated"), object: nil)
             print("✅ Created new budget: \(amount?.description ?? "no amount") \(defaultCurrency.code ?? "unknown")")
             return budget
         }
@@ -215,6 +216,7 @@ class BudgetManager: ObservableObject {
             }
             
             try self.context.save()
+            NotificationCenter.default.post(name: Notification.Name("BudgetUpdated"), object: nil)
             print("💾 Saved all category budgets")
         }
     }
@@ -300,11 +302,17 @@ class BudgetManager: ObservableObject {
             return nil
         }
         
-        return currencyConverter.convertAmount(
+        let result = currencyConverter.convertAmount(
             amount,
             from: sourceCurrency,
             to: targetCurrency
         )
+        
+        if let result = result {
+            return (result.amount, result.formatted)
+        }
+        
+        return nil
     }
     
     // MARK: - Helper Methods

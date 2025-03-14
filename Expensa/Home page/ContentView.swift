@@ -78,7 +78,7 @@ struct ContentView: View {
                     fetchedExpenses: fetchedExpenses,
                     categorizedExpenses: categorizedExpenses,
                     filterManager: filterManager,
-                    currentBudget: currentBudget
+                    currentBudget: $currentBudget
                 )
             }
             .tabItem {
@@ -104,6 +104,11 @@ struct ContentView: View {
         }
         .onChange(of: filterManager.selectedDate) { _, newDate in
             updateFetchRequestPredicate(for: newDate)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BudgetUpdated"))) { _ in
+            Task {
+                currentBudget = await BudgetManager.shared.getCurrentMonthBudget()
+            }
         }
     }
     

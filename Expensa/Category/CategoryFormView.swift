@@ -76,6 +76,8 @@ struct CategoryFormView: View {
     
     private let editingCategory: Category?
     private let isEditing: Bool
+    private let showCancelButton: Bool
+    
     
     var onSave: ((String) -> Void)?
     
@@ -84,27 +86,31 @@ struct CategoryFormView: View {
         "📚", "✈️", "🎵", "🏥", "🎁", "👕", "🐶", "🎨", "💼", "🏦"
     ]
     
-    init() {
-        let randomEmoji = Self.placeholderEmojis.randomElement() ?? "😀"
-        _selectedEmoji = State(initialValue: randomEmoji)
-        self.editingCategory = nil
-        self.isEditing = false
-    }
+    init(showCancelButton: Bool = true) { // Add parameter with default value
+         let randomEmoji = Self.placeholderEmojis.randomElement() ?? "😀"
+         _selectedEmoji = State(initialValue: randomEmoji)
+         self.editingCategory = nil
+         self.isEditing = false
+         self.showCancelButton = showCancelButton // Set the property
+     }
+     
+     init(category: Category, showCancelButton: Bool = true) { // Add parameter with default value
+         _selectedEmoji = State(initialValue: category.icon ?? "😀")
+         _categoryName = State(initialValue: category.name ?? "")
+         self.editingCategory = category
+         self.isEditing = true
+         self.showCancelButton = showCancelButton // Set the property
+     }
+     
+     init(onSave: @escaping (String) -> Void, showCancelButton: Bool = true) { // Add parameter with default value
+         let randomEmoji = Self.placeholderEmojis.randomElement() ?? "😀"
+         _selectedEmoji = State(initialValue: randomEmoji)
+         self.editingCategory = nil
+         self.isEditing = false
+         self.onSave = onSave
+         self.showCancelButton = showCancelButton // Set the property
+     }
     
-    init(category: Category) {
-        _selectedEmoji = State(initialValue: category.icon ?? "😀")
-        _categoryName = State(initialValue: category.name ?? "")
-        self.editingCategory = category
-        self.isEditing = true
-    }
-    
-    init(onSave: @escaping (String) -> Void) {
-        let randomEmoji = Self.placeholderEmojis.randomElement() ?? "😀"
-        _selectedEmoji = State(initialValue: randomEmoji)
-        self.editingCategory = nil
-        self.isEditing = false
-        self.onSave = onSave
-    }
     
     var body: some View {
             VStack(spacing: 24) {
@@ -188,9 +194,11 @@ struct CategoryFormView: View {
             .navigationTitle(isEditing ? "Edit category" : "New category")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
+                if showCancelButton { // Only show cancel button if needed
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
                     }
                 }
                 

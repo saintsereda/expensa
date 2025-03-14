@@ -60,12 +60,16 @@ class ExpenseDataManager: ObservableObject {
         
         // Use unified conversion method with appropriate fallback behavior
         // For past dates, we don't want to fall back to current rates
-        guard let (convertedAmount, _) = CurrencyConverter.shared.convertAmount(
+        // Use the updated method that returns the rate
+        let conversionResult = CurrencyConverter.shared.convertAmount(
             amount,
             from: currency,
             to: defaultCurrency,
             on: date
-        ) else {
+        )
+        
+        guard let convertedAmount = conversionResult?.amount,
+              let conversionRate = conversionResult?.rate else {
             print("❌ Currency conversion failed")
             return false
         }
@@ -74,6 +78,7 @@ class ExpenseDataManager: ObservableObject {
         newExpense.id = UUID()
         newExpense.amount = NSDecimalNumber(decimal: amount)
         newExpense.convertedAmount = NSDecimalNumber(decimal: convertedAmount)
+        newExpense.conversionRate = NSDecimalNumber(decimal: conversionRate)
         newExpense.category = category
         newExpense.date = date
         newExpense.notes = notes
@@ -126,18 +131,23 @@ class ExpenseDataManager: ObservableObject {
         }
         
         // Use the same conversion logic as in addExpense
-        guard let (convertedAmount, _) = CurrencyConverter.shared.convertAmount(
+        // Use the updated method that returns the rate
+        let conversionResult = CurrencyConverter.shared.convertAmount(
             amount,
             from: currency,
             to: defaultCurrency,
             on: date
-        ) else {
+        )
+        
+        guard let convertedAmount = conversionResult?.amount,
+              let conversionRate = conversionResult?.rate else {
             print("❌ Currency conversion failed")
             return false
         }
         
         expense.amount = NSDecimalNumber(decimal: amount)
         expense.convertedAmount = NSDecimalNumber(decimal: convertedAmount)
+        expense.conversionRate = NSDecimalNumber(decimal: conversionRate)
         expense.category = category
         expense.date = date
         expense.notes = notes

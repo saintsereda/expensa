@@ -58,16 +58,21 @@ struct ExpensesTab: View {
     // MARK: - Properties
     @Binding var isPresentingExpenseEntry: Bool
     @Binding var selectedExpense: Expense?
+    @State private var refreshBudget: Bool = false
     let fetchedExpenses: FetchedResults<Expense>
     let categorizedExpenses: [(Category, [Expense])]
     let filterManager: ExpenseFilterManager
-    let currentBudget: Budget?
+    @Binding var currentBudget: Budget?
     
+    private var shouldShowEmptyState: Bool {
+        allExpensesEver.isEmpty && currentBudget == nil
+    }
+
     var body: some View {
         ZStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
-                    if allExpensesEver.isEmpty {
+                    if shouldShowEmptyState {
                         EmptyExpenseTab()
                             .padding(.top, 60)
                     } else {
@@ -96,10 +101,19 @@ struct ExpensesTab: View {
                             //                                expenseManager: expenseManager
                             //                            )
                             //                        } else {
-                            CategorySpendingSection(
+                            
+                            TopCategoriesSection(
                                 categorizedExpenses: categorizedExpenses,
-                                fetchedExpenses: fetchedExpenses
+                                fetchedExpenses: fetchedExpenses,
+                                budget: currentBudget,
+                                budgetManager: budgetManager,
+                                expenseManager: expenseManager
                             )
+                            
+//                            CategorySpendingSection(
+//                                categorizedExpenses: categorizedExpenses,
+//                                fetchedExpenses: fetchedExpenses
+//                            )
                             //                        }
                             
                             if !recurringExpenses.isEmpty {
@@ -173,6 +187,15 @@ struct ExpensesTab: View {
             .presentationCornerRadius(32)
             .environment(\.managedObjectContext, viewContext)
         }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BudgetUpdated"))) { _ in
+            Task {
+                // Refresh the current budget asynchronously
+                currentBudget = await BudgetManager.shared.getCurrentMonthBudget()
+                refreshBudget.toggle() // Toggle to force view refresh
+            }
+        }
+        // Make the view depend on refreshBudget to trigger updates
+        .id(refreshBudget)
     }
 }
 

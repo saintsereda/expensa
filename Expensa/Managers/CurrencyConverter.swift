@@ -24,7 +24,7 @@ class CurrencyConverter {
         from sourceCurrency: Currency,
         to targetCurrency: Currency,
         on date: Date? = nil
-    ) -> (amount: Decimal, formatted: String)? {
+    ) -> (amount: Decimal, formatted: String, rate: Decimal)? {
         guard let sourceCode = sourceCurrency.code,
               let targetCode = targetCurrency.code else {
             print("❌ Missing currency codes")
@@ -33,7 +33,7 @@ class CurrencyConverter {
         
         if sourceCode == targetCode {
             let formatted = formatAmount(amount, currency: targetCurrency)
-            return (amount, formatted)
+            return (amount, formatted, 1.0)  // Rate is 1.0 for same currency
         }
         
         let date = date ?? Date()
@@ -46,8 +46,11 @@ class CurrencyConverter {
         let amountInUSD = amount / sourceRate
         let finalAmount = amountInUSD * targetRate
         let formatted = formatAmount(finalAmount, currency: targetCurrency)
+        print("Source rate: \(sourceRate), target rate: \(targetRate)")
+        // Calculate the direct conversion rate
+        let conversionRate = targetRate / sourceRate
         
-        return (finalAmount, formatted)
+        return (finalAmount, formatted, conversionRate)
     }
     
     @MainActor
@@ -83,7 +86,7 @@ class CurrencyConverter {
                 continue
             }
             
-            if let (convertedAmount, _) = convertAmount(
+            if let (convertedAmount, _ , conversionRate) = convertAmount(
                 amount,
                 from: sourceCurrency,
                 to: newCurrency,
@@ -91,6 +94,8 @@ class CurrencyConverter {
             ) {
                 updates.append {
                     expense.convertedAmount = NSDecimalNumber(decimal: convertedAmount)
+                    expense.conversionRate = NSDecimalNumber(decimal: conversionRate)
+
                 }
             }
         }
@@ -102,7 +107,7 @@ class CurrencyConverter {
                 continue
             }
             
-            if let (convertedAmount, _) = convertAmount(
+            if let (convertedAmount, _, _) = convertAmount(
                 amount,
                 from: oldCurrency,
                 to: newCurrency,
@@ -116,7 +121,7 @@ class CurrencyConverter {
                     if let categoryBudgets = budget.categoryBudgets as? Set<CategoryBudget> {
                         for categoryBudget in categoryBudgets {
                             if let catAmount = categoryBudget.budgetAmount?.decimalValue,
-                               let (catConvertedAmount, _) = self.convertAmount(
+                               let (catConvertedAmount, _, _) = self.convertAmount(
                                 catAmount,
                                 from: oldCurrency,
                                 to: newCurrency,
@@ -144,7 +149,7 @@ class CurrencyConverter {
             
             // Only process if the currency matches the old default or we need to update the converted amount
             if currencyCode != newCurrency.code {
-                if let (convertedAmount, _) = convertAmount(
+                if let (convertedAmount, _, _) = convertAmount(
                     amount,
                     from: sourceCurrency,
                     to: newCurrency,
@@ -191,13 +196,24 @@ class CurrencyConverter {
         formatter.decimalSeparator = ","
         formatter.groupingSeparator = " "
         
-        guard let amountString = formatter.string(from: amount as NSDecimalNumber) else {
+        // Check if amount is negative
+        let isNegative = amount < 0
+        // Use absolute value for formatting
+        let absAmount = abs(amount)
+        
+        guard let amountString = formatter.string(from: absAmount as NSDecimalNumber) else {
             return "\(amount)"
         }
         
         let symbol = currency.symbol ?? currency.code ?? ""
         let isUSD = currency.code == "USD"
         
-        return isUSD ? "\(symbol)\(amountString)" : "\(amountString) \(symbol)"
+        if isUSD {
+            // For USD, put minus sign before the symbol if negative
+            return isNegative ? "-\(symbol)\(amountString)" : "\(symbol)\(amountString)"
+        } else {
+            // For other currencies, put minus sign at the beginning
+            return isNegative ? "-\(amountString) \(symbol)" : "\(amountString) \(symbol)"
+        }
     }
 }
