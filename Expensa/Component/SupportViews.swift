@@ -42,6 +42,27 @@ struct NavigationLinkButton: View {
     }
 }
 
+struct CloseButton: View {
+    let icon: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .center, spacing: 8) {
+                    HStack(alignment: .center, spacing: 0) {
+                        Image(systemName: icon)
+                            .frame(width: 20, height: 20)
+                            .foregroundColor(Color(uiColor: .label))
+                    }
+                    .opacity(0.64)
+            }
+            .frame(width: 40, height: 40, alignment: .center)
+            .background(Color(uiColor: .systemGray5))
+            .cornerRadius(999)
+        }
+    }
+}
+
 struct RoundButton: View {
     let leftIcon: String?
     let label: String
@@ -58,32 +79,73 @@ struct RoundButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(alignment: .center, spacing: 8) {
+            HStack(alignment: .center, spacing: 6) {
                 if let leftIcon = leftIcon {
-                    Image(systemName: leftIcon)
+                    Image(leftIcon)
+                        .renderingMode(.template)
                         .frame(width: 20, height: 20)
                         .foregroundColor(Color(uiColor: .label))
-                        .opacity(0.64)
                 }
 
                 Text(label)
                     .font(.system(size: 17, weight: .regular, design: .rounded))
                     .foregroundColor(Color(uiColor: .label))
-                    .opacity(0.64)
                     .contentTransition(.numericText())
                     .animation(.spring(response: 0.4, dampingFraction: 0.95), value: label)
 
                 if let rightIcon = rightIcon {
-                    Image(systemName: rightIcon)
+                    Image(rightIcon)
+                        .renderingMode(.template)
                         .frame(width: 20, height: 20)
                         .foregroundColor(Color(uiColor: .label))
-                        .opacity(0.64)
                 }
             }
             .padding(.horizontal, 12)
             .frame(height: 40, alignment: .center)
-            .background(Color(uiColor: .secondarySystemBackground))
+            .background(Color(uiColor: .systemGray5))
             .cornerRadius(999)
+        }
+    }
+}
+
+struct GhostButton: View {
+    let leftIcon: String?
+    let label: String
+    let rightIcon: String?
+    let action: () -> Void
+
+    // Initializer with optional icons
+    init(leftIcon: String? = nil, label: String, rightIcon: String? = nil, action: @escaping () -> Void) {
+        self.leftIcon = leftIcon
+        self.label = label
+        self.rightIcon = rightIcon
+        self.action = action
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .center, spacing: 6) {
+                if let leftIcon = leftIcon {
+                    Image(leftIcon)
+                        .renderingMode(.template)
+                        .frame(width: 18, height: 18)
+                        .foregroundColor(Color.primary)
+                }
+
+                Text(label)
+                    .font(.system(size: 17, weight: .regular, design: .rounded))
+                    .foregroundColor(Color(uiColor: .label))
+                    .contentTransition(.numericText())
+                    .animation(.spring(response: 0.4, dampingFraction: 0.95), value: label)
+
+                if let rightIcon = rightIcon {
+                    Image(rightIcon)
+                        .renderingMode(.template)
+                        .frame(width: 18, height: 18)
+                        .foregroundColor(Color.primary)
+                }
+            }
+            .frame(height: 48, alignment: .leading)
         }
     }
 }

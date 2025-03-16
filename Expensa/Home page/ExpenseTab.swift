@@ -83,10 +83,10 @@ struct ExpensesTab: View {
                             )
                             .padding(.horizontal, 16)
                             
-                            DailySpendingProgressGraph(
-                                expenses: Array(fetchedExpenses),
-                                selectedDate: filterManager.selectedDate
-                            )
+//                            DailySpendingProgressGraph(
+//                                expenses: Array(fetchedExpenses),
+//                                selectedDate: filterManager.selectedDate
+//                            )
                         }
                         .padding(.bottom, 16)
                         
@@ -102,18 +102,18 @@ struct ExpensesTab: View {
                             //                            )
                             //                        } else {
                             
-                            TopCategoriesSection(
-                                categorizedExpenses: categorizedExpenses,
-                                fetchedExpenses: fetchedExpenses,
-                                budget: currentBudget,
-                                budgetManager: budgetManager,
-                                expenseManager: expenseManager
-                            )
-                            
-//                            CategorySpendingSection(
+//                            TopCategoriesSection(
 //                                categorizedExpenses: categorizedExpenses,
-//                                fetchedExpenses: fetchedExpenses
+//                                fetchedExpenses: fetchedExpenses,
+//                                budget: currentBudget,
+//                                budgetManager: budgetManager,
+//                                expenseManager: expenseManager
 //                            )
+                            
+                            CategorySpendingSection(
+                                categorizedExpenses: categorizedExpenses,
+                                fetchedExpenses: fetchedExpenses
+                            )
                             //                        }
                             
                             if !recurringExpenses.isEmpty {
@@ -179,12 +179,12 @@ struct ExpensesTab: View {
             )
             .environmentObject(currencyManager)
         }
-        .sheet(isPresented: $isPresentingExpenseEntry) {
+            .fullScreenCover(isPresented: $isPresentingExpenseEntry) {
             ExpenseEntryView(
                 isPresented: $isPresentingExpenseEntry,
                 expense: nil
             )
-            .presentationCornerRadius(32)
+
             .environment(\.managedObjectContext, viewContext)
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("BudgetUpdated"))) { _ in

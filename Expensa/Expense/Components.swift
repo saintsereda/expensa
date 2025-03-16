@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 
+
 struct ExpenseButton: View {
     let icon: String?  // Make icon optional
     let label: String
@@ -51,93 +52,88 @@ struct ExpenseButton: View {
             .padding(.trailing, 16)
             .padding(.vertical, 0)
             .frame(height: 40, alignment: .center)
-            .background(Color(uiColor: .secondarySystemBackground))
+            .background(Color(uiColor: .systemGray5))
             .cornerRadius(999)
         }
     }
 }
 
-struct CloseButton: View {
-    let icon: String
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(alignment: .center, spacing: 8) {
-                    HStack(alignment: .center, spacing: 0) {
-                        Image(systemName: icon)
-                            .frame(width: 20, height: 20)
-                            .foregroundColor(Color(uiColor: .label))
-                    }
-                    .opacity(0.64)
-            }
-            .frame(width: 40, height: 40, alignment: .center)
-            .background(Color(uiColor: .secondarySystemBackground))
-            .cornerRadius(999)
-        }
-    }
-}
 
 struct CategoryButton: View {
-    let category: Category?
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            HStack(alignment: .center, spacing: 8) {
-                Text("\(category?.icon ?? "🔹") \(category?.name ?? "Select category")")
+            HStack(alignment: .center, spacing: 6) {
+                Image("9-dot-menu")
+                    .renderingMode(.template)
+                    .foregroundColor(Color(uiColor: .label))
+                Text("All")
                     .font(.system(size: 17, weight: .regular, design: .rounded))
                     .foregroundColor(Color(uiColor: .label))
-                    .contentTransition(.numericText())
-                
-                Image(systemName: "chevron.right")
-                    .foregroundColor(Color(uiColor: .tertiaryLabel))
             }
-            .padding(.leading, 16)
-            .padding(.trailing, 12)
-            .padding(.vertical, 0)
+            .padding(.horizontal, 16)
             .frame(height: 48, alignment: .center)
-            .background(Color(uiColor: .systemGray4))
-            .cornerRadius(999)
+            .background(Color.clear)
+            .overlay(
+                RoundedRectangle(cornerRadius: 99)
+                    .stroke(Color(uiColor: .systemGray5), lineWidth: 2)
+            )
+            .cornerRadius(99)
         }
     }
+    
+//    var body: some View {
+//        Button(action: action) {
+//            HStack(alignment: .center, spacing: 8) {
+//                Text("\(category?.icon ?? "") \(category?.name ?? "Select category")")
+//                    .font(.system(size: 17, weight: .regular, design: .rounded))
+//                    .foregroundColor(Color(uiColor: .label))
+//                    .contentTransition(.numericText())
+//                
+//                Image(systemName: "chevron.right")
+//                    .foregroundColor(Color(uiColor: .tertiaryLabel))
+//            }
+//            .padding(.horizontal, 16)
+//            .frame(height: 48, alignment: .center)
+//            .background(Color.clear)
+//            .overlay(
+//                RoundedRectangle(cornerRadius: 99)
+//                    .stroke(Color(uiColor: .systemGray5), lineWidth: 2)
+//            )
+//            .cornerRadius(99)
+//        }
+//    }
 }
 
 struct SaveButton: View {
     let isEnabled: Bool
     let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
+    
     var body: some View {
         Button(action: action) {
             HStack(alignment: .center, spacing: 10) {
                 Text("Save")
                     .font(.system(size: 17, weight: .medium, design: .rounded))
                     .multilineTextAlignment(.center)
-                    .foregroundColor(isEnabled ? Color.white : Color(uiColor: .systemGray2))
+                    .foregroundColor(
+                        isEnabled
+                        ? (colorScheme == .dark ? Color.black : Color.white)
+                        : Color(uiColor: .systemGray2)
+                    )
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 0)
             .frame(height: 48, alignment: .center)
-
-            .background(isEnabled ? Color.accentColor : Color(uiColor: .systemGray4))
+            .background(
+                isEnabled
+                ? (colorScheme == .dark ? Color.white : Color.black)
+                : Color(uiColor: .systemGray4)
+            )
             .cornerRadius(999)
         }
         .disabled(!isEnabled)
-    }
-}
-
-struct BottomActionSection: View {
-    let category: Category?
-    let isEnabled: Bool
-    let onCategoryTap: () -> Void
-    let onSaveTap: () -> Void
-    
-    var body: some View {
-        HStack(alignment: .center) {
-            CategoryButton(category: category, action: onCategoryTap)
-            Spacer()
-            SaveButton(isEnabled: isEnabled, action: onSaveTap)
-        }
-        .frame(maxWidth: .infinity, alignment: .center)
     }
 }
 

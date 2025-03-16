@@ -55,7 +55,7 @@ struct FloatingSearchBar: View {
                 }
             }
             Spacer()
-                .frame(height: isKeyboardVisible ? 16 : 24)
+                .frame(height: isKeyboardVisible ? 16 : 16)
         }
         .background(
             Color(UIColor.systemBackground)

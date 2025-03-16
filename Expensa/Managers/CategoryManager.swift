@@ -80,22 +80,32 @@ class CategoryManager: ObservableObject {
     
         
         // Update existing method with caching
-        func getMostUsedCategories(limit: Int = 3) -> [Category] {
-            // Return cached result if less than 5 minutes old
-            let cacheAge = Date().timeIntervalSince(lastCacheUpdate)
-            if !cachedFrequentlyUsedCategories.isEmpty && cacheAge < 300 {
-                return cachedFrequentlyUsedCategories
-            }
-            
-            // Calculate and cache result
-            let result = categories.sorted { getUsageCount(for: $0) > getUsageCount(for: $1) }
-                .prefix(limit)
-                .filter { getUsageCount(for: $0) > 0 }
-            
-            cachedFrequentlyUsedCategories = Array(result)
-            lastCacheUpdate = Date()
+    func getMostUsedCategories(limit: Int = 3) -> [Category] {
+        // Return cached result if less than 5 minutes old
+        let cacheAge = Date().timeIntervalSince(lastCacheUpdate)
+        if !cachedFrequentlyUsedCategories.isEmpty && cacheAge < 300 {
             return cachedFrequentlyUsedCategories
         }
+        
+        // Get categories that have been used with expenses
+        let categoriesWithExpenses = categories.filter { category in
+            // Check if the category has any associated expenses
+            if let expenses = category.expenses as? Set<Expense>, !expenses.isEmpty {
+                return true
+            }
+            return false
+        }
+        
+        // Sort by usage count and take the top 'limit' categories
+        let result = categoriesWithExpenses
+            .sorted { getUsageCount(for: $0) > getUsageCount(for: $1) }
+            .prefix(limit)
+            .filter { getUsageCount(for: $0) > 0 }
+        
+        cachedFrequentlyUsedCategories = Array(result)
+        lastCacheUpdate = Date()
+        return cachedFrequentlyUsedCategories
+    }
 
     // MARK: - Add Predefined Categories with Icons
     func addPredefinedCategories() {

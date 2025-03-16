@@ -6,24 +6,25 @@ struct NotesModalView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject private var tagManager: TagManager
     @Binding var notes: String
-    @Binding var tempTags: Set<Tag>  // Add this binding
+    @Binding var tempTags: Set<Tag>
     @State private var tempNotes: String
     @FocusState private var isFocused: Bool
     
-    // Regular expression to match hashtags
-    private let hashtagPattern = try! NSRegularExpression(pattern: "#\\w+", options: [])
+    // Static regular expression to match hashtags - more efficient
+    private static let hashtagPattern = try! NSRegularExpression(pattern: "#\\w+", options: [])
     
-    // Highlighting rule for hashtags
-    private var highlightRules: [HighlightRule] {
-        [
-            HighlightRule(
-                pattern: hashtagPattern,
-                formattingRules: [
-                    TextFormattingRule(key: .foregroundColor, value: UIColor.systemBlue)
-                ]
-            )
-        ]
-    }
+    // Memoized highlighting rules
+    private let highlightRules: [HighlightRule] = [
+        HighlightRule(
+            pattern: NotesModalView.hashtagPattern,
+            formattingRules: [
+                TextFormattingRule(key: .foregroundColor, value: UIColor.systemBlue)
+            ]
+        )
+    ]
+    
+    // Debounced extraction to reduce frequency
+    @State private var tagExtractionTask: Task<Void, Never>?
     
     init(notes: Binding<String>, tempTags: Binding<Set<Tag>>) {
         self._notes = notes
@@ -32,26 +33,39 @@ struct NotesModalView: View {
     }
     
     private func extractTempTags() {
-        // Extract all hashtags from the text
-        let range = NSRange(location: 0, length: tempNotes.utf16.count)
-        let matches = hashtagPattern.matches(in: tempNotes, options: [], range: range)
+        // Cancel previous extraction task if it exists
+        tagExtractionTask?.cancel()
         
-        // Clear existing temp tags
-        tempTags.removeAll()
-        
-        // Create temporary tags
-        for match in matches {
-            if let range = Range(match.range, in: tempNotes) {
-                let tagText = String(tempNotes[range])
-                let tagName = String(tagText.dropFirst()) // Remove # from the beginning
+        // Create a new extraction task with a slight delay
+        tagExtractionTask = Task {
+            // Add a small delay to avoid extracting on every keystroke
+            try? await Task.sleep(nanoseconds: 300_000_000) // 300ms
+            
+            if Task.isCancelled { return }
+            
+            await MainActor.run {
+                // Extract all hashtags from the text
+                let range = NSRange(location: 0, length: tempNotes.utf16.count)
+                let matches = NotesModalView.hashtagPattern.matches(in: tempNotes, options: [], range: range)
                 
-                // Try to find existing tag first
-                if let existingTag = tagManager.findTag(name: tagName) {
-                    tempTags.insert(existingTag)
-                } else {
-                    // Create temporary tag without saving to CoreData
-                    let tempTag = tagManager.createTemporaryTag(name: tagName)
-                    tempTags.insert(tempTag)
+                // Clear existing temp tags
+                tempTags.removeAll()
+                
+                // Create temporary tags
+                for match in matches {
+                    if let range = Range(match.range, in: tempNotes) {
+                        let tagText = String(tempNotes[range])
+                        let tagName = String(tagText.dropFirst()) // Remove # from the beginning
+                        
+                        // Try to find existing tag first
+                        if let existingTag = tagManager.findTag(name: tagName) {
+                            tempTags.insert(existingTag)
+                        } else {
+                            // Create temporary tag without saving to CoreData
+                            let tempTag = tagManager.createTemporaryTag(name: tagName)
+                            tempTags.insert(tempTag)
+                        }
+                    }
                 }
             }
         }
@@ -74,10 +88,14 @@ struct NotesModalView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Text editor
+                // Text editor with optimized performance
                 HighlightedTextEditor(text: $tempNotes, highlightRules: highlightRules)
                     .focused($isFocused)
                     .padding()
+                    .onChange(of: tempNotes) { _, _ in
+                        // Debounced tag extraction
+                        extractTempTags()
+                    }
                 
                 // Bottom tag scroll section
                 VStack(spacing: 0) {
@@ -96,16 +114,9 @@ struct NotesModalView: View {
                         .padding(.vertical, 12)
                     }
                     .background(
-                        ZStack {
-                            // Add the top divider
-                            VStack(spacing: 0) {
-                                Divider()
-                                
-                                Spacer()
-                            }
-//                            
-//                            // Add the blur effect
-//                            BlurView(style: .regular)
+                        VStack(spacing: 0) {
+                            Divider()
+                            Spacer()
                         }
                     )
                 }
@@ -122,14 +133,18 @@ struct NotesModalView: View {
                     Button("Save") {
                         notes = tempNotes
                         extractTempTags()
+                        HapticFeedback.play()
                         dismiss()
                     }
                 }
             }
             .foregroundColor(.primary)
-        }
-        .onAppear {
-            isFocused = true
+            .onAppear {
+                // Slight delay before setting focus to allow view to fully render
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    isFocused = true
+                }
+            }
         }
     }
 }
@@ -147,18 +162,5 @@ struct TagChip: View {
             .background(Color(uiColor: .systemGray5))
             .foregroundColor(.secondary)
             .cornerRadius(999)
-    }
-}
-
-// BlurView from TagListView
-struct BlurView: UIViewRepresentable {
-    var style: UIBlurEffect.Style
-    
-    func makeUIView(context: Context) -> UIVisualEffectView {
-        return UIVisualEffectView(effect: UIBlurEffect(style: style))
-    }
-    
-    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {
-        uiView.effect = UIBlurEffect(style: style)
     }
 }

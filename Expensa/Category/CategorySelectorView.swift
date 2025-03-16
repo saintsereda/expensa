@@ -9,6 +9,10 @@ import SwiftUI
 import CoreData
 import Combine
 
+import SwiftUI
+import CoreData
+import Combine
+
 struct CategorySelectorView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var categoryManager: CategoryManager
@@ -18,8 +22,7 @@ struct CategorySelectorView: View {
     
     // State variables
     @State private var searchText = ""
-    @State private var filteredCategories: [Category] = []
-    @State private var frequentCategories: [Category] = []
+    @State private var categories: [Category] = []
     @State private var hasLoaded: Bool = false
     @State private var navigateToNewCategory: Bool = false
     @State private var isKeyboardVisible = false
@@ -30,18 +33,16 @@ struct CategorySelectorView: View {
         self._selectedCategory = selectedCategory
     }
     
-    // Function to update filtered categories based on search text
-    private func updateFilteredCategories() {
+    // Function to update categories based on search text
+    private func updateCategories() {
         let allCategories = categoryManager.getCategories()
         
         if searchText.isEmpty {
-            // When showing frequently used categories, remove them from the main list
-            filteredCategories = allCategories.filter { category in
-                !frequentCategories.contains(category)
-            }
+            // Show all categories when search is empty
+            categories = allCategories
         } else {
             // Filter by search text
-            filteredCategories = allCategories.filter { category in
+            categories = allCategories.filter { category in
                 (category.name ?? "").localizedCaseInsensitiveContains(searchText)
             }
         }
@@ -52,36 +53,10 @@ struct CategorySelectorView: View {
         // Skip if already loaded
         if hasLoaded { return }
         
-        // Load frequent categories
-        frequentCategories = categoryManager.getMostUsedCategories()
-        
-        // Load and filter all categories
-        updateFilteredCategories()
-        
-        // The key change: Don't modify selectedCategory if it's explicitly nil
-        // This preserves the nil state when editing an expense with no category
+        // Load all categories
+        updateCategories()
         
         hasLoaded = true
-    }
-    
-    // Chunk the array of categories into arrays of 3 for grid layout
-    private func chunkedCategories(_ categories: [Category]) -> [[Category]] {
-        var result: [[Category]] = []
-        var currentChunk: [Category] = []
-        
-        for category in categories {
-            currentChunk.append(category)
-            if currentChunk.count == 4 {
-                result.append(currentChunk)
-                currentChunk = []
-            }
-        }
-        
-        if !currentChunk.isEmpty {
-            result.append(currentChunk)
-        }
-        
-        return result
     }
     
     private func handleCategorySelection(_ category: Category) {
@@ -124,13 +99,12 @@ struct CategorySelectorView: View {
             ZStack {
                 // Main content
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        // MARK: - Main View Content
-                        if searchText.isEmpty {
-                            frequentCategoriesSection
-                            allCategoriesSection
+                    VStack(alignment: .leading, spacing: 24) {
+                        // Main content - either all categories or search results
+                        if categories.isEmpty {
+                            emptyCategoriesView
                         } else {
-                            searchResultsSection
+                            categoriesGridView
                         }
                     }
                     // Add bottom padding to prevent content from being hidden by the floating search bar
@@ -169,7 +143,7 @@ struct CategorySelectorView: View {
                 setupKeyboardObservers()
             }
             .onChange(of: searchText) { _, _ in
-                updateFilteredCategories()
+                updateCategories()
             }
             .onChange(of: navigateToNewCategory) { oldValue, newValue in
                 // When returning from the CategoryFormView
@@ -179,9 +153,8 @@ struct CategorySelectorView: View {
                     
                     // Refresh the categories list with a slight delay to ensure CoreData is updated
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        // Reload data including frequently used categories
-                        frequentCategories = categoryManager.getMostUsedCategories()
-                        updateFilteredCategories()
+                        // Reload data
+                        updateCategories()
                         
                         // Get the most recently added category
                         let allCategories = categoryManager.getCategories()
@@ -196,7 +169,7 @@ struct CategorySelectorView: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("CategoriesUpdated"))) { _ in
                 // Update categories when we receive a notification that categories have been updated
-                updateFilteredCategories()
+                updateCategories()
             }
             .navigationDestination(isPresented: $navigateToNewCategory) {
                 CategoryFormView(showCancelButton: false)
@@ -207,85 +180,52 @@ struct CategorySelectorView: View {
     
     // MARK: - Extracted View Components
     
-    private var frequentCategoriesSection: some View {
-        Group {
-            if !frequentCategories.isEmpty {
-                Text("Frequently used")
-                    .font(.subheadline)
-                    .padding(.horizontal)
-                    .padding(.top)
-                    .foregroundColor(.gray)
-                
-                ForEach(chunkedCategories(frequentCategories), id: \.self) { row in
-                    categoryRow(for: row)
-                }
-            }
-        }
-    }
-    
-    private var allCategoriesSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("All categories")
-                .font(.subheadline)
-                .padding(.horizontal)
-                .padding(.top)
-                .foregroundColor(.gray)
-            
-            if filteredCategories.isEmpty {
-                emptyCategoriesView
-            } else {
-                categoriesGridView
-            }
-        }
-    }
-    
     private var emptyCategoriesView: some View {
-        VStack {
-            HStack(spacing: 8) {
-                Spacer().frame(maxWidth: .infinity)
-                
-                Button(action: { navigateToNewCategory = true }) {
-                    AddCategoryItem()
-                }
-                .frame(maxWidth: .infinity)
-                
-                
-                Spacer().frame(maxWidth: .infinity)
-            }
-            .padding(.horizontal)
+        VStack(spacing: 16) {
+            Spacer()
             
-            Text("No categories found")
+            Text("No categories found.\nYou can create your own category")
                 .foregroundColor(.gray)
-                .padding(.horizontal)
+                .multilineTextAlignment(.center)
+                .padding()
+            
+            Button(action: { navigateToNewCategory = true }) {
+                AddCategoryItem()
+            }
+            .frame(width: 120)
+            
+            Spacer()
         }
+        .padding(.top, 24)
+        .frame(maxWidth: .infinity)
+        .padding()
     }
     
     private var categoriesGridView: some View {
         Group {
             // Calculate how many items we have (categories + add button)
-            let totalItems = filteredCategories.count + 1
-            let rowCount = (totalItems + 3) / 4 // Calculate number of rows needed
+            let totalItems = categories.count + 1
+            let rowCount = (totalItems + 2) / 3 // Calculate number of rows needed for 3 items per row
             
             VStack(alignment: .leading, spacing: 24) {
                 ForEach(0..<rowCount, id: \.self) { rowIndex in
                     HStack(spacing: 8) {
-                        ForEach(0..<4, id: \.self) { colIndex in
-                            let index = rowIndex * 4 + colIndex
+                        ForEach(0..<3, id: \.self) { colIndex in
+                            let index = rowIndex * 3 + colIndex
                             
-                            if index < filteredCategories.count {
+                            if index < categories.count {
                                 // Regular category
                                 CategoryItemView(
-                                    category: filteredCategories[index],
-                                    isSelected: selectedCategory != nil && filteredCategories[index] == selectedCategory
+                                    category: categories[index],
+                                    isSelected: selectedCategory != nil && categories[index] == selectedCategory
                                 )
                                 .onTapGesture {
-                                    handleCategorySelection(filteredCategories[index])
+                                    handleCategorySelection(categories[index])
                                     HapticFeedback.play()
                                 }
                                 .frame(maxWidth: .infinity)
-                            } else if index == filteredCategories.count {
+                            } else if index == categories.count {
                                 // Add category button (exactly after all categories)
-                                // IMPORTANT: Remove the nested onTapGesture
                                 Button(action: {
                                     HapticFeedback.play()
                                     navigateToNewCategory = true
@@ -303,154 +243,9 @@ struct CategorySelectorView: View {
                 }
             }
         }
+        .padding(.top, 24)
     }
-    
-    private var categoryRows: some View {
-        Group {
-            if !filteredCategories.isEmpty {
-                let rowCount = (filteredCategories.count + 3) / 4 // Calculate number of rows needed
-                
-                ForEach(0..<rowCount, id: \.self) { rowIndex in
-                    HStack(spacing: 8) {
-                        ForEach(0..<4, id: \.self) { colIndex in
-                            let index = rowIndex * 4 + colIndex
-                            
-                            if index < filteredCategories.count {
-                                CategoryItemView(
-                                    category: filteredCategories[index],
-                                    isSelected: selectedCategory != nil && filteredCategories[index] == selectedCategory
-                                )
-                                .onTapGesture {
-                                    handleCategorySelection(filteredCategories[index])
-                                    HapticFeedback.play()
-                                }
-                                .frame(maxWidth: .infinity)
-                            } else {
-                                Spacer().frame(maxWidth: .infinity)
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-            }
-        }
-    }
-    
-    private var searchResultsSection: some View {
-        Group {
-            if filteredCategories.isEmpty {
-                // Center aligned content for empty search results
-                VStack(spacing: 16) {
-                    Spacer()
-                    
-                    Text("No categories found.\nYou can create your own category")
-                        .foregroundColor(.gray)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    
-                    Button(action: { navigateToNewCategory = true }) {
-                        AddCategoryItem()
-                    }
-                    .frame(width: 120)
-                    
-                    Spacer()
-                }
-                .padding(.top, 24)
-                .frame(maxWidth: .infinity)
-                .padding()
-            } else {
-                searchResultsGrid
-            }
-        }
-    }
-    
-    private var searchResultsGrid: some View {
-        Group {
-            // Calculate how many items we have (categories + add button)
-            let totalItems = filteredCategories.count + 1
-            let rowCount = (totalItems + 3) / 4
-            
-            ForEach(0..<rowCount, id: \.self) { rowIndex in
-                HStack(spacing: 8) {
-                    ForEach(0..<4, id: \.self) { colIndex in
-                        let index = rowIndex * 4 + colIndex
-                        
-                        if index < filteredCategories.count {
-                            // Regular category
-                            CategoryItemView(
-                                category: filteredCategories[index],
-                                isSelected: selectedCategory != nil && filteredCategories[index] == selectedCategory
-                            )
-                            .onTapGesture {
-                                handleCategorySelection(filteredCategories[index])
-                                HapticFeedback.play()
-                            }
-                            .frame(maxWidth: .infinity)
-                        } else if index == filteredCategories.count {
-                            // Add category button (exactly after all categories)
-                            // IMPORTANT: Remove the nested onTapGesture
-                            Button(action: {
-                                HapticFeedback.play()
-                                navigateToNewCategory = true
-                            }) {
-                                AddCategoryItem()
-                            }
-                            .frame(maxWidth: .infinity)
-                        } else {
-                            // Empty space
-                            Spacer().frame(maxWidth: .infinity)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-            }
-        }
-    }
-    
-    private func categoryRow(for row: [Category]) -> some View {
-        HStack(spacing: 8) {
-            ForEach(row, id: \.self) { category in
-                CategoryItemView(
-                    category: category,
-                    isSelected: selectedCategory != nil && category == selectedCategory
-                )
-                .onTapGesture {
-                    handleCategorySelection(category)
-                    HapticFeedback.play()
-                }
-                .frame(maxWidth: .infinity)
-            }
-            
-            // Fill empty slots with spacers
-            if row.count < 4 {
-                ForEach(0..<(4 - row.count), id: \.self) { _ in
-                    Spacer().frame(maxWidth: .infinity)
-                }
-            }
-        }
-        .padding(.horizontal)
-    }
-    
-    private var addCategoryRow: some View {
-        HStack {
-            Spacer()
-            
-            Button(action: { navigateToNewCategory = true }) {
-                AddCategoryItem()
-                    .onTapGesture {
-                        HapticFeedback.play()
-                    }
-            }
-            .frame(width: 100)
-            
-            Spacer()
-        }
-        .padding(.top, 8)
-        .padding(.bottom, 16)
-    }
-
 }
-
 
 // Separate view for the Add Category button
 struct AddCategoryItem: View {
@@ -460,7 +255,7 @@ struct AddCategoryItem: View {
             ZStack {
                 Circle()
                     .stroke(Color(UIColor.systemGray5), lineWidth: 2)
-                    .frame(width: 64, height: 64)
+                    .frame(width: 80, height: 80)
 
                 Image(systemName: "plus")
                     .font(.system(size: 24))
@@ -469,11 +264,10 @@ struct AddCategoryItem: View {
             
             // Text label
             Text("Add category")
-                .font(.system(size: 14))
+                .font(.system(size: 15))
                 .foregroundColor(.primary)
                 .lineLimit(1)
         }
-        .frame(height: 104)
         .contentShape(Rectangle())
     }
 }
@@ -487,26 +281,23 @@ struct CategoryItemView: View {
             // Emoji container - 48px circle with 24px emoji
             ZStack {
                 Circle()
-                    .fill(isSelected ? Color.blue.opacity(0.2) : Color.gray.opacity(0.1))
-                    .frame(width: 64, height: 64)
+                    .fill(isSelected ? Color(UIColor.systemGray5) : Color.clear)
+                    .frame(width: 80, height: 80)
+                    .overlay(
+                        Circle()
+                    .stroke(Color(UIColor.systemGray5), lineWidth: 2)
+                    )
                 
                 Text(category.icon ?? "🔹")
-                    .font(.system(size: 20))
+                    .font(.system(size: 32))
             }
-            .overlay(
-                isSelected ?
-                Circle()
-                    .stroke(Color.blue, lineWidth: 2)
-                    .frame(width: 64, height: 64) : nil
-            )
             
             // Category name
             Text(category.name ?? "Unnamed")
-                .font(.system(size: 14))
-                .foregroundColor(isSelected ? .blue : .primary)
+                .font(.system(size: 15))
+                .foregroundColor(Color.primary)
                 .lineLimit(1)
         }
-        .frame(height: 104)
         .contentShape(Rectangle())
     }
 }

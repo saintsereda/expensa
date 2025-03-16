@@ -193,7 +193,7 @@ struct ExpenseDetailView: View {
                         }
                     }
                 }
-                .sheet(isPresented: $showingEditSheet) {
+                .fullScreenCover(isPresented: $showingEditSheet) {
                     ExpenseEntryView(
                         isPresented: $showingEditSheet,
                         expense: expense
