@@ -102,16 +102,6 @@ public struct SpendingProgressGraph: View {
         VStack(spacing: 8) {
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    // Grid lines
-                    ForEach(0..<5) { i in
-                        Path { path in
-                            let y = (geometry.size.height / 4) * CGFloat(i)
-                            path.move(to: CGPoint(x: 0, y: y))
-                            path.addLine(to: CGPoint(x: geometry.size.width, y: y))
-                        }
-                        .stroke(Color.gray.opacity(0.1), lineWidth: 1)
-                    }
-                    
                     if !cumulativeSpending.isEmpty {
                         let maxSpending = GraphCalculator.safeMaxAmount(cumulativeSpending.map { $0.1 })
                         let startX = currentDayX * geometry.size.width

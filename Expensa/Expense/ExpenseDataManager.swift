@@ -42,6 +42,56 @@ class ExpenseDataManager: ObservableObject {
         return (NSDecimalNumber(decimal: categoryAmount).doubleValue /
                 NSDecimalNumber(decimal: totalAmount).doubleValue) * 100
     }
+    
+    func formatPercentage(percentage: Double, categoryAmount: Decimal, totalAmount: Decimal) -> String {
+        let numberFormatter: NumberFormatter = {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = 0
+            formatter.maximumFractionDigits = 0
+            return formatter
+        }()
+        
+        if categoryAmount == totalAmount {
+            return "100%"
+        } else if percentage < 0.1 {
+            return "<0.1%"
+        } else if percentage >= 99.9 {
+            return "99.9%"
+        } else if percentage < 1 {
+            return "<1%"
+        }
+        return "\(numberFormatter.string(from: NSNumber(value: percentage)) ?? "0")%"
+    }
+    
+    func getCategoryRowData(for category: Category, expenses: [Expense], totalExpenses: Decimal) -> (amount: Decimal, percentage: Double, percentageDisplay: String, count: Int) {
+        let categoryExpenses = expenses.filter { $0.category == category }
+        let categoryAmount = calculateTotalAmount(for: categoryExpenses)
+        let percentage = calculatePercentage(categoryAmount: categoryAmount, totalAmount: totalExpenses)
+        let percentageDisplay = formatPercentage(percentage: percentage, categoryAmount: categoryAmount, totalAmount: totalExpenses)
+        
+        return (
+            amount: categoryAmount,
+            percentage: percentage,
+            percentageDisplay: percentageDisplay,
+            count: categoryExpenses.count
+        )
+    }
+    
+    // Calculate percentage that a category represents of total expenses
+    func calculatePercentage(categoryAmount: Decimal, totalAmount: Decimal) -> Double {
+        guard totalAmount > 0 else { return 0 }
+        let calculated = (NSDecimalNumber(decimal: categoryAmount).doubleValue /
+                NSDecimalNumber(decimal: totalAmount).doubleValue) * 100
+        
+        if calculated < 0.1 {
+            return 0.1 // Show at least 0.1% if there's any amount
+        } else if calculated >= 99.9 {
+            // Only show 100% if the amounts are exactly equal
+            return categoryAmount == totalAmount ? 100 : 99.9
+        }
+        return calculated
+    }
 
     // MARK: - CRUD Operations
     @MainActor

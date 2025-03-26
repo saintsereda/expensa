@@ -27,7 +27,6 @@ struct ContentView: View {
     init() {
         let request = NSFetchRequest<Expense>(entityName: "Expense")
         request.sortDescriptors = [
-//            NSSortDescriptor(keyPath: \Expense.date, ascending: false),
             NSSortDescriptor(keyPath: \Expense.createdAt, ascending: false)
         ]
         
@@ -43,13 +42,6 @@ struct ContentView: View {
             fetchRequest: request,
             animation: .default
         )
-        
-        let tabBarAppearance = UITabBarAppearance()
-//        tabBarAppearance.configureWithDefaultBackground()
-//        tabBarAppearance.backgroundEffect = UIBlurEffect(style: .systemMaterial)
-        
-        UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-        UITabBar.appearance().standardAppearance = tabBarAppearance
     }
     
     // MARK: - Computed Properties
@@ -68,35 +60,49 @@ struct ContentView: View {
         }
     }
     
+    // MARK: - State for sheets
+    @State private var isPresentingBudgetView = false
+    @State private var isPresentingSettingsView = false
+    
     // MARK: - Body
     var body: some View {
-        TabView {
-            NavigationStack {
-                ExpensesTab(
-                    isPresentingExpenseEntry: $isPresentingExpenseEntry,
-                    selectedExpense: $selectedExpense,
-                    fetchedExpenses: fetchedExpenses,
-                    categorizedExpenses: categorizedExpenses,
-                    filterManager: filterManager,
-                    currentBudget: $currentBudget
-                )
-            }
-            .tabItem {
-                Label("", systemImage: "creditcard.fill")
-            }
-            
-            NavigationStack {
-                BudgetView()
-            }
-            .tabItem {
-                Label("", systemImage: "chart.pie.fill")
-            }
-            
-            NavigationStack {
-                SettingsView()
-            }
-            .tabItem {
-                Label("", systemImage: "gear")
+        NavigationStack {
+            ZStack(alignment: .top) {
+                VStack(spacing: 0) {
+
+                    // Main content
+                    ExpensesTab(
+                        isPresentingExpenseEntry: $isPresentingExpenseEntry,
+                        selectedExpense: $selectedExpense,
+                        fetchedExpenses: fetchedExpenses,
+                        categorizedExpenses: categorizedExpenses,
+                        filterManager: filterManager,
+                        currentBudget: $currentBudget
+                    )
+                }
+//                .variableBlur(radius: 32, maskHeight: 60, fromTop: true)
+                
+                // Top buttons row (on top of the blur)
+                HStack(spacing: 12) {
+                    IconButton(
+                        icon: "pie-chart",
+                        action: {
+                            isPresentingBudgetView = true
+                        }
+                    )
+                    
+                    Spacer()
+                    
+                    IconButton(
+                        icon: "settings",
+                        action: {
+                            isPresentingSettingsView = true
+                        }
+                    )
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+                .frame(height: 60)
             }
         }
         .task {
@@ -110,13 +116,22 @@ struct ContentView: View {
                 currentBudget = await BudgetManager.shared.getCurrentMonthBudget()
             }
         }
+        .sheet(isPresented: $isPresentingBudgetView) {
+            BudgetView()
+                .presentationCornerRadius(32)
+        }
+        .sheet(isPresented: $isPresentingSettingsView) {
+            NavigationStack {
+                SettingsView()
+            }
+        }
     }
     
     // MARK: - Helper Methods
     private func updateFetchRequestPredicate(for date: Date) {
         let interval = filterManager.dateInterval(for: date)
         fetchRequest.wrappedValue.nsPredicate = NSPredicate(
-            format: "date <= %@",
+            format: "date >= %@ AND date <= %@",
             interval.start as NSDate,
             interval.end as NSDate
         )

@@ -77,16 +77,32 @@ struct ExpensesTab: View {
                             .padding(.top, 60)
                     } else {
                         VStack(spacing: 16) {
+                            Spacer()
                             TotalSpentRow(
                                 expenses: fetchedExpenses,
                                 selectedDate: filterManager.selectedDate
                             )
                             .padding(.horizontal, 16)
-                            
+//                            
 //                            DailySpendingProgressGraph(
 //                                expenses: Array(fetchedExpenses),
 //                                selectedDate: filterManager.selectedDate
 //                            )
+                            
+//                            SpendingProgressGraph(
+//                                expenses: Array(fetchedExpenses),
+//                                selectedDate: filterManager.selectedDate
+//                            )
+//                            CumulativeSpendingGraph(
+//                                expenses: Array(fetchedExpenses),
+//                                selectedDate: filterManager.selectedDate
+//                                )
+                            MonthlyComparisonChart(
+                                currentMonthExpenses: Array(fetchedExpenses),
+                                selectedDate: filterManager.selectedDate
+                            )
+                            .padding(.horizontal, 16)
+                            
                         }
                         .padding(.bottom, 16)
                         
@@ -102,18 +118,18 @@ struct ExpensesTab: View {
                             //                            )
                             //                        } else {
                             
-//                            TopCategoriesSection(
-//                                categorizedExpenses: categorizedExpenses,
-//                                fetchedExpenses: fetchedExpenses,
-//                                budget: currentBudget,
-//                                budgetManager: budgetManager,
-//                                expenseManager: expenseManager
-//                            )
-                            
-                            CategorySpendingSection(
+                            TopCategoriesSection(
                                 categorizedExpenses: categorizedExpenses,
-                                fetchedExpenses: fetchedExpenses
+                                fetchedExpenses: fetchedExpenses,
+                                budget: currentBudget,
+                                budgetManager: budgetManager,
+                                expenseManager: expenseManager
                             )
+                            
+//                            CategorySpendingSection(
+//                                categorizedExpenses: categorizedExpenses,
+//                                fetchedExpenses: fetchedExpenses
+//                            )
                             //                        }
                             
                             if !recurringExpenses.isEmpty {
@@ -138,7 +154,6 @@ struct ExpensesTab: View {
             VStack {
                 Spacer()
                 FloatingActionButton(
-                    title: nil,
                     icon: "plus"
                 ) {
                     isPresentingExpenseEntry = true
@@ -151,10 +166,9 @@ struct ExpensesTab: View {
                 AllExpenses()
                     .toolbar(.hidden, for: .tabBar)
             case .allCategories:
-                AllCategoriesView(
-                    categorizedExpenses: categorizedExpenses,
-                    fetchedExpenses: fetchedExpenses
-                )
+                AllCategoriesView()
+                    .toolbar(.hidden, for: .tabBar)
+                    .environmentObject(currencyManager)
             case .allSubscriptions:
                 RecurrenceListView()
                     .toolbar(.hidden, for: .tabBar)

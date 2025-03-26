@@ -8,6 +8,7 @@
 import Foundation
 import SwiftUI
 import CoreData
+import Lottie
 
 struct UncategorizedExpensesView: View {
     @EnvironmentObject private var currencyManager: CurrencyManager
@@ -44,8 +45,10 @@ struct UncategorizedExpensesView: View {
                         Circle()
                             .fill(Color(UIColor.systemGray5))
                             .frame(width: 48, height: 48)
-                        Text("❓")
-                            .font(.system(size: 20))
+                        
+                        // Replace emoji with Lottie animation
+                        LottieView(name: "eyes-animation", loopCount: 2, delay: 10.0)
+                            .frame(width: 24, height: 24) // Adjust size as needed
                     }
                     VStack(alignment: .leading)  {
                         if let defaultCurrency = currencyManager.defaultCurrency {
@@ -73,6 +76,54 @@ struct UncategorizedExpensesView: View {
         }
     }
 }
+
+// Add this SwiftUI wrapper for Lottie animations
+struct LottieView: UIViewRepresentable {
+    var name: String
+    var loopCount: Int = 2
+    var delay: TimeInterval = 3.0
+
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView(frame: .zero)
+        let animationView = LottieAnimationView(name: name)
+        animationView.contentMode = .scaleAspectFit
+        view.addSubview(animationView)
+        animationView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            animationView.heightAnchor.constraint(equalTo: view.heightAnchor),
+            animationView.widthAnchor.constraint(equalTo: view.widthAnchor)
+        ])
+        context.coordinator.setupAnimation(animationView, loopCount: loopCount, delay: delay)
+        return view
+    }
+
+    func updateUIView(_ uiView: UIView, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    class Coordinator {
+        func setupAnimation(_ animationView: LottieAnimationView, loopCount: Int, delay: TimeInterval) {
+            playAnimation(animationView, loopCount: loopCount, delay: delay)
+        }
+
+        private func playAnimation(_ animationView: LottieAnimationView, loopCount: Int, delay: TimeInterval) {
+            animationView.play { [weak self] finished in
+                if finished {
+                    if loopCount > 1 {
+                        self?.playAnimation(animationView, loopCount: loopCount - 1, delay: delay)
+                    } else {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                            self?.playAnimation(animationView, loopCount: loopCount, delay: delay)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 //
 //  UncategorizedExpensesListView.swift

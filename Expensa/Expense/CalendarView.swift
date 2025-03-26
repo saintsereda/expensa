@@ -115,7 +115,7 @@ struct CalendarSheet: View {
                 VStack(spacing: 0) {
                     Divider()
                     HStack {
-                        SaveButton(isEnabled: true) {
+                        SaveButton(isEnabled: true, label: "Save") {
                             // Apply changes
                             selectedDate = tempDate
                             isRecurring = tempIsRecurring

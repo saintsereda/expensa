@@ -10,6 +10,7 @@
 		7064CE9F2CCC51050029BFC0 /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 7064CE9D2CCC51050029BFC0 /* DataModel.xcdatamodeld */; };
 		707031FD2D6CD7530048AE41 /* HighlightedTextEditor in Frameworks */ = {isa = PBXBuildFile; productRef = 707031FC2D6CD7530048AE41 /* HighlightedTextEditor */; };
 		7070321A2D6F8F240048AE41 /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 707032192D6F8F240048AE41 /* ConfettiSwiftUI */; };
+		70D6489B2D89DE8E00775346 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 70D6489A2D89DE8E00775346 /* Lottie */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +75,7 @@
 			files = (
 				7070321A2D6F8F240048AE41 /* ConfettiSwiftUI in Frameworks */,
 				707031FD2D6CD7530048AE41 /* HighlightedTextEditor in Frameworks */,
+				70D6489B2D89DE8E00775346 /* Lottie in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -137,6 +139,7 @@
 			packageProductDependencies = (
 				707031FC2D6CD7530048AE41 /* HighlightedTextEditor */,
 				707032192D6F8F240048AE41 /* ConfettiSwiftUI */,
+				70D6489A2D89DE8E00775346 /* Lottie */,
 			);
 			productName = Expensa;
 			productReference = 7064CE702CCC509D0029BFC0 /* Expensa.app */;
@@ -223,6 +226,7 @@
 			packageReferences = (
 				707031FB2D6CD7530048AE41 /* XCRemoteSwiftPackageReference "HighlightedTextEditor" */,
 				707032182D6F8F240048AE41 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
+				70D648992D89DE8E00775346 /* XCRemoteSwiftPackageReference "lottie-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7064CE712CCC509D0029BFC0 /* Products */;
@@ -429,7 +433,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Expensa/Expensa.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 31;
 				DEVELOPMENT_ASSET_PATHS = "\"Expensa/Preview Content\"";
 				DEVELOPMENT_TEAM = 4B9JB9B2KQ;
 				ENABLE_PREVIEWS = YES;
@@ -465,7 +469,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Expensa/Expensa.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 29;
+				CURRENT_PROJECT_VERSION = 31;
 				DEVELOPMENT_ASSET_PATHS = "\"Expensa/Preview Content\"";
 				DEVELOPMENT_TEAM = 4B9JB9B2KQ;
 				ENABLE_PREVIEWS = YES;
@@ -624,6 +628,14 @@
 				minimumVersion = 2.0.2;
 			};
 		};
+		70D648992D89DE8E00775346 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.5.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -636,6 +648,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 707032182D6F8F240048AE41 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
 			productName = ConfettiSwiftUI;
+		};
+		70D6489A2D89DE8E00775346 /* Lottie */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 70D648992D89DE8E00775346 /* XCRemoteSwiftPackageReference "lottie-ios" */;
+			productName = Lottie;
 		};
 /* End XCSwiftPackageProductDependency section */
 

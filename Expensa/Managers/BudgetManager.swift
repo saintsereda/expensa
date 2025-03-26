@@ -535,16 +535,38 @@ class BudgetManager: ObservableObject {
     }
     
     // Get expenses for a specific budget period
+    //
+    // Optimized method to get expenses for a specific budget period
+    // This should replace the existing expensesForBudget method in BudgetManager
+    //
+    @MainActor
     func expensesForBudget(_ budget: Budget) -> [Expense] {
         guard let budgetDate = budget.startDate else { return [] }
         
+        // Create date range for the budget month
         let calendar = Calendar.current
         let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: budgetDate))!
         let startOfNextMonth = calendar.date(byAdding: DateComponents(month: 1), to: startOfMonth)!
         
-        return ExpenseDataManager.shared.fetchExpenses().filter { expense in
-            guard let expenseDate = expense.date else { return false }
-            return expenseDate >= startOfMonth && expenseDate < startOfNextMonth
+        // Use Core Data fetch request with a date-based predicate
+        let fetchRequest: NSFetchRequest<Expense> = Expense.fetchRequest()
+        fetchRequest.predicate = NSPredicate(
+            format: "date >= %@ AND date < %@",
+            startOfMonth as NSDate,
+            startOfNextMonth as NSDate
+        )
+        
+        // Add a sort descriptor for consistent ordering
+        fetchRequest.sortDescriptors = [
+            NSSortDescriptor(keyPath: \Expense.date, ascending: false)
+        ]
+        
+        // Execute fetch request
+        do {
+            return try context.fetch(fetchRequest)
+        } catch {
+            print("❌ Error fetching expenses for budget: \(error.localizedDescription)")
+            return []
         }
     }
     

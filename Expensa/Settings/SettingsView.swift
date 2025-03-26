@@ -174,7 +174,6 @@ struct SettingsView: View {
                 showLanguageOptions()
             }
         } header: {
-            SectionHeader(text: "Preferences")
         }
     }
     

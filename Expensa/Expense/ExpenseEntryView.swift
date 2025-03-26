@@ -16,8 +16,6 @@ struct ExpenseEntryView: View {
     @Environment(\.colorScheme) private var colorScheme
     
     @State private var showingCalendar = false
-    
-    
     @State private var exchangeRate: String?
     
     // Add new state variables for recurrence
@@ -62,7 +60,6 @@ struct ExpenseEntryView: View {
     @State private var selectedTags: Set<Tag> = []
     @State private var tempTags: Set<Tag> = []
     
-    @State private var showNumberEffect = false
     @State private var shakeAmount: CGFloat = 0
     @State private var lastEnteredDigit = ""
     @State private var isSaving = false
@@ -173,7 +170,7 @@ struct ExpenseEntryView: View {
                         let symbol = currency.symbol ?? currency.code ?? ""
                         let isUSD = currency.code == "USD"
                         Text(isUSD ? "\(symbol)0" : "0 \(symbol)")
-                            .font(.system(size: 72, weight: .regular, design: .rounded))
+                            .font(.system(size: 72, weight: .medium, design: .rounded))
                             .foregroundColor(Color(UIColor.systemGray2))
                             .minimumScaleFactor(0.3)
                             .lineLimit(1)
@@ -187,7 +184,7 @@ struct ExpenseEntryView: View {
                         let isUSD = currency.code == "USD"
                         
                         Text(isUSD ? "\(symbol)\(formattedAmount)" : "\(formattedAmount) \(symbol)")
-                            .font(.system(size: 72, weight: .regular, design: .rounded))
+                            .font(.system(size: 72, weight: .medium, design: .rounded))
                             .foregroundColor(.primary)
                             .contentTransition(.numericText())
                             .lineLimit(1)
@@ -212,7 +209,7 @@ struct ExpenseEntryView: View {
                        let targetRate = targetRate,
                        let defaultCurrency = defaultCurrency {
                         let rate = targetRate/sourceRate
-                        let rateString = formatUserInput(rate.description)
+                        let rateString = KeypadInputHelpers.formatUserInput(rate.description)
                         let symbol = defaultCurrency.symbol ?? defaultCurrency.code ?? ""
                         let isUSD = defaultCurrency.code == "USD"
                         let formattedRate = isUSD ? "\(symbol)\(rateString)" : "\(rateString) \(symbol)"
@@ -235,22 +232,11 @@ struct ExpenseEntryView: View {
                 .animation(.spring(response: 0.4, dampingFraction: 0.95), value: convertedAmount)
             }
         }
-//        .padding(.vertical, shouldShowConvertedAmount ? 16 : 8)
         .padding(.horizontal, 16)
         .animation(.spring(response: 0.4, dampingFraction: 0.95), value: shouldShowConvertedAmount)
     }
     
     // MARK: - category section
-//    private var categoryButtonSection: some View {
-//        HStack {
-//            CategoryButton(category: selectedCategory) {
-//                showingCategorySelector = true
-//                HapticFeedback.play()
-//            }
-//        }
-//        .padding()
-//    }
-    
     private var categoryButtonSection: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
@@ -354,7 +340,7 @@ struct ExpenseEntryView: View {
                 .disabled(isSaving)
             }
             Spacer()
-            SaveButton(isEnabled: isValidInput(), action: saveExpense)
+            SaveButton(isEnabled: isValidInput(), label: "Save", action: saveExpense)
         }
         .padding(.horizontal, 20)
     }
@@ -389,8 +375,19 @@ struct ExpenseEntryView: View {
                         
                         // Numeric keypad - fixed bottom padding
                         NumericKeypad(
-                            onNumberTap: handleNumberInput,
-                            onDelete: handleDelete
+                            onNumberTap: { value in
+                                // Use the shared helper method
+                                KeypadInputHelpers.handleNumberInput(
+                                    value: value,
+                                    amount: &amount,
+                                    lastEnteredDigit: &lastEnteredDigit,
+                                    triggerShake: triggerShake
+                                )
+                            },
+                            onDelete: {
+                                // Use the shared helper method
+                                KeypadInputHelpers.handleDelete(amount: &amount)
+                            }
                         )
                         .padding(.bottom, 20)
                     }
@@ -399,7 +396,6 @@ struct ExpenseEntryView: View {
                 
                 // Fixed spacing between rounded rectangle and bottom section
                 Spacer(minLength: 12)
-
                 
                 // Bottom section with fixed height
                 bottomActionSection
@@ -482,114 +478,8 @@ struct ExpenseEntryView: View {
     }
     
     // MARK: - helpers
-    // MARK: - keypad
-    private func handleNumberInput(_ value: String) {
-        HapticFeedback.play()
-        var cleanAmount = amount.replacingOccurrences(of: " ", with: "")
-        
-        if value == "," {
-            if !cleanAmount.contains(",") {
-                if cleanAmount.isEmpty || cleanAmount == "0" {
-                    amount = "0,"
-                } else {
-                    // Otherwise preserve formatting when adding comma
-                    amount = formatUserInput(cleanAmount) + ","
-                }
-                showNumberEffect = false
-                lastEnteredDigit = value
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                    withAnimation(.easeOut(duration: 0.3)) {
-                        showNumberEffect = true
-                    }
-                }
-            } else {
-                triggerShake()
-            }
-            return
-        }
-        
-        // Check if we're entering decimal places
-        if cleanAmount.contains(",") {
-            let parts = cleanAmount.split(separator: ",")
-            if parts.count > 1 {
-                let decimalPart = parts[1]
-                if decimalPart.count >= 2 {
-                    triggerShake()
-                    return
-                }
-            }
-            cleanAmount += value
-        } else {
-            // Handle integer part
-            if cleanAmount == "0" && value != "," {
-                cleanAmount = value
-            } else {
-                let integerPart = cleanAmount.split(separator: ",").first ?? ""
-                if integerPart.count >= 10 && value != "," {
-                    triggerShake()
-                    return
-                }
-                cleanAmount += value
-            }
-        }
-        
-        showNumberEffect = false
-        lastEnteredDigit = value
-        amount = formatUserInput(cleanAmount)
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-            withAnimation(.easeOut(duration: 0.3)) {
-                showNumberEffect = true
-            }
-        }
-    }
-    
-    private func handleDelete() {
-        var cleanAmount = amount.replacingOccurrences(of: " ", with: "")
-        
-        if !cleanAmount.isEmpty {
-            cleanAmount.removeLast()
-            amount = formatUserInput(cleanAmount)
-            HapticFeedback.play()
-        }
-    }
-    
     private var formattedAmount: String {
-        formatUserInput(amount)
-    }
-    
-    private func formatUserInput(_ amount: String) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.groupingSeparator = " "
-        formatter.decimalSeparator = ","
-        formatter.usesGroupingSeparator = true
-        formatter.minimumFractionDigits = 0
-        formatter.maximumFractionDigits = 2
-        
-        let cleanedAmount = amount.replacingOccurrences(of: " ", with: "")
-        
-        // If there's a decimal part, handle it separately
-        if cleanedAmount.contains(",") {
-            let parts = cleanedAmount.split(separator: ",", maxSplits: 1)
-            let integerPart = String(parts[0])
-            let decimalPart = parts.count > 1 ? String(parts[1]) : ""
-            
-            // Format the integer part
-            if let number = Double(integerPart) {
-                let formattedInteger = formatter.string(from: NSNumber(value: number)) ?? integerPart
-                // Always return with comma and decimal part
-                return formattedInteger + "," + decimalPart
-            }
-            return cleanedAmount
-        }
-        
-        // Handle non-decimal numbers
-        if let number = Double(cleanedAmount.replacingOccurrences(of: ",", with: ".")), !amount.hasSuffix(",") {
-            return formatter.string(from: NSNumber(value: number)) ?? amount
-        }
-        return cleanedAmount
+        KeypadInputHelpers.formatUserInput(amount)
     }
     
     // MARK: - Setup Methods
@@ -683,6 +573,7 @@ struct ExpenseEntryView: View {
             return
         }
         
+        // Use helper to clean and parse amount
         let cleanedAmount = amount.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: ",", with: ".")
         
         guard let amountValue = Decimal(string: cleanedAmount) else {
@@ -736,15 +627,10 @@ struct ExpenseEntryView: View {
         selectedCurrency = defaultCurrency
     }
     
-    
     // MARK: - Validation & Save Methods
     private func isValidInput() -> Bool {
-        // Convert comma to period for Decimal parsing
-        let decimalAmount = amount
-            .replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: ",", with: ".")
-        
-        guard let amountValue = Decimal(string: decimalAmount),
+        // Use helper for parsing amount
+        guard let amountValue = KeypadInputHelpers.parseAmount(amount),
               amountValue > 0,
               selectedCategory != nil,
               selectedCurrency != nil else {
@@ -765,13 +651,9 @@ struct ExpenseEntryView: View {
         // Start a save operation
         isSaving = true
         
-        // Pre-validate input outside of the async context
-        let decimalAmount = amount
-            .replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: ",", with: ".")
-        
+        // Pre-validate input outside of the async context and use helper for parsing
         guard isValidInput(),
-              let amountValue = Decimal(string: decimalAmount),
+              let amountValue = KeypadInputHelpers.parseAmount(amount),
               let selectedCurrency = selectedCurrency,
               let category = selectedCategory else {
             errorMessage = "Please fill in all required fields"

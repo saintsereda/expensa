@@ -108,13 +108,14 @@ struct CategoryButton: View {
 
 struct SaveButton: View {
     let isEnabled: Bool
+    let label: String
     let action: () -> Void
     @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         Button(action: action) {
             HStack(alignment: .center, spacing: 10) {
-                Text("Save")
+                Text(label)
                     .font(.system(size: 17, weight: .medium, design: .rounded))
                     .multilineTextAlignment(.center)
                     .foregroundColor(

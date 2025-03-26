@@ -48,18 +48,9 @@ struct CategoryLimitsSection: View {
                         CategoryLimitRow(
                             category: category,
                             amount: amount,
-                            spent: expenseManager.calculateCategoryAmount(
-                                for: budgetManager.expensesForBudget(budget),
-                                category: category.name ?? ""
-                            ),
-                            percentage: budgetManager.formatPercentage(
-                                budgetManager.calculatePercentage(for: categoryBudget, in: budget)
-                            ),
-                            currency: categoryBudget.budgetCurrency ?? Currency(),
-                            expenseCount: budgetManager.expensesForBudget(budget)
-                                .filter { $0.category?.name == category.name }
-                                .count
+                            currency: categoryBudget.budgetCurrency ?? Currency()
                         )
+
                         
                         let sortedCategories = Array(categoryBudgets).sorted { cat1, cat2 in
                             let percent1 = budgetManager.calculatePercentage(for: cat1, in: budget)

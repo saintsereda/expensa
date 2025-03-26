@@ -105,7 +105,6 @@ struct TotalSpentRow: View {
             
             Text(formattedText)
                 .font(.system(size: 52, weight: .medium, design: .rounded))
-                .fontWeight(.regular)
                 .foregroundColor(color)
                 // Only animate when necessary
                 .contentTransition(.numericText())
@@ -229,8 +228,16 @@ struct TotalSpentRow: View {
             
         }
         .onAppear {
-            // Calculate total once on appear
             updateTotalSpent()
+            // Calculate total once on appear
+            // Add notification observer for currency changes
+            NotificationCenter.default.addObserver(
+                forName: Notification.Name("DefaultCurrencyChanged"),
+                object: nil,
+                queue: .main
+            ) { _ in
+                updateTotalSpent()
+            }
         }
         .onChange(of: expenses.count) { _, _ in
             // Recalculate only when expense count changes

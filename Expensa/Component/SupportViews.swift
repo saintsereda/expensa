@@ -63,6 +63,27 @@ struct CloseButton: View {
     }
 }
 
+struct IconButton: View {
+    let icon: String
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .center, spacing: 8) {
+                    HStack(alignment: .center, spacing: 0) {
+                        Image(icon)
+                            .renderingMode(.template)
+                            .frame(width: 24, height: 24)
+                            .foregroundColor(Color(uiColor: .label))
+                    }
+            }
+            .frame(width: 40, height: 40, alignment: .center)
+            .cornerRadius(999)
+        }
+    }
+}
+
+
 struct RoundButton: View {
     let leftIcon: String?
     let label: String
@@ -110,7 +131,7 @@ struct RoundButton: View {
 
 struct GhostButton: View {
     let leftIcon: String?
-    let label: String
+    let label: String?
     let rightIcon: String?
     let action: () -> Void
 
@@ -132,7 +153,7 @@ struct GhostButton: View {
                         .foregroundColor(Color.primary)
                 }
 
-                Text(label)
+                Text(label ?? "Label")
                     .font(.system(size: 17, weight: .regular, design: .rounded))
                     .foregroundColor(Color(uiColor: .label))
                     .contentTransition(.numericText())
@@ -150,27 +171,94 @@ struct GhostButton: View {
     }
 }
 
+//40px height primary small button
+struct PrimarySmallButton: View {
+    let isEnabled: Bool
+    let label: String
+    let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .center, spacing: 10) {
+                Text(label)
+                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(
+                        isEnabled
+                        ? (colorScheme == .dark ? Color.black : Color.white)
+                        : Color(uiColor: .systemGray2)
+                    )
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 0)
+            .frame(height: 40, alignment: .center)
+            .background(
+                isEnabled
+                ? (colorScheme == .dark ? Color.white : Color.black)
+                : Color(uiColor: .systemGray4)
+            )
+            .cornerRadius(999)
+        }
+        .disabled(!isEnabled)
+    }
+}
+
+struct SecondarySmallButton: View {
+    let isEnabled: Bool
+    let label: String
+    let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .center, spacing: 10) {
+                Text(label)
+                    .font(.system(size: 17, weight: .medium, design: .rounded))
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(
+                        isEnabled
+                        ? (colorScheme == .dark ? Color.white : Color.black)
+                        : Color(uiColor: .systemGray3)
+                    )
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 0)
+            .frame(height: 40, alignment: .center)
+            .background(Color.clear) // Transparent background
+            .overlay(
+                RoundedRectangle(cornerRadius: 999)
+                    .stroke(
+                        isEnabled
+                        ? (colorScheme == .dark ? Color.white.opacity(0.12) : Color.black.opacity(0.12))
+                        : Color(uiColor: .systemGray4),
+                        lineWidth: 1
+                    )
+            )
+            .cornerRadius(999)
+        }
+        .disabled(!isEnabled)
+    }
+}
 
 // MARK: - Action Buttons
 struct FloatingActionButton: View {
-    let title: String?
     let icon: String
     let action: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
     
     var body: some View {
         Button(action: action) {
             ZStack {
                 Circle()
-                    .fill(Color.accentColor)
+                    .fill(colorScheme == .dark ? Color.white : Color.black)
                     .frame(width: 56, height: 56)
-                    .shadow(radius: 4)
                 
                 Image(systemName: icon)
                     .font(.system(size: 24, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(colorScheme == .dark ? Color.black : Color.white)
             }
         }
-        .padding(.bottom, 16)
     }
 }
 

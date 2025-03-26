@@ -62,30 +62,30 @@ struct CategoryExpensesRow: View {
                 // Progress bar and stats
                 VStack() {
                     // Custom progress bar
-                    GeometryReader { geometry in
-                        ZStack(alignment: .leading) {
-                            // Blue progress bar
-                            Rectangle()
-                                .fill(Color.blue)
-                                .frame(width: max(0, min(geometry.size.width * CGFloat(percentage / 100), geometry.size.width)), height: 4)
-                                .cornerRadius(2)
-                            
-                            // Gray segments
-                            if percentage < 100 {
-                                ForEach(0..<Int(geometry.size.width / 9), id: \.self) { i in
-                                    let startX = (geometry.size.width * CGFloat(percentage / 100)) + CGFloat(i) * 9
-                                    if startX + 1 <= geometry.size.width {
-                                        Rectangle()
-                                            .fill(Color.gray.opacity(0.5))
-                                            .frame(width: 2, height: 4)
-                                            .cornerRadius(2)
-                                            .offset(x: startX)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    .frame(height: 4)
+//                    GeometryReader { geometry in
+//                        ZStack(alignment: .leading) {
+//                            // Blue progress bar
+//                            Rectangle()
+//                                .fill(Color.blue)
+//                                .frame(width: max(0, min(geometry.size.width * CGFloat(percentage / 100), geometry.size.width)), height: 4)
+//                                .cornerRadius(2)
+//                            
+//                            // Gray segments
+//                            if percentage < 100 {
+//                                ForEach(0..<Int(geometry.size.width / 9), id: \.self) { i in
+//                                    let startX = (geometry.size.width * CGFloat(percentage / 100)) + CGFloat(i) * 9
+//                                    if startX + 1 <= geometry.size.width {
+//                                        Rectangle()
+//                                            .fill(Color.gray.opacity(0.5))
+//                                            .frame(width: 2, height: 4)
+//                                            .cornerRadius(2)
+//                                            .offset(x: startX)
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                    .frame(height: 4)
                     
                     // Stats row
                     HStack {

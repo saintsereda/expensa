@@ -36,20 +36,11 @@ struct BudgetRow: View {
                     ForEach(sortedCategoryBudgets, id: \.self) { categoryBudget in
                         if let category = categoryBudget.category,
                            let amount = categoryBudget.budgetAmount?.decimalValue {
+                            // Using the simplified CategoryLimitRow that only shows icon, name and limit
                             CategoryLimitRow(
                                 category: category,
                                 amount: amount,
-                                spent: expenseManager.calculateCategoryAmount(
-                                    for: budgetManager.expensesForBudget(budget),
-                                    category: category.name ?? ""
-                                ),
-                                percentage: budgetManager.formatPercentage(
-                                    budgetManager.calculatePercentage(for: categoryBudget, in: budget)
-                                ),
-                                currency: categoryBudget.budgetCurrency ?? Currency(),
-                                expenseCount: budgetManager.expensesForBudget(budget)
-                                    .filter { $0.category?.name == category.name }
-                                    .count
+                                currency: categoryBudget.budgetCurrency ?? Currency()
                             )
                             if categoryBudget != sortedCategoryBudgets.last {
                                 Divider()

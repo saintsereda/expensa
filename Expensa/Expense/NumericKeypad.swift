@@ -14,45 +14,48 @@ struct NumericKeypad: View {
     var body: some View {
         GeometryReader { geometry in
             // Calculate responsive spacing and button size based on screen width
-            let availableWidth = geometry.size.width
+            let availableWidth = max(geometry.size.width, 1) // Ensure non-zero width
             let buttonCount = 3 // 3 buttons per row
-            let minSpacing: CGFloat = 16 // Minimum spacing between buttons
-            let maxButtonWidth: CGFloat = 96 // Maximum button width
+            let minSpacing: CGFloat = 4 // Minimum spacing between buttons
+            let maxButtonWidth: CGFloat = 128 // Maximum button width
             
             // Calculate the ideal button width based on available space
             let calculatedButtonWidth = min(maxButtonWidth,
-                                           (availableWidth - (minSpacing * (CGFloat(buttonCount) - 1))) / CGFloat(buttonCount))
+                                       (availableWidth - (minSpacing * (CGFloat(buttonCount) - 1))) / CGFloat(buttonCount))
+            
+            // Ensure button width is positive
+            let safeButtonWidth = max(calculatedButtonWidth, 1)
             
             // Calculate the actual spacing to use
-            let actualSpacing = (availableWidth - (calculatedButtonWidth * CGFloat(buttonCount))) / (CGFloat(buttonCount) - 1)
+            let actualSpacing = max((availableWidth - (safeButtonWidth * CGFloat(buttonCount))) / (CGFloat(buttonCount) - 1), 1)
             
-            VStack(spacing: 8) {
+            VStack(spacing: 0) {
                 // First row: 1-3
                 HStack(spacing: actualSpacing) {
                     ForEach(1...3, id: \.self) { number in
-                        numberButton("\(number)", width: calculatedButtonWidth)
+                        numberButton("\(number)", width: safeButtonWidth)
                     }
                 }
                 
                 // Second row: 4-6
                 HStack(spacing: actualSpacing) {
                     ForEach(4...6, id: \.self) { number in
-                        numberButton("\(number)", width: calculatedButtonWidth)
+                        numberButton("\(number)", width: safeButtonWidth)
                     }
                 }
                 
                 // Third row: 7-9
                 HStack(spacing: actualSpacing) {
                     ForEach(7...9, id: \.self) { number in
-                        numberButton("\(number)", width: calculatedButtonWidth)
+                        numberButton("\(number)", width: safeButtonWidth)
                     }
                 }
                 
                 // Fourth row: comma, 0, delete
                 HStack(spacing: actualSpacing) {
-                    numberButton(",", width: calculatedButtonWidth)
-                    numberButton("0", width: calculatedButtonWidth)
-                    deleteButton(width: calculatedButtonWidth)
+                    numberButton(",", width: safeButtonWidth)
+                    numberButton("0", width: safeButtonWidth)
+                    deleteButton(width: safeButtonWidth)
                 }
             }
             .frame(maxWidth: .infinity)
