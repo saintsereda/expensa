@@ -2,21 +2,6 @@ import SwiftUI
 import Charts
 import CoreData
 
-// Helper extension for more efficient date handling
-private extension Calendar {
-    func startOfMonth(for date: Date) -> Date {
-        let components = dateComponents([.year, .month], from: date)
-        return self.date(from: components) ?? date
-    }
-    
-    func endOfMonth(for date: Date) -> Date {
-        guard let startOfNextMonth = self.date(byAdding: DateComponents(month: 1), to: startOfMonth(for: date)) else {
-            return date
-        }
-        return self.date(byAdding: DateComponents(day: -1), to: startOfNextMonth) ?? date
-    }
-}
-
 struct MonthlyComparisonChart: View {
     @EnvironmentObject private var currencyManager: CurrencyManager
     @Environment(\.managedObjectContext) private var viewContext
@@ -26,12 +11,20 @@ struct MonthlyComparisonChart: View {
     let selectedDate: Date
     
     @State private var previousMonthExpenses: [Expense] = []
-    @State private var isLoadingPreviousMonth = false
     
     private var calendar: Calendar { Calendar.current }
     
     private var daysInMonth: Range<Int> {
         (calendar.range(of: .day, in: .month, for: selectedDate)?.lowerBound ?? 1)..<(calendar.range(of: .day, in: .month, for: selectedDate)?.upperBound ?? 31)
+    }
+    
+    private var currentInterval: DateInterval {
+        ExpenseFilterManager().dateInterval(for: selectedDate)
+    }
+    
+    private var previousInterval: DateInterval {
+        let prevMonth = calendar.date(byAdding: .month, value: -1, to: selectedDate) ?? selectedDate
+        return ExpenseFilterManager().dateInterval(for: prevMonth)
     }
     
     private var today: Date {
@@ -48,111 +41,71 @@ struct MonthlyComparisonChart: View {
     }
     
     private var dateRange: ClosedRange<Date> {
-        let startOfMonth = calendar.startOfMonth(for: selectedDate)
-        let endOfMonth = calendar.endOfMonth(for: selectedDate)
-        return startOfMonth...endOfMonth
+        currentInterval.start...currentInterval.end
     }
     
-    // Memoized calculation to improve performance
-    private func cumulativeDailyTotals(from expenses: [Expense], for monthDate: Date, limitToToday: Bool) -> [(date: Date, total: Decimal)] {
-        // Use a dictionary for faster lookups
-        var dailyTotals: [Int: Decimal] = [:]
-        let startOfMonth = calendar.startOfMonth(for: monthDate)
+    // Get the number of days in each month for x-axis
+    private var daysInMonths: (current: Int, previous: Int) {
+        let currentDays = calendar.range(of: .day, in: .month, for: selectedDate)?.count ?? 31
         
-        // First pass - sum up all expenses by day
-        for expense in expenses {
-            guard let date = expense.date else { continue }
-            let day = calendar.component(.day, from: date)
-            let amount = expense.convertedAmount?.decimalValue ?? expense.amount?.decimalValue ?? 0
-            dailyTotals[day, default: 0] += amount
+        if let prevDate = calendar.date(byAdding: .month, value: -1, to: selectedDate) {
+            let prevDays = calendar.range(of: .day, in: .month, for: prevDate)?.count ?? 31
+            return (currentDays, prevDays)
         }
         
-        // Second pass - calculate running total for each day
+        return (currentDays, 0)
+    }
+    
+    // Calculate cumulative totals for a specific collection of expenses - now with tuples
+    private func cumulativeDailyTotals(from expenses: [Expense], in interval: DateInterval, limitToToday: Bool) -> [(date: Date, total: Decimal)] {
+        var grouped: [Date: Decimal] = [:]
+        for expense in expenses {
+            guard let date = expense.date else { continue }
+            let day = calendar.startOfDay(for: date)
+            let amount = expense.convertedAmount?.decimalValue ?? expense.amount?.decimalValue ?? 0
+            grouped[day, default: 0] += amount
+        }
+        
         var result: [(date: Date, total: Decimal)] = []
         var runningTotal: Decimal = 0
         
         for day in daysInMonth {
-            guard let date = calendar.date(bySetting: .day, value: day, of: startOfMonth) else { continue }
+            guard let date = calendar.date(bySetting: .day, value: day, of: interval.start),
+                  !limitToToday || date <= today else { break }
             
-            // If limiting to today and we've passed today, stop
-            if limitToToday && date > today {
-                break
-            }
-            
-            runningTotal += dailyTotals[day] ?? 0
+            let amount = grouped[calendar.startOfDay(for: date)] ?? 0
+            runningTotal += amount
             result.append((date: date, total: runningTotal))
         }
-        
         return result
     }
     
     private var previousMonthTotalsAligned: [(date: Date, total: Decimal)] {
-        guard let previousMonthDate = calendar.date(byAdding: .month, value: -1, to: selectedDate) else {
-            return []
-        }
-        
-        let raw = cumulativeDailyTotals(from: previousMonthExpenses, for: previousMonthDate, limitToToday: false)
-        
-        // Align previous month data to current month for comparison
+        let raw = cumulativeDailyTotals(from: previousMonthExpenses, in: previousInterval, limitToToday: false)
         return raw.enumerated().compactMap { index, item in
-            guard index < daysInMonth.count,
-                  let alignedDate = calendar.date(bySetting: .day, value: index + 1, of: calendar.startOfMonth(for: selectedDate)) else {
-                return nil
-            }
+            guard let alignedDate = calendar.date(bySetting: .day, value: index + 1, of: currentInterval.start) else { return nil }
             return (date: alignedDate, total: item.total)
         }
     }
     
     private var currentMonthTotals: [(date: Date, total: Decimal)] {
-        cumulativeDailyTotals(from: currentMonthExpenses, for: selectedDate, limitToToday: true)
+        cumulativeDailyTotals(from: currentMonthExpenses, in: currentInterval, limitToToday: true)
     }
     
-    // Optimized fetch for previous month expenses
+    // Fetch previous month's expenses
     private func fetchPreviousMonthExpenses() {
-        // Prevent multiple concurrent fetches
-        if isLoadingPreviousMonth {
-            return
-        }
+        let request = NSFetchRequest<Expense>(entityName: "Expense")
+        request.predicate = NSPredicate(
+            format: "date >= %@ AND date <= %@",
+            previousInterval.start as NSDate,
+            previousInterval.end as NSDate
+        )
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \Expense.date, ascending: true)]
         
-        isLoadingPreviousMonth = true
-        
-        guard let previousMonthDate = calendar.date(byAdding: .month, value: -1, to: selectedDate) else {
-            isLoadingPreviousMonth = false
-            return
-        }
-        
-        let startOfPreviousMonth = calendar.startOfMonth(for: previousMonthDate)
-        let endOfPreviousMonth = calendar.endOfMonth(for: previousMonthDate)
-        
-        // Use the end of day for the end date to include all expenses
-        let endOfDay = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: endOfPreviousMonth) ?? endOfPreviousMonth
-        
-        let fetchRequest = Expense.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "date >= %@ AND date <= %@",
-                                           startOfPreviousMonth as NSDate,
-                                           endOfDay as NSDate)
-        fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \Expense.date, ascending: true)]
-        
-        // Use background task to avoid blocking UI
-        DispatchQueue.global(qos: .userInitiated).async {
-            do {
-                // Perform fetch on background thread
-                let context = viewContext
-                let results = try context.performAndWait {
-                    try fetchRequest.execute()
-                }
-                
-                // Update UI on main thread
-                DispatchQueue.main.async {
-                    previousMonthExpenses = results
-                    isLoadingPreviousMonth = false
-                }
-            } catch {
-                print("Error fetching previous month expenses: \(error)")
-                DispatchQueue.main.async {
-                    isLoadingPreviousMonth = false
-                }
-            }
+        do {
+            previousMonthExpenses = try viewContext.fetch(request)
+        } catch {
+            print("Error fetching previous month expenses: \(error)")
         }
     }
     
@@ -224,6 +177,7 @@ struct MonthlyComparisonChart: View {
             .background(Color.clear)
         }
         .animation(.easeInOut, value: currentMonthTotals.count)
+        .animation(.easeInOut, value: previousMonthTotalsAligned.count)
         .padding(.horizontal, 16)
         .frame(height: 200)
         .onAppear {
