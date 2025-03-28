@@ -1,63 +1,167 @@
 import SwiftUI
 import Charts
 import CoreData
+import Combine
 
-struct MonthlyComparisonChart: View {
-    @EnvironmentObject private var currencyManager: CurrencyManager
-    @Environment(\.managedObjectContext) private var viewContext
+// ViewModel to handle data processing outside the View
+class MonthlyComparisonViewModel: ObservableObject {
+    @Published var currentMonthTotals: [(date: Date, total: Decimal)] = []
+    @Published var previousMonthTotals: [(date: Date, total: Decimal)] = []
+    @Published var selectedDate: Date
+    @Published var dateRange: ClosedRange<Date>?
+    @Published var xAxisLabels: [Int] = []
     
-    // The two separate data sources
-    let currentMonthExpenses: [Expense]
-    let selectedDate: Date
+    private var currentMonthExpenses: [Expense] = []
+    private var previousMonthExpenses: [Expense] = []
+    private var cancellables = Set<AnyCancellable>()
+    private let context: NSManagedObjectContext
+    private let calendar = Calendar.current
     
-    @State private var previousMonthExpenses: [Expense] = []
-    
-    private var calendar: Calendar { Calendar.current }
-    
-    private var daysInMonth: Range<Int> {
-        (calendar.range(of: .day, in: .month, for: selectedDate)?.lowerBound ?? 1)..<(calendar.range(of: .day, in: .month, for: selectedDate)?.upperBound ?? 31)
+    init(context: NSManagedObjectContext, initialDate: Date, initialExpenses: [Expense] = []) {
+        self.context = context
+        self.selectedDate = initialDate
+        self.currentMonthExpenses = initialExpenses
+        
+        // Calculate date range and x-axis labels immediately
+        updateDateRange()
+        updateXAxisLabels()
+        
+        // Process initial expenses
+        processCurrentMonthExpenses(initialExpenses)
+        
+        // Fetch previous month expenses
+        Task {
+            await fetchPreviousMonthExpenses()
+        }
     }
     
-    private var currentInterval: DateInterval {
-        ExpenseFilterManager().dateInterval(for: selectedDate)
+    func updateCurrentMonthExpenses(_ expenses: [Expense]) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            self.currentMonthExpenses = expenses
+            self.processCurrentMonthExpenses(expenses)
+        }
     }
     
-    private var previousInterval: DateInterval {
+    func updateSelectedDate(_ date: Date) {
+        self.selectedDate = date
+        updateDateRange()
+        updateXAxisLabels()
+        
+        // Fetch previous month's data with the new date
+        Task {
+            await fetchPreviousMonthExpenses()
+        }
+    }
+    
+    private func updateDateRange() {
+        let interval = ExpenseFilterManager().dateInterval(for: selectedDate)
+        DispatchQueue.main.async { [weak self] in
+            self?.dateRange = interval.start...interval.end
+        }
+    }
+    
+    private func updateXAxisLabels() {
+        let lastDay = calendar.range(of: .day, in: .month, for: selectedDate)?.last ?? 28
+        
+        // Create evenly spaced labels - divide the month into equal segments
+        let numberOfLabels = 6 // Including first and last day
+        let stepSize = max(1, lastDay / (numberOfLabels - 1))
+        
+        var labels: [Int] = []
+        for i in 0..<numberOfLabels {
+            let day = min(1 + (i * stepSize), lastDay)
+            labels.append(day)
+        }
+        
+        // Ensure first and last day are included
+        if !labels.contains(1) {
+            labels.insert(1, at: 0)
+        }
+        if !labels.contains(lastDay) {
+            labels.append(lastDay)
+        }
+        
+        // Add today if it's in the current month and not already included
+        let today = calendar.startOfDay(for: Date())
+        let isCurrentMonth = calendar.isDate(today, equalTo: selectedDate, toGranularity: .month)
+        
+        if isCurrentMonth {
+            let todayDay = calendar.component(.day, from: today)
+            // Only add today if it's not the first or last day (which are already shown)
+            if todayDay != 1 && todayDay != lastDay && !labels.contains(todayDay) {
+                labels.append(todayDay)
+            }
+        }
+        
+        // Sort and remove duplicates
+        labels = Array(Set(labels)).sorted()
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.xAxisLabels = labels
+        }
+    }
+    
+    private func processCurrentMonthExpenses(_ expenses: [Expense]) {
+        let currentInterval = ExpenseFilterManager().dateInterval(for: selectedDate)
+        let today = calendar.startOfDay(for: Date())
+        
+        let totals = calculateCumulativeTotals(from: expenses, in: currentInterval, limitToToday: true, today: today)
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.currentMonthTotals = totals
+        }
+    }
+    
+    func processPreviousMonthExpenses(_ expenses: [Expense]) {
+        // If there are no expenses, set empty array and return early
+        guard !expenses.isEmpty else {
+            DispatchQueue.main.async { [weak self] in
+                self?.previousMonthTotals = []
+            }
+            return
+        }
+        
+        let currentInterval = ExpenseFilterManager().dateInterval(for: selectedDate)
+        let previousInterval = getPreviousMonthInterval()
+        
+        // Calculate raw previous month totals
+        let rawTotals = calculateCumulativeTotals(from: expenses, in: previousInterval, limitToToday: false, today: Date())
+        
+        // Check if we have any actual spending (non-zero totals)
+        let hasPreviousSpending = rawTotals.contains { NSDecimalNumber(decimal: $0.total).doubleValue > 0 }
+        
+        if hasPreviousSpending {
+            // Align to current month days
+            let alignedTotals = alignPreviousMonthTotals(rawTotals, currentInterval: currentInterval)
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.previousMonthTotals = alignedTotals
+            }
+        } else {
+            // If no actual spending, set empty array
+            DispatchQueue.main.async { [weak self] in
+                self?.previousMonthTotals = []
+            }
+        }
+    }
+    
+    private func getPreviousMonthInterval() -> DateInterval {
         let prevMonth = calendar.date(byAdding: .month, value: -1, to: selectedDate) ?? selectedDate
         return ExpenseFilterManager().dateInterval(for: prevMonth)
     }
     
-    private var today: Date {
-        calendar.startOfDay(for: Date())
-    }
-    
-    private var xAxisLabels: [Int] {
-        let lastDay = calendar.range(of: .day, in: .month, for: selectedDate)?.last ?? 28
-        let isFebruary = calendar.component(.month, from: selectedDate) == 2
-        
-        return isFebruary
-            ? [1, 6, 11, 16, 21, lastDay]
-            : [1, 6, 11, 16, 21, 26, lastDay]
-    }
-    
-    private var dateRange: ClosedRange<Date> {
-        currentInterval.start...currentInterval.end
-    }
-    
-    // Get the number of days in each month for x-axis
-    private var daysInMonths: (current: Int, previous: Int) {
-        let currentDays = calendar.range(of: .day, in: .month, for: selectedDate)?.count ?? 31
-        
-        if let prevDate = calendar.date(byAdding: .month, value: -1, to: selectedDate) {
-            let prevDays = calendar.range(of: .day, in: .month, for: prevDate)?.count ?? 31
-            return (currentDays, prevDays)
+    private func alignPreviousMonthTotals(_ totals: [(date: Date, total: Decimal)], currentInterval: DateInterval) -> [(date: Date, total: Decimal)] {
+        return totals.enumerated().compactMap { index, item in
+            guard let alignedDate = calendar.date(bySetting: .day, value: index + 1, of: currentInterval.start) else { return nil }
+            return (date: alignedDate, total: item.total)
         }
-        
-        return (currentDays, 0)
     }
     
-    // Calculate cumulative totals for a specific collection of expenses - now with tuples
-    private func cumulativeDailyTotals(from expenses: [Expense], in interval: DateInterval, limitToToday: Bool) -> [(date: Date, total: Decimal)] {
+    private func calculateCumulativeTotals(from expenses: [Expense], in interval: DateInterval, limitToToday: Bool, today: Date) -> [(date: Date, total: Decimal)] {
+        let daysInMonth = (calendar.range(of: .day, in: .month, for: interval.start)?.lowerBound ?? 1)..<(calendar.range(of: .day, in: .month, for: interval.start)?.upperBound ?? 31)
+        
+        // Group expenses by day and sum amounts
         var grouped: [Date: Decimal] = [:]
         for expense in expenses {
             guard let date = expense.date else { continue }
@@ -77,114 +181,174 @@ struct MonthlyComparisonChart: View {
             runningTotal += amount
             result.append((date: date, total: runningTotal))
         }
+        
         return result
     }
     
-    private var previousMonthTotalsAligned: [(date: Date, total: Decimal)] {
-        let raw = cumulativeDailyTotals(from: previousMonthExpenses, in: previousInterval, limitToToday: false)
-        return raw.enumerated().compactMap { index, item in
-            guard let alignedDate = calendar.date(bySetting: .day, value: index + 1, of: currentInterval.start) else { return nil }
-            return (date: alignedDate, total: item.total)
-        }
-    }
-    
-    private var currentMonthTotals: [(date: Date, total: Decimal)] {
-        cumulativeDailyTotals(from: currentMonthExpenses, in: currentInterval, limitToToday: true)
-    }
-    
-    // Fetch previous month's expenses
-    private func fetchPreviousMonthExpenses() {
+    @MainActor
+    func fetchPreviousMonthExpenses() async {
+        let previousInterval = getPreviousMonthInterval()
+        
         let request = NSFetchRequest<Expense>(entityName: "Expense")
         request.predicate = NSPredicate(
             format: "date >= %@ AND date <= %@",
             previousInterval.start as NSDate,
             previousInterval.end as NSDate
         )
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \Expense.date, ascending: true)]
         
         do {
-            previousMonthExpenses = try viewContext.fetch(request)
+            let expenses = try context.fetch(request)
+            self.previousMonthExpenses = expenses
+            processPreviousMonthExpenses(expenses)
         } catch {
             print("Error fetching previous month expenses: \(error)")
         }
     }
+}
+
+struct MonthlyComparisonChart: View {
+    @EnvironmentObject private var currencyManager: CurrencyManager
+    @Environment(\.managedObjectContext) private var viewContext
+    
+    @StateObject private var viewModel: MonthlyComparisonViewModel
+    
+    // Input state from parent
+    let currentMonthExpenses: [Expense]
+    let selectedDate: Date
+    
+    // MARK: - Initialization with dependency injection
+    init(currentMonthExpenses: [Expense], selectedDate: Date) {
+        self.currentMonthExpenses = currentMonthExpenses
+        self.selectedDate = selectedDate
+        
+        // Create the view model with initial data
+        _viewModel = StateObject(wrappedValue: MonthlyComparisonViewModel(
+            context: CoreDataStack.shared.context,
+            initialDate: selectedDate,
+            initialExpenses: currentMonthExpenses
+        ))
+    }
     
     var body: some View {
         GeometryReader { geometry in
-            Chart {
-                // 🔹 Previous month line
-                if !previousMonthExpenses.isEmpty {
-                    ForEach(previousMonthTotalsAligned.indices, id: \.self) { index in
-                        let item = previousMonthTotalsAligned[index]
+            if let dateRange = viewModel.dateRange {
+                Chart {
+                    // Today's vertical reference line
+                    if Calendar.current.isDate(Date(), equalTo: selectedDate, toGranularity: .month) {
+                        let today = Calendar.current.startOfDay(for: Date())
+                        RuleMark(x: .value("Today", today))
+                            .foregroundStyle(.white.opacity(0.4))
+                            .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
+                    }
+                    
+                    // 🔹 Previous month line - only show if there are values
+                    if !viewModel.previousMonthTotals.isEmpty {
+                        ForEach(viewModel.previousMonthTotals.indices, id: \.self) { index in
+                            let item = viewModel.previousMonthTotals[index]
+                            LineMark(
+                                x: .value("Date", item.date),
+                                y: .value("Total", NSDecimalNumber(decimal: item.total).doubleValue),
+                                series: .value("Series", "Previous")
+                            )
+                            .interpolationMethod(.catmullRom)
+                            .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
+                            .foregroundStyle(.white.opacity(0.25))
+                        }
+                    }
+                    
+                    // ⚪️ Current month line
+                    ForEach(viewModel.currentMonthTotals.indices, id: \.self) { index in
+                        let item = viewModel.currentMonthTotals[index]
                         LineMark(
                             x: .value("Date", item.date),
                             y: .value("Total", NSDecimalNumber(decimal: item.total).doubleValue),
-                            series: .value("Series", "Previous")
+                            series: .value("Series", "Current")
                         )
                         .interpolationMethod(.catmullRom)
                         .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
-                        .foregroundStyle(.white.opacity(0.25))
+                        .foregroundStyle(.white)
+                    }
+                    
+                    // 🎯 End dot
+                    if let last = viewModel.currentMonthTotals.last {
+                        PointMark(
+                            x: .value("Date", last.date),
+                            y: .value("Total", NSDecimalNumber(decimal: last.total).doubleValue)
+                        )
+                        .symbolSize(32)
+                        .foregroundStyle(.white)
                     }
                 }
-                
-                // ⚪️ Current month line
-                ForEach(currentMonthTotals.indices, id: \.self) { index in
-                    let item = currentMonthTotals[index]
-                    LineMark(
-                        x: .value("Date", item.date),
-                        y: .value("Total", NSDecimalNumber(decimal: item.total).doubleValue),
-                        series: .value("Series", "Current")
-                    )
-                    .interpolationMethod(.catmullRom)
-                    .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
-                    .foregroundStyle(.white)
-                }
-                
-                // 🎯 End dot
-                if let last = currentMonthTotals.last {
-                    PointMark(
-                        x: .value("Date", last.date),
-                        y: .value("Total", NSDecimalNumber(decimal: last.total).doubleValue)
-                    )
-                    .symbolSize(32)
-                    .foregroundStyle(.white)
-                }
-            }
-            .frame(width: geometry.size.width)
-            .chartXScale(domain: dateRange)
-            .chartXAxis {
-                AxisMarks(values: .stride(by: .day)) { value in
-                    if let date = value.as(Date.self) {
-                        let day = calendar.component(.day, from: date)
-                        
-                        if xAxisLabels.contains(day) {
+                .frame(width: geometry.size.width)
+                .chartXScale(domain: dateRange)
+                .chartXAxis {
+                    // Create specific date markers for the month
+                    let lastDay = Calendar.current.range(of: .day, in: .month, for: selectedDate)?.upperBound ?? 31
+                    let datesToMark = [1, 5, 10, 15, 20, 25, lastDay - 1]
+                    let today = Calendar.current.component(.day, from: Date())
+                    
+                    // Generate mark values from calendar dates
+                    let markValues = datesToMark.compactMap { day -> Date? in
+                        var components = Calendar.current.dateComponents([.year, .month], from: selectedDate)
+                        components.day = day
+                        return Calendar.current.date(from: components)
+                    }
+                    
+                    AxisMarks(values: markValues) { value in
+                        if let date = value.as(Date.self) {
+                            let day = Calendar.current.component(.day, from: date)
+                            let isToday = day == today && Calendar.current.isDate(date, equalTo: Date(), toGranularity: .month)
+                            
                             AxisValueLabel {
                                 Text("\(day)")
-                                    .foregroundColor(.white)
+                                    .foregroundColor(isToday ? .yellow : .white)
                                     .font(.system(size: 8))
+                                    .fontWeight(isToday ? .bold : .regular)
                                     .fixedSize()
                             }
+                            
+                            AxisTick(stroke: StrokeStyle(lineWidth: 1))
+                                .foregroundStyle(isToday ? .yellow.opacity(0.5) : .white.opacity(0.3))
                         }
-                        
-                        if calendar.isDate(date, inSameDayAs: today) {
-                            AxisGridLine()
-                                .foregroundStyle(.white.opacity(0.2))
+                    }
+                    
+                    // Add a separate mark for today if needed
+                    if Calendar.current.isDate(Date(), equalTo: selectedDate, toGranularity: .month) {
+                        let todayDate = Calendar.current.startOfDay(for: Date())
+                        if !datesToMark.contains(today) {
+                            AxisMarks(values: [todayDate]) { _ in
+                                AxisValueLabel {
+                                    Text("\(today)")
+                                        .foregroundColor(.yellow)
+                                        .font(.system(size: 8))
+                                        .fontWeight(.bold)
+                                        .fixedSize()
+                                }
+                                
+                                AxisTick(stroke: StrokeStyle(lineWidth: 1))
+                                    .foregroundStyle(.yellow.opacity(0.5))
+                                
+                                AxisGridLine()
+                                    .foregroundStyle(.white.opacity(0.3))
+                            }
                         }
                     }
                 }
+                .chartYAxis(.hidden)
+                .background(Color.clear)
+            } else {
+                // Placeholder view while loading
+                ProgressView()
+                    .frame(width: geometry.size.width, height: 200)
             }
-            .chartYAxis(.hidden)
-            .background(Color.clear)
         }
-        .animation(.easeInOut, value: currentMonthTotals.count)
-        .animation(.easeInOut, value: previousMonthTotalsAligned.count)
-        .padding(.horizontal, 16)
         .frame(height: 200)
-        .onAppear {
-            fetchPreviousMonthExpenses()
+        .padding(.horizontal, 16)
+        .onChange(of: currentMonthExpenses) { _, newExpenses in
+            viewModel.updateCurrentMonthExpenses(newExpenses)
         }
-        .onChange(of: selectedDate) { _, _ in
-            fetchPreviousMonthExpenses()
+        .onChange(of: selectedDate) { _, newDate in
+            viewModel.updateSelectedDate(newDate)
         }
     }
 }
