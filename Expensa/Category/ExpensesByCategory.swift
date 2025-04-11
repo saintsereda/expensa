@@ -46,6 +46,7 @@ struct ExpensesByCategoryView: View {
     
     // MARK: - Properties
     let category: Category
+    let selectedDate: Date
     private let analytics = ExpenseAnalytics.shared
     
     // MARK: - Fetch Request
@@ -79,12 +80,34 @@ struct ExpensesByCategoryView: View {
         }
     }
     
+    private var monthName: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM"
+        return formatter.string(from: filterManager.selectedDate)
+    }
+    
     // MARK: - Initialization
-    init(category: Category) {
+    init(category: Category, selectedDate: Date = Date()) {
         self.category = category
+        self.selectedDate = selectedDate
         
         let request = NSFetchRequest<Expense>(entityName: "Expense")
-        request.predicate = NSPredicate(format: "category == %@", category)
+        
+        // Create date range for the selected month
+        let calendar = Calendar.current
+        let interval = DateInterval(
+            start: calendar.date(from: calendar.dateComponents([.year, .month], from: selectedDate))!,
+            end: calendar.date(byAdding: .month, value: 1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: selectedDate))!)!.addingTimeInterval(-1)
+        )
+        
+        // Filter by both category and date range
+        request.predicate = NSPredicate(
+            format: "category == %@ AND date >= %@ AND date <= %@",
+            category,
+            interval.start as NSDate,
+            interval.end as NSDate
+        )
+        
         request.sortDescriptors = [NSSortDescriptor(keyPath: \Expense.date, ascending: false)]
         
         _expenses = FetchRequest(fetchRequest: request)
@@ -153,6 +176,9 @@ struct ExpensesByCategoryView: View {
                     .font(.title2)
                     .fontWeight(.semibold)
                 
+                Text("Spent in \(monthName)")
+                    .font(.body)
+
                 if let defaultCurrency = currencyManager.defaultCurrency {
                     Text(currencyManager.currencyConverter.formatAmount(
                         analytics.calculateTotalSpent(for: Array(expenses)),
