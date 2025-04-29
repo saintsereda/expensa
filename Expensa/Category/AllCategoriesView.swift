@@ -55,41 +55,6 @@ struct AllCategoriesView: View {
         ExpenseDataManager.shared.calculateTotalAmount(for: Array(fetchedExpenses))
     }
     
-    // Add budget info struct
-    private struct BudgetInfo {
-        let amount: Decimal
-        let remaining: Decimal
-        let currency: Currency
-        
-        var formattedRemaining: String {
-            CurrencyConverter.shared.formatAmount(remaining, currency: currency)
-        }
-        
-        var formattedOverspent: String {
-            CurrencyConverter.shared.formatAmount(abs(remaining), currency: currency)
-        }
-        
-        var isOverspent: Bool {
-            remaining < 0
-        }
-    }
-    
-    // Add computed property for budget info
-    private var budgetInfo: BudgetInfo? {
-        guard let budget = currentBudget,
-              let amount = budget.amount?.decimalValue,
-              let currency = currencyManager.defaultCurrency else {
-            return nil
-        }
-        
-        let remaining = amount - totalExpensesAmount
-        return BudgetInfo(
-            amount: amount,
-            remaining: remaining,
-            currency: currency
-        )
-    }
-    
     // Initialization with custom fetch request
     init() {
         // Create and configure fetch request
@@ -132,31 +97,10 @@ struct AllCategoriesView: View {
                         .font(.system(size: 32, weight: .regular, design: .rounded))
                         .foregroundColor(.primary)
                         .contentTransition(.numericText())
-                        .animation(.spring(response: 0.4, dampingFraction: 0.95), value: totalExpensesAmount)
-                        
-                        // Add budget status text
-                        if let info = budgetInfo {
-                            HStack(spacing: 12) {
-                                if info.isOverspent {
-                                    Text("👎🏻 Budget overspent by \(info.formattedOverspent)")
-                                        .font(.system(.body, design: .rounded))
-                                        .foregroundColor(.secondary)
-                                } else {
-                                    Text("👍🏻 Budget on track")
-                                        .font(.system(.body, design: .rounded))
-                                        .foregroundColor(.secondary)
-                                    
-                                    Divider()
-                                        .frame(width: 1, height: 20)
-                                        .background(Color.secondary.opacity(0.4))
-                                    
-                                    Text("💰 \(info.formattedRemaining) left")
-                                        .font(.system(.body, design: .rounded))
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            .padding(.top, 4)
-                        }
+                        .animation(.spring(response: 0.4, dampingFraction: 0.95), value: CurrencyConverter.shared.formatAmount(
+                            totalExpensesAmount,
+                            currency: defaultCurrency
+                        ))
                     }
                 }
                 .padding(.horizontal, 16)
