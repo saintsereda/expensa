@@ -197,7 +197,7 @@ class RecurringExpenseManager: ObservableObject {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         let targetDate = calendar.startOfDay(for: date)
-        return targetDate == today 
+        return targetDate == today
     }
     
     func updateRecurringTemplate(
@@ -248,8 +248,8 @@ class RecurringExpenseManager: ObservableObject {
             // Update next due date
             template.nextDueDate = startDate
             
-            // Only create expense if start date is today
-            if shouldCreateExpenseFor(date: startDate) {
+            // Only create expense if start date is today AND no expense exists for today
+            if shouldCreateExpenseFor(date: startDate) && !hasExpenseForDate(template: template, date: startDate) {
                 createExpenseFromTemplate(template: template, forDate: startDate)
             }
         }

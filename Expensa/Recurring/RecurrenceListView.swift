@@ -24,6 +24,7 @@ struct RecurrenceListView: View {
     @State private var selectedTemplate: RecurringExpense?
     @State private var showingDetailView = false
     @State private var showingAddExpense = false
+    @State private var showingYearlyTotal = false
     
     var body: some View {
         ScrollView {
@@ -42,22 +43,31 @@ struct RecurrenceListView: View {
                         
                         VStack(alignment: .trailing) {
                             if let defaultCurrency = currencyManager.defaultCurrency {
+                                let monthlyTotal = RecurringExpenseManager.calculateMonthlyTotal(
+                                    for: Array(templates),
+                                    defaultCurrency: defaultCurrency,
+                                    currencyConverter: currencyManager.currencyConverter
+                                )
+                                
                                 Text(currencyManager.currencyConverter.formatAmount(
-                                    RecurringExpenseManager.calculateMonthlyTotal(
-                                        for: Array(templates),
-                                        defaultCurrency: defaultCurrency,
-                                        currencyConverter: currencyManager.currencyConverter
-                                    ),
+                                    showingYearlyTotal ? monthlyTotal * 12 : monthlyTotal,
                                     currency: defaultCurrency
                                 ))
                                 .font(.system(size: 28, weight: .medium))
+                                .contentTransition(.numericText())
                                 
-                                Text("monthly total")
+                                Text(showingYearlyTotal ? "yearly total" : "monthly total")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
+                                    .contentTransition(.numericText())
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .topTrailing)
+                        .onTapGesture(count: 2) {
+                            withAnimation(.spring()) {
+                                showingYearlyTotal.toggle()
+                            }
+                        }
                     }
                     .padding(.horizontal, 16)
                 }
