@@ -55,7 +55,7 @@ struct TemplateEditView: View {
     @State private var showingErrorAlert = false
     @State private var errorMessage = ""
     
-    @State private var tempTags: Set<Tag> = [] 
+    @State private var tempTags: Set<Tag> = []
     
     private let frequencyOptions = ["Daily", "Weekly", "Monthly", "Yearly"]
     private let dateFormatter: DateFormatter = {
@@ -246,22 +246,27 @@ struct TemplateEditView: View {
     private func loadTemplateData() {
         print("🔄 Loading template data...")
         
-        // Load amount
         if let decimalAmount = template.amount?.decimalValue {
-            amount = decimalAmount.formatted()
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.maximumFractionDigits = 2
+            formatter.minimumFractionDigits = 2
+            formatter.groupingSeparator = ","
+            formatter.decimalSeparator = "."
+            
+            if let formattedString = formatter.string(from: NSDecimalNumber(decimal: decimalAmount)) {
+                amount = formattedString
+            } else {
+                amount = decimalAmount.description
+            }
         }
         
-        // Load category
         selectedCategory = template.category
         print("📂 Loaded category: \(template.category?.name ?? "unknown")")
         
-        // Load currency
         selectedCurrency = template.currency ?? "USD"
-        
-        // Load other fields
         frequency = template.frequency ?? "Monthly"
         
-        // Load and validate next due date
         if let templateDate = template.nextDueDate {
             let validDate = max(templateDate, minimumDate)
             nextDueDate = validDate
@@ -272,7 +277,6 @@ struct TemplateEditView: View {
         notes = template.notes ?? ""
         notificationEnabled = template.notificationEnabled
         
-        // Initial conversion
         Task {
             await updateConvertedAmount()
         }
@@ -299,15 +303,11 @@ struct TemplateEditView: View {
         )
         
         await MainActor.run {
-            // Change from .0 to .amount
             if let result = conversionResult {
                 convertedAmount = currencyManager.currencyConverter.formatAmount(
                     result.amount,
                     currency: defaultCurrency
                 )
-                
-                // You could also display the rate if desired:
-                // let rateString = "Rate: \(result.rate)"
             } else {
                 convertedAmount = nil
             }
@@ -315,14 +315,21 @@ struct TemplateEditView: View {
     }
     
     private func saveTemplate() {
-        guard let amountDecimal = Decimal(string: amount.replacingOccurrences(of: ",", with: ".")),
+        let cleanedAmount = amount.replacingOccurrences(of: ",", with: "")
+        
+        guard let amountDecimal = Decimal(string: cleanedAmount),
               let category = selectedCategory else {
             errorMessage = "Please fill in all required fields"
             showingErrorAlert = true
             return
         }
         
-        // Use Task to handle async operation
+        guard amountDecimal > 0 else {
+            errorMessage = "Amount must be greater than zero"
+            showingErrorAlert = true
+            return
+        }
+        
         Task {
             let success = await RecurringExpenseManager.shared.updateRecurringTemplate(
                 template: template,
@@ -335,7 +342,6 @@ struct TemplateEditView: View {
                 notificationEnabled: notificationEnabled
             )
             
-            // Update UI on main thread
             await MainActor.run {
                 if success {
                     isPresented = false

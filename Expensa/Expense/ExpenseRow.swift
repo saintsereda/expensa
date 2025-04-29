@@ -45,6 +45,11 @@ struct ExpenseRow: View {
         return "-" + currencyManager.currencyConverter.formatAmount(amount, currency: defaultCurrency)
     }
     
+    // Add recurring indicator helper
+    private var isRecurring: Bool {
+        expense.isRecurring && expense.recurringExpense != nil
+    }
+    
     var body: some View {
         HStack {
             HStack(spacing: 12) {
@@ -58,19 +63,25 @@ struct ExpenseRow: View {
                         .font(.system(size: 20))
                 }
                 
-                // Center: Category and Note (modified to truncate)
+                // Center: Category and Note (modified to add recurring indicator)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(category)
-                        .font(.body)
-                        .lineLimit(1)
-                    
+                    HStack(spacing: 4) {
+                        Text(category)
+                            .font(.body)
+                            .lineLimit(1)
+                        
+                        // Add recurring indicator
+                        if isRecurring {
+                            Text("🔄")
+                                .font(.system(size: 12))
+                        }
+                    }
                     
                     if let note = note, !note.isEmpty {
                         Text(note)
                             .font(.subheadline)
                             .foregroundColor(.primary.opacity(0.64))
                             .lineLimit(1)
-                        
                     }
                 }
             }

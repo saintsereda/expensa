@@ -193,6 +193,13 @@ class RecurringExpenseManager: ObservableObject {
         }
     }
     
+    private func shouldCreateExpenseFor(date: Date) -> Bool {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let targetDate = calendar.startOfDay(for: date)
+        return targetDate == today 
+    }
+    
     func updateRecurringTemplate(
         template: RecurringExpense,
         amount: Decimal,
@@ -234,20 +241,17 @@ class RecurringExpenseManager: ObservableObject {
         template.notificationEnabled = notificationEnabled
         template.updatedAt = Date()
         
-        // If frequency or date changed, we need to handle future expenses
         if oldFrequency != frequency || oldStartDate != startDate {
-            // Delete future expenses
+            // Delete all future expenses
             deleteFutureExpenses(for: template)
             
             // Update next due date
             template.nextDueDate = startDate
             
-            // Generate new future expenses
-            generateMissingExpenses(
-                for: template,
-                from: startDate,
-                to: Calendar.current.date(byAdding: .month, value: 2, to: Date())!
-            )
+            // Only create expense if start date is today
+            if shouldCreateExpenseFor(date: startDate) {
+                createExpenseFromTemplate(template: template, forDate: startDate)
+            }
         }
         
         do {
