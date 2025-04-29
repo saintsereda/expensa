@@ -295,6 +295,26 @@ class BudgetManager: ObservableObject {
         }
     }
     
+    func getBudgetFor(month date: Date) async -> Budget? {
+        return await context.perform {
+            let fetchRequest: NSFetchRequest<Budget> = Budget.fetchRequest()
+            
+            // Create a predicate based on the specified month
+            let calendar = Calendar.current
+            let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: date))!
+            let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth)!
+            
+            fetchRequest.predicate = NSPredicate(
+                format: "startDate >= %@ AND startDate <= %@",
+                startOfMonth as NSDate,
+                endOfMonth as NSDate
+            )
+            fetchRequest.fetchLimit = 1
+            
+            return try? self.context.fetch(fetchRequest).first
+        }
+    }
+    
     func getBudgetAmount(in targetCurrency: Currency) async throws -> (amount: Decimal, formatted: String)? {
         guard let budget = await getCurrentMonthBudget(),
               let amount = budget.amount?.decimalValue,

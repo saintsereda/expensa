@@ -242,8 +242,8 @@ struct ExpenseEntryView: View {
             HStack(spacing: 8) {
                 // 1. Main CategoryButton (always shown)
                 CategoryButton() {
-                    showingCategorySelector = true
                     HapticFeedback.play()
+                    showingCategorySelector = true
                 }
                 
                 // 2. Last selected category (if not already selected)
@@ -257,8 +257,8 @@ struct ExpenseEntryView: View {
                         isSelected: selectedCategory == lastCategory,
                         isLastSelected: true
                     ) {
-                        selectedCategory = lastCategory
                         HapticFeedback.play()
+                        selectedCategory = lastCategory
                     }
                 }
                 
@@ -269,11 +269,12 @@ struct ExpenseEntryView: View {
                         isSelected: selectedCategory == category,
                         isLastSelected: false
                     ) {
-                        selectedCategory = category
                         HapticFeedback.play()
+                        selectedCategory = category
                     }
                 }
             }
+            .frame(height: 56)
             .padding(.horizontal, 16)
         }
         .padding(.vertical, 8)

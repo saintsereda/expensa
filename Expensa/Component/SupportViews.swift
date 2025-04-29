@@ -74,7 +74,8 @@ struct IconButton: View {
                         Image(icon)
                             .renderingMode(.template)
                             .frame(width: 24, height: 24)
-                            .foregroundColor(Color(uiColor: .label))
+                            .foregroundColor(Color.white)
+                            .opacity(0.64)
                     }
             }
             .frame(width: 40, height: 40, alignment: .center)

@@ -28,6 +28,7 @@ struct MonthlyTrendView: View {
         VStack(alignment: .leading, spacing: 8) {
             MonthlyTrendChart(data: data)
                 .frame(height: 200)
+                .padding(.horizontal, 8) // Add side padding for the chart
         }
         .padding(.vertical)
         .background(Color(UIColor.systemBackground))
@@ -38,7 +39,8 @@ struct MonthlyTrendView: View {
 struct ExpensesByCategoryView: View {
     // MARK: - Environment & StateObjects
     @EnvironmentObject private var currencyManager: CurrencyManager
-    @StateObject private var filterManager = ExpenseFilterManager()
+    @StateObject private var filterManager: ExpenseFilterManager
+    @State private var showingDatePicker = false
     
     // MARK: - State
     @State private var selectedSorting: ExpenseSorting = .dateNewest
@@ -46,15 +48,33 @@ struct ExpensesByCategoryView: View {
     
     // MARK: - Properties
     let category: Category
-    let selectedDate: Date
     private let analytics = ExpenseAnalytics.shared
     
-    // MARK: - Fetch Request
+    // MARK: - Fetch Request for category expenses
     @FetchRequest private var expenses: FetchedResults<Expense>
     
     // MARK: - Computed Properties
+    // Get 6 months of data regardless of selected period
     private var monthlyData: [(Date, Decimal)] {
-        analytics.calculateMonthlyTrend(for: Array(expenses))
+        // Get all expenses for this category for the past 6 months
+        let calendar = Calendar.current
+        let today = Date()
+        let sixMonthsAgo = calendar.date(byAdding: .month, value: -5, to: calendar.startOfMonth(for: today))!
+        
+        let request = NSFetchRequest<Expense>(entityName: "Expense")
+        request.predicate = NSPredicate(
+            format: "category == %@ AND date >= %@",
+            category,
+            sixMonthsAgo as NSDate
+        )
+        
+        do {
+            let allExpenses = try CoreDataStack.shared.context.fetch(request)
+            return analytics.calculateMonthlyTrend(for: allExpenses)
+        } catch {
+            print("Error fetching 6-month expenses: \(error.localizedDescription)")
+            return []
+        }
     }
     
     private var maxExpenseDay: (date: Date, amount: Decimal)? {
@@ -80,25 +100,27 @@ struct ExpensesByCategoryView: View {
         }
     }
     
-    private var monthName: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM"
-        return formatter.string(from: filterManager.selectedDate)
+    private var totalAmountForPeriod: Decimal {
+        analytics.calculateTotalSpent(for: Array(expenses))
     }
     
     // MARK: - Initialization
-    init(category: Category, selectedDate: Date = Date()) {
+    init(category: Category, selectedDate: Date = Date(), filterManager: ExpenseFilterManager? = nil) {
         self.category = category
-        self.selectedDate = selectedDate
+        
+        // Create or use filterManager
+        let fm = filterManager ?? {
+            let newFM = ExpenseFilterManager()
+            newFM.selectedDate = selectedDate
+            return newFM
+        }()
+        
+        self._filterManager = StateObject(wrappedValue: fm)
         
         let request = NSFetchRequest<Expense>(entityName: "Expense")
         
-        // Create date range for the selected month
-        let calendar = Calendar.current
-        let interval = DateInterval(
-            start: calendar.date(from: calendar.dateComponents([.year, .month], from: selectedDate))!,
-            end: calendar.date(byAdding: .month, value: 1, to: calendar.date(from: calendar.dateComponents([.year, .month], from: selectedDate))!)!.addingTimeInterval(-1)
-        )
+        // Get date interval based on filter manager
+        let interval = fm.currentPeriodInterval()
         
         // Filter by both category and date range
         request.predicate = NSPredicate(
@@ -120,8 +142,12 @@ struct ExpensesByCategoryView: View {
                 categoryHeader
                 VStack(spacing: 16) {
                     MonthlyTrendView(data: monthlyData)
-                    //                sortingMenu
-                    expensesList
+                    
+                    if !sortedExpenses.isEmpty {
+                        expensesList
+                    } else {
+                        noExpensesView
+                    }
                 }
                 .padding(.horizontal, 16)
             }
@@ -139,6 +165,15 @@ struct ExpensesByCategoryView: View {
             .environmentObject(currencyManager)
         }
         .navigationBarTitleDisplayMode(.inline)
+        .onChange(of: filterManager.selectedDate) { _, _ in
+            updateFetchRequestPredicate()
+        }
+        .onChange(of: filterManager.endDate) { _, _ in
+            updateFetchRequestPredicate()
+        }
+        .onChange(of: filterManager.isRangeMode) { _, _ in
+            updateFetchRequestPredicate()
+        }
     }
     
     // MARK: - View Components
@@ -176,12 +211,12 @@ struct ExpensesByCategoryView: View {
                     .font(.title2)
                     .fontWeight(.semibold)
                 
-                Text("Spent in \(monthName)")
+                Text("Spent in \(filterManager.formattedPeriod())")
                     .font(.body)
 
                 if let defaultCurrency = currencyManager.defaultCurrency {
                     Text(currencyManager.currencyConverter.formatAmount(
-                        analytics.calculateTotalSpent(for: Array(expenses)),
+                        totalAmountForPeriod,
                         currency: defaultCurrency
                     ))
                     .font(.title3)
@@ -210,32 +245,48 @@ struct ExpensesByCategoryView: View {
         .frame(height: 250)
     }
     
-    private var sortingMenu: some View {
-        Menu {
-            ForEach(ExpenseSorting.allCases, id: \.self) { sorting in
-                Button(action: { selectedSorting = sorting }) {
-                    if sorting == selectedSorting {
-                        Label(sorting.description, systemImage: "checkmark")
-                    } else {
-                        Text(sorting.description)
-                    }
+    private var expensesList: some View {
+        VStack(alignment: .leading, spacing: 8) {            
+            GroupedExpensesView(
+                expenses: sortedExpenses,
+                onExpenseSelected: { expense in
+                    selectedExpense = expense
                 }
-            }
-        } label: {
-            HStack {
-                Text("Sort: \(selectedSorting.description)")
-                Image(systemName: "chevron.up.chevron.down")
-            }
+            )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
-    private var expensesList: some View {
-        GroupedExpensesView(
-            expenses: sortedExpenses,
-            onExpenseSelected: { expense in
-                selectedExpense = expense
-            }
+    private var noExpensesView: some View {
+        VStack(spacing: 16) {
+            Text("No expenses in this period")
+                .font(.headline)
+                .foregroundColor(.secondary)
+            
+            Text("There are no expenses recorded for this category in the selected period. You can see the trend from previous months in the chart above.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding()
+        }
+        .padding(.top, 32)
+    }
+    
+    // MARK: - Helper Methods
+    private func updateFetchRequestPredicate() {
+        let interval = filterManager.currentPeriodInterval()
+        expenses.nsPredicate = NSPredicate(
+            format: "category == %@ AND date >= %@ AND date <= %@",
+            category,
+            interval.start as NSDate,
+            interval.end as NSDate
         )
+    }
+}
+
+// Helper extension
+private extension Calendar {
+    func startOfMonth(for date: Date) -> Date {
+        let components = dateComponents([.year, .month], from: date)
+        return self.date(from: components) ?? date
     }
 }

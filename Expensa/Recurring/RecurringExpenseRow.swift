@@ -60,7 +60,7 @@ struct RecurringExpenseRow: View {
                 // Left: Category Icon
                 ZStack {
                     Circle()
-                        .fill(Color(UIColor.systemGray5))
+                        .fill(Color.white.opacity(0.08))
                         .frame(width: 48, height: 48)
                     
                     Text(icon)
@@ -78,7 +78,7 @@ struct RecurringExpenseRow: View {
                         // Frequency indicator square
                         ZStack {
                             Rectangle()
-                                .fill(Color(UIColor.systemGray5))
+                                .fill(Color.white.opacity(0.16))
                                 .frame(width: 20, height: 20)
                                 .cornerRadius(4)
                             
@@ -90,7 +90,7 @@ struct RecurringExpenseRow: View {
                         // Next payment date
                         Text("Next \(formattedNextDueDate)")
                             .font(.subheadline)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.primary.opacity(0.64))
                             .lineLimit(1)
                     }
                 }
@@ -109,7 +109,7 @@ struct RecurringExpenseRow: View {
                     
                     Text(formattedOriginalAmount)
                         .font(.subheadline)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.primary.opacity(0.64))
                         .fixedSize()
                 } else {
                     Text(formattedOriginalAmount)

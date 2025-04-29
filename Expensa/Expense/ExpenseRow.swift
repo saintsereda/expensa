@@ -51,7 +51,7 @@ struct ExpenseRow: View {
                 // Left: Category Icon (unchanged)
                 ZStack {
                     Circle()
-                        .fill(Color(UIColor.systemGray5))
+                        .fill(Color.white.opacity(0.08))
                         .frame(width: 48, height: 48)
                     
                     Text(icon)
@@ -68,7 +68,7 @@ struct ExpenseRow: View {
                     if let note = note, !note.isEmpty {
                         Text(note)
                             .font(.subheadline)
-                            .foregroundColor(.gray)
+                            .foregroundColor(.primary.opacity(0.64))
                             .lineLimit(1)
                         
                     }
@@ -88,7 +88,7 @@ struct ExpenseRow: View {
                     
                     Text(formattedOriginalAmount)
                         .font(.subheadline)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.primary.opacity(0.64))
                         .fixedSize()
                 } else {
                     Text(formattedOriginalAmount)

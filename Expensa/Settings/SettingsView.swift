@@ -10,7 +10,8 @@ import SwiftUI
 import CoreData
 
 struct SettingsView: View {
-    @StateObject private var themeManager = ThemeManager()
+    @EnvironmentObject private var themeManager: ThemeManager
+    @StateObject private var accentColorManager = AccentColorManager.shared
     @State private var showingDebug = false
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.managedObjectContext) private var managedObjectContext
@@ -30,6 +31,7 @@ struct SettingsView: View {
             legalSection
             connectSection
         }
+        .scrollIndicators(.hidden)
         .listStyle(InsetGroupedListStyle())
         .sheet(isPresented: $showingDebug) {
             NavigationView {
@@ -101,6 +103,7 @@ struct SettingsView: View {
     // MARK: - Preferences Section
     private var preferencesSection: some View {
         Section {
+            // In your SettingsView.swift, modify your appearance picker section:
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
                     Image(systemName: "circle.lefthalf.filled")
@@ -109,29 +112,66 @@ struct SettingsView: View {
                     Text("Appearance")
                         .font(.body)
                     Spacer()
-                    Picker("", selection: Binding(
-                        get: { themeManager.selectedTheme },
-                        set: { themeManager.setTheme($0) }
-                    )) {
+                    
+                    // Implement the menu directly like in your CalendarSheet
+                    Menu {
                         ForEach(ColorScheme.allCases, id: \.self) { theme in
-                            Text(theme.rawValue).tag(theme)
+                            Button(action: {
+                                themeManager.setTheme(theme)
+                            }) {
+                                Text(theme.rawValue)
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Text(themeManager.selectedTheme.rawValue)
+                                .frame(width: 65, alignment: .trailing)
+                                .foregroundColor(.primary) // Use .primary instead of default blue
+                            Image(systemName: "chevron.up.chevron.down")
+                                .foregroundColor(.gray)
+                                .font(.caption)
                         }
                     }
-                    .pickerStyle(.menu)
                 }
             }
             .padding(.vertical, 4)
-            // NavigationLink(destination: RateDebugView().toolbar(.hidden, for: .tabBar)) {
-            //     NavigationRow(
-            //         title: "Debug rates",
-            //         icon: "ladybug.fill",
-            //         color: .gray
-            //     ) {
-            //         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            //             showingDebug = true
-            //         }
-            //     }
-            // }
+            
+            // New Accent Color picker
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    Image(systemName: "paintpalette.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(accentColorManager.selectedAccentColor.color)
+                    Text("Accent Color")
+                        .font(.body)
+                    Spacer()
+                    
+                    Menu {
+                        ForEach(AccentColorOption.allCases) { colorOption in
+                            Button(action: {
+                                accentColorManager.selectedAccentColor = colorOption
+                            }) {
+                                HStack {
+                                    Circle()
+                                        .fill(colorOption.color)
+                                        .frame(width: 16, height: 16)
+                                    Text(colorOption.rawValue)
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Text(accentColorManager.selectedAccentColor.rawValue)
+                                .frame(width: 65, alignment: .trailing)
+                                .foregroundColor(.primary) // Use .primary instead of default blue
+                            Image(systemName: "chevron.up.chevron.down")
+                                .foregroundColor(.gray)
+                                .font(.caption)
+                        }
+                    }
+                }
+            }
+            .padding(.vertical, 4)
             
             NavigationLink(destination: NotificationsView(context: managedObjectContext).toolbar(.hidden, for: .tabBar)) {                NavigationRow(
                     title: "Notifications",

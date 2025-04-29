@@ -20,7 +20,7 @@ struct SegmentedLineChartView: View {
     init(
         categorizedExpenses: [(Category, [Expense])],
         totalExpenses: Decimal,
-        height: CGFloat = 32,
+        height: CGFloat = 24,
         segmentSpacing: CGFloat = 2,
         minPercentage: Double = 1.0
     ) {
@@ -127,16 +127,9 @@ struct SegmentedLineChartView: View {
                                     .font(.body)
                                 
                                 // Show both amount and percentage
-                                if let defaultCurrency = CurrencyManager.shared.defaultCurrency {
                                     Text("\(Int(segment.percentage))%")
                                         .font(.body)
                                         .foregroundColor(.secondary)
-                                } else {
-                                    // Fallback to percentage only if currency not available
-                                    Text("\(Int(segment.percentage))%")
-                                        .font(.body)
-                                        .foregroundColor(.secondary)
-                                }
                             }
                         }
                     }

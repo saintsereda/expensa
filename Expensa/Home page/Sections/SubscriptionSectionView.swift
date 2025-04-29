@@ -16,40 +16,40 @@ struct SubscriptionsSection: View {
     var body: some View {
         if !recurringExpenses.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Subscriptions")
+                Text("Upcoming expenses")
                     .font(.subheadline)
-                    .foregroundColor(.gray)
+                    .foregroundColor(.primary.opacity(0.64))
                 
-                HStack(alignment: .top, spacing: 8) {
-                    VStack(alignment: .leading) {
-                        Text("\(recurringExpenses.count)")
-                            .font(.body)
-                        Text("Active")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    
-                    VStack(alignment: .trailing) {
-                        if let defaultCurrency = currencyManager.defaultCurrency {
-                            Text(currencyManager.currencyConverter.formatAmount(
-                                RecurringExpenseManager.calculateMonthlyTotal(
-                                    for: Array(recurringExpenses),
-                                    defaultCurrency: defaultCurrency,
-                                    currencyConverter: currencyManager.currencyConverter
-                                ),
-                                currency: defaultCurrency
-                            ))
-                            .font(.body)
-                            
-                            Text("monthly")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .topTrailing)
-                }
-                Divider()
+//                HStack(alignment: .top, spacing: 8) {
+//                    VStack(alignment: .leading) {
+//                        Text("\(recurringExpenses.count)")
+//                            .font(.body)
+//                        Text("Active")
+//                            .font(.subheadline)
+//                            .foregroundColor(.primary.opacity(0.64))
+//                    }
+//                    .frame(maxWidth: .infinity, alignment: .topLeading)
+//                    
+//                    VStack(alignment: .trailing) {
+//                        if let defaultCurrency = currencyManager.defaultCurrency {
+//                            Text(currencyManager.currencyConverter.formatAmount(
+//                                RecurringExpenseManager.calculateMonthlyTotal(
+//                                    for: Array(recurringExpenses),
+//                                    defaultCurrency: defaultCurrency,
+//                                    currencyConverter: currencyManager.currencyConverter
+//                                ),
+//                                currency: defaultCurrency
+//                            ))
+//                            .font(.body)
+//                            
+//                            Text("monthly")
+//                                .font(.subheadline)
+//                                .foregroundColor(.primary.opacity(0.64))
+//                        }
+//                    }
+//                    .frame(maxWidth: .infinity, alignment: .topTrailing)
+//                }
+//                Divider()
                 
                 ForEach(Array(recurringExpenses.prefix(3))) { template in
                     RecurringExpenseRow(template: template)
@@ -58,21 +58,18 @@ struct SubscriptionsSection: View {
                         Divider()
                     }
                 }
-                
-                if recurringExpenses.count > 3 {
                     Divider()
                     
                     NavigationLink(value: NavigationDestination.allSubscriptions) {
-                        Text("View all \(recurringExpenses.count) subscriptions")
+                        Text("View all")
                             .foregroundColor(.primary)
                             .frame(maxWidth: .infinity, alignment: .center)
                     }
-                }
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .topLeading)
-            .background(Color(UIColor.systemGray6))
-            .cornerRadius(12)
+            .background(Color.white.opacity(0.16))
+            .cornerRadius(16)
         }
     }
 }

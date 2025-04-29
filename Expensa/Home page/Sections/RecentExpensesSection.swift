@@ -20,14 +20,14 @@ struct RecentExpensesSection: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Recent expenses")
                 .font(.subheadline)
-                .foregroundColor(.gray)
+                .foregroundColor(.primary.opacity(0.64))
             
             if fetchedExpenses.isEmpty {
                 // "No expenses this month" message
                 VStack(spacing: 8) {
                     Text("No expenses this month")
                         .font(.system(.body, design: .rounded))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.primary.opacity(0.7))
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.vertical, 24)
                 }
@@ -61,8 +61,8 @@ struct RecentExpensesSection: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .topLeading)
-        .background(Color(UIColor.systemGray6))
-        .cornerRadius(12)
+        .background(Color.white.opacity(0.16))
+        .cornerRadius(16)
         .onAppear {
             // Update the cache on appear
             updateRecentExpenses()

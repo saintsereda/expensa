@@ -43,7 +43,7 @@ struct UncategorizedExpensesView: View {
                 HStack {
                     ZStack {
                         Circle()
-                            .fill(Color(UIColor.systemGray5))
+                            .fill(Color.white.opacity(0.08))
                             .frame(width: 48, height: 48)
                         
                         // Replace emoji with Lottie animation
@@ -68,8 +68,8 @@ struct UncategorizedExpensesView: View {
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(UIColor.systemGray6))
-                .cornerRadius(12)
+                .background(Color.white.opacity(0.16))
+                .cornerRadius(16)
                 .contentTransition(.numericText())
             }
             .buttonStyle(PlainButtonStyle())

@@ -117,10 +117,12 @@ struct MonthlyTrendChart: View {
         } else if amount >= 1_000_000 {
             let value = amount / 1_000_000
             let formatted = String(format: "%.1fM", NSDecimalNumber(decimal: value).doubleValue)
+                .replacingOccurrences(of: ".", with: ",")
             return "\(formatted)"
         } else if amount >= 1_000 {
             let value = amount / 1_000
             let formatted = String(format: "%.1fK", NSDecimalNumber(decimal: value).doubleValue)
+                .replacingOccurrences(of: ".", with: ",")
             return "\(formatted)"
         } else {
             return formatAmount(amount)

@@ -8,7 +8,7 @@
 import SwiftUI
 import CoreData
 
-struct EmptyExpenseTab: View {
+struct EmptyHomePage: View {
     var body: some View {
         VStack(spacing: 16) {
             Text("💰")
@@ -30,19 +30,11 @@ struct EmptyExpenseTab: View {
     }
 }
 
-struct ExpensesTab: View {
+struct HomePage: View {
     // MARK: - Environment
     @Environment(\.managedObjectContext) private var viewContext
     @EnvironmentObject private var currencyManager: CurrencyManager
     
-    // MARK: - Fetch Request
-    @FetchRequest(
-        sortDescriptors: [
-            SortDescriptor(\RecurringExpense.nextDueDate, order: .forward)
-        ],
-        predicate: NSPredicate(format: "status == %@", "Active"),
-        animation: .default
-    ) private var recurringExpenses: FetchedResults<RecurringExpense>
     
     @FetchRequest(
         sortDescriptors: [
@@ -67,13 +59,15 @@ struct ExpensesTab: View {
     private var shouldShowEmptyState: Bool {
         allExpensesEver.isEmpty && currentBudget == nil
     }
+    
+    let fetchedRecurringExpenses: FetchedResults<RecurringExpense>
 
     var body: some View {
         ZStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 16) {
                     if shouldShowEmptyState {
-                        EmptyExpenseTab()
+                        EmptyHomePage()
                             .padding(.top, 60)
                     } else {
                         VStack(spacing: 16) {
@@ -82,32 +76,31 @@ struct ExpensesTab: View {
                                 expenses: fetchedExpenses,
                                 selectedDate: filterManager.selectedDate
                             )
-                            .padding(.horizontal, 16)
-//                            
-//                            DailySpendingProgressGraph(
-//                                expenses: Array(fetchedExpenses),
-//                                selectedDate: filterManager.selectedDate
-//                            )
+                            .padding(.horizontal, 12)
+                            //
+                            //                            DailySpendingProgressGraph(
+                            //                                expenses: Array(fetchedExpenses),
+                            //                                selectedDate: filterManager.selectedDate
+                            //                            )
                             
-//                            SpendingProgressGraph(
-//                                expenses: Array(fetchedExpenses),
-//                                selectedDate: filterManager.selectedDate
-//                            )
-//                            CumulativeSpendingGraph(
-//                                expenses: Array(fetchedExpenses),
-//                                selectedDate: filterManager.selectedDate
-//                                )
+                            //                            SpendingProgressGraph(
+                            //                                expenses: Array(fetchedExpenses),
+                            //                                selectedDate: filterManager.selectedDate
+                            //                            )
+                            //                            CumulativeSpendingGraph(
+                            //                                expenses: Array(fetchedExpenses),
+                            //                                selectedDate: filterManager.selectedDate
+                            //                                )
                             MonthlyComparisonChart(
                                 currentMonthExpenses: Array(fetchedExpenses),
                                 selectedDate: filterManager.selectedDate
                             )
-                            .padding(.horizontal, 16)
                             
                         }
-                        .padding(.bottom, 16)
-                        
+
                         VStack(spacing: 16) {
                             UncategorizedExpensesView(context: viewContext)
+                                .padding(.horizontal, 12)
                                 .environmentObject(currencyManager)
                             
                             //                        if let budget = currentBudget {
@@ -125,30 +118,45 @@ struct ExpensesTab: View {
                                 budgetManager: budgetManager,
                                 expenseManager: expenseManager
                             )
+                            .padding(.horizontal, 12)
                             
-//                            CategorySpendingSection(
-//                                categorizedExpenses: categorizedExpenses,
-//                                fetchedExpenses: fetchedExpenses
-//                            )
+                            //                            CategorySpendingSection(
+                            //                                categorizedExpenses: categorizedExpenses,
+                            //                                fetchedExpenses: fetchedExpenses
+                            //                            )
                             //                        }
                             
-                            if !recurringExpenses.isEmpty {
+                            if !fetchedRecurringExpenses.isEmpty {
                                 SubscriptionsSection(
-                                    recurringExpenses: recurringExpenses
+                                    recurringExpenses: fetchedRecurringExpenses
                                 )
+                                .padding(.horizontal, 12)
                             }
                             
                             RecentExpensesSection(
                                 fetchedExpenses: fetchedExpenses,
                                 selectedExpense: $selectedExpense
                             )
+                            .padding(.horizontal, 12)
                         }
-                        .padding(.horizontal, 16)
+                        .padding(.top, 32)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(stops: [
+                                    .init(color: Color(UIColor.systemBackground).opacity(0), location: 0.0),   // 0%
+                                    .init(color: Color(UIColor.systemBackground), location: 0.12),   // 60%
+                                    .init(color: Color(UIColor.systemBackground), location: 1.0)  // 80%
+                                ]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                            .ignoresSafeArea()
+                        )
                     }
                     Spacer()
                     .frame(height: 80)
                 }
-                .padding(.top, 32)
+                .padding(.top, 16)
             }
             
             VStack {
@@ -156,6 +164,7 @@ struct ExpensesTab: View {
                 FloatingActionButton(
                     icon: "plus"
                 ) {
+                    HapticFeedback.play()
                     isPresentingExpenseEntry = true
                 }
             }
