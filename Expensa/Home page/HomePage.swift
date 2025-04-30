@@ -3,7 +3,7 @@
 //  Expensa
 //
 //  Created by Andrew Sereda on 26.10.2024.
-//
+//  HomePage.swift
 
 import SwiftUI
 import CoreData
