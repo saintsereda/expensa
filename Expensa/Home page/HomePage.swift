@@ -35,6 +35,14 @@ struct HomePage: View {
     @Environment(\.managedObjectContext) private var viewContext
     @EnvironmentObject private var currencyManager: CurrencyManager
     
+    // MARK: - Fetch Request
+    @FetchRequest(
+        sortDescriptors: [
+            SortDescriptor(\RecurringExpense.nextDueDate, order: .forward)
+        ],
+        predicate: NSPredicate(format: "status == %@", "Active"),
+        animation: .default
+    ) private var recurringExpenses: FetchedResults<RecurringExpense>
     
     @FetchRequest(
         sortDescriptors: [
@@ -59,8 +67,6 @@ struct HomePage: View {
     private var shouldShowEmptyState: Bool {
         allExpensesEver.isEmpty && currentBudget == nil
     }
-    
-    let fetchedRecurringExpenses: FetchedResults<RecurringExpense>
 
     var body: some View {
         ZStack {
@@ -126,9 +132,9 @@ struct HomePage: View {
                             //                            )
                             //                        }
                             
-                            if !fetchedRecurringExpenses.isEmpty {
+                            if !recurringExpenses.isEmpty {
                                 SubscriptionsSection(
-                                    recurringExpenses: fetchedRecurringExpenses
+                                    recurringExpenses: recurringExpenses
                                 )
                                 .padding(.horizontal, 12)
                             }

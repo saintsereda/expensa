@@ -25,10 +25,6 @@ struct ContentView: View {
     // MARK: - Fetch Request
     private var fetchRequest: FetchRequest<Expense>
     private var fetchedExpenses: FetchedResults<Expense> { fetchRequest.wrappedValue }
-
-    // Add a separate fetch request for recurring expenses
-    private var recurringFetchRequest: FetchRequest<RecurringExpense>
-    private var fetchedRecurringExpenses: FetchedResults<RecurringExpense> { recurringFetchRequest.wrappedValue }
     
     // MARK: - Initialization
     init() {
@@ -47,23 +43,6 @@ struct ContentView: View {
         
         self.fetchRequest = FetchRequest(
             fetchRequest: request,
-            animation: .default
-        )
-        
-        // Initial recurring expenses fetch request
-        let recurringRequest = NSFetchRequest<RecurringExpense>(entityName: "RecurringExpense")
-        recurringRequest.sortDescriptors = [
-            NSSortDescriptor(keyPath: \RecurringExpense.nextDueDate, ascending: true)
-        ]
-        recurringRequest.predicate = NSPredicate(
-            format: "status == %@ AND nextDueDate >= %@ AND nextDueDate <= %@",
-            "Active",
-            initialInterval.start as NSDate,
-            initialInterval.end as NSDate
-        )
-        
-        self.recurringFetchRequest = FetchRequest(
-            fetchRequest: recurringRequest,
             animation: .default
         )
         
@@ -122,7 +101,7 @@ struct ContentView: View {
                     fetchedExpenses: fetchedExpenses,
                     categorizedExpenses: categorizedExpenses,
                     filterManager: filterManager,
-                    currentBudget: $currentBudget, fetchedRecurringExpenses: fetchedRecurringExpenses
+                    currentBudget: $currentBudget
                 )
                 .toolbar {
                     ToolbarItem(placement: .navigationBarLeading) {
@@ -186,18 +165,8 @@ struct ContentView: View {
     // MARK: - Helper Methods
     private func updateFetchRequestPredicate(for date: Date) {
         let interval = filterManager.dateInterval(for: date)
-        
-        // Update expenses predicate
         fetchRequest.wrappedValue.nsPredicate = NSPredicate(
             format: "date >= %@ AND date <= %@",
-            interval.start as NSDate,
-            interval.end as NSDate
-        )
-        
-        // Update recurring expenses predicate
-        recurringFetchRequest.wrappedValue.nsPredicate = NSPredicate(
-            format: "status == %@ AND nextDueDate >= %@ AND nextDueDate <= %@",
-            "Active",
             interval.start as NSDate,
             interval.end as NSDate
         )
