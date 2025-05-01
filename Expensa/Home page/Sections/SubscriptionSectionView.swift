@@ -1,11 +1,4 @@
 //
-//  SubscriptionSectionView.swift
-//  Expensa
-//
-//  Created by Andrew Sereda on 16.02.2025.
-//
-
-//
 //  SubscriptionSectionView.swift
 //  Expensa
 //
@@ -20,48 +13,32 @@ struct SubscriptionsSection: View {
     let recurringExpenses: FetchedResults<RecurringExpense>
     @EnvironmentObject private var currencyManager: CurrencyManager
     
+    // Filter for current month subscriptions
+    private var currentMonthSubscriptions: [RecurringExpense] {
+        let calendar = Calendar.current
+        let now = Date()
+        let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: now))!
+        let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth)!
+        
+        return recurringExpenses.filter { subscription in
+            guard let nextDueDate = subscription.nextDueDate else { return false }
+            return nextDueDate >= startOfMonth && nextDueDate <= endOfMonth
+        }
+    }
+
+    
     var body: some View {
-        if !recurringExpenses.isEmpty {
+        if !recurringExpenses.isEmpty && !currentMonthSubscriptions.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Subscriptions")
+                Text("Upcoming expenses")
                     .font(.subheadline)
                     .foregroundColor(.primary.opacity(0.64))
                 
-                HStack(alignment: .top, spacing: 8) {
-                    VStack(alignment: .leading) {
-                        Text("\(recurringExpenses.count)")
-                            .font(.body)
-                        Text("Active")
-                            .font(.subheadline)
-                            .foregroundColor(.primary.opacity(0.64))
-                    }
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
-                    
-                    VStack(alignment: .trailing) {
-                        if let defaultCurrency = currencyManager.defaultCurrency {
-                            Text(currencyManager.currencyConverter.formatAmount(
-                                RecurringExpenseManager.calculateMonthlyTotal(
-                                    for: Array(recurringExpenses),
-                                    defaultCurrency: defaultCurrency,
-                                    currencyConverter: currencyManager.currencyConverter
-                                ),
-                                currency: defaultCurrency
-                            ))
-                            .font(.body)
-                            
-                            Text("monthly")
-                                .font(.subheadline)
-                                .foregroundColor(.primary.opacity(0.64))
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .topTrailing)
-                }
-                Divider()
-                
-                ForEach(Array(recurringExpenses.prefix(3))) { template in
+                // Show only current month subscriptions
+                ForEach(Array(currentMonthSubscriptions.prefix(3))) { template in
                     RecurringExpenseRow(template: template)
                     
-                    if template != recurringExpenses.prefix(3).last {
+                    if template != currentMonthSubscriptions.prefix(3).last {
                         Divider()
                     }
                 }

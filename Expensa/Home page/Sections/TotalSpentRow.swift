@@ -30,6 +30,18 @@ private struct BudgetInfo {
     }
 }
 
+private struct OverspentCategoryInfo {
+    let name: String
+    let amount: Decimal
+    let budgetAmount: Decimal
+    let overAmount: Decimal
+    let currency: Currency
+    
+    var formattedOverAmount: String {
+        CurrencyConverter.shared.formatAmount(overAmount, currency: currency)
+    }
+}
+
 struct TotalSpentRow: View {
     @EnvironmentObject private var currencyManager: CurrencyManager
     
@@ -41,6 +53,9 @@ struct TotalSpentRow: View {
     
     // Cache the total spent value
     @State private var cachedTotalSpent: Decimal = 0
+    
+    // Store overspent categories information
+    @State private var overspentCategories: [OverspentCategoryInfo] = []
     
     // MARK: - Base Properties
     private var totalSpent: Decimal {
@@ -145,6 +160,32 @@ struct TotalSpentRow: View {
         }
     }
     
+    @ViewBuilder
+    private func overspentCategoriesText() -> some View {
+        if !overspentCategories.isEmpty {
+            VStack(alignment: .center, spacing: 4) {
+                if overspentCategories.count == 1 {
+                    // Single category overspent
+                    let category = overspentCategories[0]
+                    Text("You've overspent \"\(category.name)\"")
+                        .font(.system(.body, design: .rounded))
+                        .foregroundColor(.white.opacity(0.64))
+                        .multilineTextAlignment(.center)
+                } else {
+                    // Multiple categories overspent
+                    let firstCategory = overspentCategories[0]
+                    let remainingCount = overspentCategories.count - 1
+                    
+                    Text("You've overspent \"\(firstCategory.name)\" and \(remainingCount) \(remainingCount == 1 ? "category" : "categories")")
+                        .font(.system(.body, design: .rounded))
+                        .foregroundColor(.white.opacity(0.64))
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .padding(.top, 6)
+        }
+    }
+    
     // MARK: - Body
     var body: some View {
         VStack(spacing: 4) {
@@ -153,9 +194,14 @@ struct TotalSpentRow: View {
                 .frame(maxWidth: .infinity, alignment: .center)
                 
             budgetStatusText()
+            
+            // Add the category overspent warning
+            overspentCategoriesText()
         }
         .onAppear {
             updateTotalSpent()
+            checkOverspentCategories()
+            
             // Add notification observer for currency changes
             NotificationCenter.default.addObserver(
                 forName: Notification.Name("DefaultCurrencyChanged"),
@@ -163,11 +209,26 @@ struct TotalSpentRow: View {
                 queue: .main
             ) { _ in
                 updateTotalSpent()
+                checkOverspentCategories()
+            }
+            
+            // Listen for budget updates
+            NotificationCenter.default.addObserver(
+                forName: Notification.Name("BudgetUpdated"),
+                object: nil,
+                queue: .main
+            ) { _ in
+                checkOverspentCategories()
             }
         }
         .onChange(of: expenses.count) { _, _ in
             // Recalculate only when expense count changes
             updateTotalSpent()
+            checkOverspentCategories()
+        }
+        .onChange(of: currentMonthBudget.count) { _, _ in
+            // Recalculate when budget changes
+            checkOverspentCategories()
         }
     }
     
@@ -177,5 +238,49 @@ struct TotalSpentRow: View {
         cachedTotalSpent = expenses.reduce(Decimal(0)) { sum, expense in
             sum + (expense.convertedAmount?.decimalValue ?? expense.amount?.decimalValue ?? 0)
         }
+    }
+    
+    // Check for overspent categories
+    private func checkOverspentCategories() {
+        guard let budget = currentMonthBudget.first,
+              let categoryBudgets = budget.categoryBudgets as? Set<CategoryBudget>,
+              !categoryBudgets.isEmpty,
+              let defaultCurrency = currencyManager.defaultCurrency else {
+            overspentCategories = []
+            return
+        }
+        
+        let budgetManager = BudgetManager.shared
+        let expenseManager = ExpenseDataManager.shared
+        let allBudgetExpenses = budgetManager.expensesForBudget(budget)
+        
+        var overspentInfo: [OverspentCategoryInfo] = []
+        
+        for categoryBudget in categoryBudgets {
+            guard let category = categoryBudget.category,
+                  let categoryName = category.name,
+                  let budgetAmount = categoryBudget.budgetAmount?.decimalValue else {
+                continue
+            }
+            
+            let spent = expenseManager.calculateCategoryAmount(
+                for: allBudgetExpenses,
+                category: categoryName
+            )
+            
+            // Check if overspent
+            if spent > budgetAmount {
+                overspentInfo.append(OverspentCategoryInfo(
+                    name: categoryName,
+                    amount: spent,
+                    budgetAmount: budgetAmount,
+                    overAmount: spent - budgetAmount,
+                    currency: categoryBudget.budgetCurrency ?? defaultCurrency
+                ))
+            }
+        }
+        
+        // Sort categories by the amount overspent (descending)
+        overspentCategories = overspentInfo.sorted { $0.overAmount > $1.overAmount }
     }
 }
