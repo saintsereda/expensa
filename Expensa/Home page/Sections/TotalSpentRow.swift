@@ -56,24 +56,13 @@ struct TotalSpentRow: View {
     
     // MARK: - Budget Info
     private var budgetInfo: BudgetInfo? {
-        // Add extensive logging
-        print("🔍 Attempting to get budget")
-        print("Budget count: \(currentMonthBudget.count)")
-        
         guard let budget = currentMonthBudget.first,
               let amount = budget.amount?.decimalValue,
               let currency = currencyManager.defaultCurrency else {
-            print("❌ Budget retrieval failed:")
-            print("  - Budget exists: \(currentMonthBudget.count > 0)")
-            print("  - Default Currency: \(currencyManager.defaultCurrency.debugDescription)")
             return nil
         }
         
         let remaining = amount - totalSpent
-        print("✅ Budget found:")
-        print("  - Amount: \(amount)")
-        print("  - Remaining: \(remaining)")
-        
         return BudgetInfo(
             amount: amount,
             remaining: remaining,
@@ -86,44 +75,15 @@ struct TotalSpentRow: View {
         self.expenses = expenses
         self.selectedDate = selectedDate
         
+        // Set up budget fetch request predicate
         let calendar = Calendar.current
-        
-        // Print out detailed date information
-        print("🔍 Selected Date Details:")
-        print("Original Date: \(selectedDate)")
-        print("Year: \(calendar.component(.year, from: selectedDate))")
-        print("Month: \(calendar.component(.month, from: selectedDate))")
-        print("Day: \(calendar.component(.day, from: selectedDate))")
-        
-        // Check how the date components are extracted
-        let components = calendar.dateComponents([.year, .month], from: selectedDate)
-        
-        print("🕒 Date Components:")
-        print("Components Year: \(components.year ?? -1)")
-        print("Components Month: \(components.month ?? -1)")
-        
-        guard let startOfMonth = calendar.date(from: components),
-              let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth) else {
-            // Fallback predicate
-            _currentMonthBudget = FetchRequest(
-                entity: Budget.entity(),
-                sortDescriptors: [NSSortDescriptor(keyPath: \Budget.startDate, ascending: false)],
-                predicate: NSPredicate(value: false)
-            )
-            return
-        }
-        
-        print("🕒 Calculated Dates:")
-        print("Start of Month: \(startOfMonth)")
-        print("End of Month: \(endOfMonth)")
-        
-        // Set end of month to 23:59:59
-        let endOfMonthWithTime = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: endOfMonth) ?? endOfMonth
+        let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: selectedDate))!
+        let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth)!
         
         let predicate = NSPredicate(
             format: "startDate >= %@ AND startDate <= %@",
             startOfMonth as NSDate,
-            endOfMonthWithTime as NSDate
+            endOfMonth as NSDate
         )
         
         _currentMonthBudget = FetchRequest(

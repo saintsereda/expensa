@@ -66,7 +66,7 @@ class BudgetViewModel: ObservableObject {
     private var fetchedBudgets: [String: Budget] = [:] // Cache by month key
     private var cachedDisplayData: [String: BudgetDisplayData] = [:] // Cache processed display data
     private var currencyChangeObserver: NSObjectProtocol?
-    private var budgetUpdateObserver: NSObjectProtocol?
+
     
     // MARK: - Initialization
     init() {
@@ -79,24 +79,13 @@ class BudgetViewModel: ObservableObject {
             self?.handleCurrencyChange()
         }
         
-        // Add budget update observer
-        budgetUpdateObserver = NotificationCenter.default.addObserver(
-            forName: Notification.Name("BudgetUpdated"),
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            self?.budgetModified()
-        }
-        
         // Initial data fetch
         fetchBudgetForSelectedDate()
     }
 
+    // Add a deinit to clean up the observer
     deinit {
         if let observer = currencyChangeObserver {
-            NotificationCenter.default.removeObserver(observer)
-        }
-        if let observer = budgetUpdateObserver {
             NotificationCenter.default.removeObserver(observer)
         }
     }
@@ -166,10 +155,6 @@ class BudgetViewModel: ObservableObject {
         showDeleteAlert = false
     }
     
-    func fetchCurrentBudget() async {
-        fetchBudgetForSelectedDate()
-    }
-    
     // MARK: - Private Methods
     
     /// Clears all cached data
@@ -180,27 +165,22 @@ class BudgetViewModel: ObservableObject {
     
     /// Fetches budget for selected date
     private func fetchBudgetForSelectedDate() {
-        print("🎯 Fetching budget for date: \(selectedDate)")
         let monthKey = formatDateToMonthKey(selectedDate)
-        print("🔑 Month key: \(monthKey)")
         
         // Check if we already have processed display data
         if let cachedData = cachedDisplayData[monthKey] {
-            print("📋 Using cached display data")
             currentBudget = cachedData
             return
         }
         
         // Check if we have the raw budget data cached
         if let cachedBudget = fetchedBudgets[monthKey] {
-            print("📦 Using cached raw budget")
             processBudget(cachedBudget, forKey: monthKey)
             return
         }
         
         // Otherwise fetch from Core Data
         isLoading = true
-        print("🔄 Starting Core Data fetch")
         
         Task {
             do {
@@ -209,16 +189,13 @@ class BudgetViewModel: ObservableObject {
                 // Cache the raw budget result
                 if let budget = budget {
                     self.fetchedBudgets[monthKey] = budget
-                    print("💾 Cached raw budget")
                 }
                 
                 await MainActor.run {
                     isLoading = false
                     if let budget = budget {
-                        print("✅ Processing fetched budget")
                         processBudget(budget, forKey: monthKey)
                     } else {
-                        print("⚠️ No budget found for date")
                         currentBudget = nil
                     }
                 }
@@ -227,7 +204,6 @@ class BudgetViewModel: ObservableObject {
                     isLoading = false
                     errorMessage = error.localizedDescription
                     currentBudget = nil
-                    print("❌ Error: \(error.localizedDescription)")
                 }
             }
         }
@@ -235,9 +211,7 @@ class BudgetViewModel: ObservableObject {
     
     /// Process budget into display data
     private func processBudget(_ budget: Budget, forKey key: String) {
-        print("🔄 Processing budget for key: \(key)")
         let displayData = createBudgetDisplayData(for: budget)
-        print("✅ Created display data with amount: \(displayData.amountFormatted)")
         cachedDisplayData[key] = displayData
         currentBudget = displayData
     }
@@ -247,11 +221,8 @@ class BudgetViewModel: ObservableObject {
         return try await withCheckedThrowingContinuation { continuation in
             do {
                 let calendar = Calendar.current
-                let components = calendar.dateComponents([.year, .month], from: date)
-                let startOfMonth = calendar.date(from: components)!
-                let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, second: -1), to: startOfMonth)!
-                
-                print("🔍 Fetching budget between \(startOfMonth) and \(endOfMonth)")
+                let startOfMonth = calendar.date(from: calendar.dateComponents([.year, .month], from: date))!
+                let endOfMonth = calendar.date(byAdding: DateComponents(month: 1, day: -1), to: startOfMonth)!
                 
                 let context = CoreDataStack.shared.context
                 let fetchRequest: NSFetchRequest<Budget> = Budget.fetchRequest()
@@ -260,16 +231,11 @@ class BudgetViewModel: ObservableObject {
                     startOfMonth as NSDate,
                     endOfMonth as NSDate
                 )
+                fetchRequest.fetchLimit = 1
                 
-                let results = try context.fetch(fetchRequest)
-                print("📊 Found \(results.count) budgets")
-                if let budget = results.first {
-                    print("💰 Budget amount: \(budget.amount?.description ?? "nil")")
-                }
-                
-                continuation.resume(returning: results.first)
+                let result = try context.fetch(fetchRequest).first
+                continuation.resume(returning: result)
             } catch {
-                print("❌ Error fetching budget: \(error)")
                 continuation.resume(throwing: error)
             }
         }

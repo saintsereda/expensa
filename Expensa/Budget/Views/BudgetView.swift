@@ -81,18 +81,14 @@ struct BudgetView: View {
             BudgetForm()
                 .presentationCornerRadius(32)
                 .onDisappear {
-                    Task {
-                        await viewModel.fetchCurrentBudget()
-                    }
+                    viewModel.budgetModified()
                 }
         }
         .sheet(item: $viewModel.budgetToEdit) { editData in
             BudgetForm(budget: editData.budget)
                 .presentationCornerRadius(32)
                 .onDisappear {
-                    Task {
-                        await viewModel.fetchCurrentBudget()
-                    }
+                    viewModel.budgetModified()
                 }
         }
         .alert("Delete Budget", isPresented: $viewModel.showDeleteAlert) {
