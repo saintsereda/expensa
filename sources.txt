@@ -1,0 +1,1458 @@
+@startuml
+' STYLE START
+hide empty members
+skinparam shadowing false
+' STYLE END
+set namespaceSeparator none
+
+
+class "CloudKitRecord" as CloudKitRecord << (P, GoldenRod) protocol >> { 
+  ~id : UUID?
+  ~toCKRecord()
+  ~{static} fromCKRecord(_:) 
+}
+class "MultiCategorySelectionBehavior" as MultiCategorySelectionBehavior << (P, GoldenRod) protocol >> { 
+  ~onCategorySelected(_:)
+  ~isSelected(_:) 
+}
+class "SettingsView" as SettingsView << (S, SkyBlue) struct >> { 
+  -themeManager : ThemeManager
+  -accentColorManager
+  -showingDebug
+  -colorScheme
+  -managedObjectContext
+  -categoryCount : Int
+  -tagCount : Int
+  -defaultCurrencyCode : String
+  ~body : some View
+  -updateCachedValues()
+  -profileSection : some View
+  -preferencesSection : some View
+  -manageSection : some View
+  -supportSection : some View
+  -feedbackSection : some View
+  -legalSection : some View
+  -connectSection : some View
+  -showCurrentPlan()
+  -showNotificationsOptions()
+  -showSecurityOptions()
+  -showICloudSyncOptions()
+  -showDataStorageOptions()
+  -showLanguageOptions()
+  -showCategoriesOptions()
+  -showTagsOptions()
+  -reportBug()
+  -requestFeature()
+  -rateApp()
+  -shareApp()
+  -showPrivacyPolicy()
+  -showTermsOfUse()
+  -showDonateOptions() 
+}
+class "NavigationRow" as NavigationRow << (S, SkyBlue) struct >> { 
+  ~title : String
+  ~subtitle : String?
+  ~icon : String
+  ~color : Color
+  ~action : (() -> Void)?
+  ~showChevron : Bool
+  ~body : some View 
+}
+class "SectionHeader" as SectionHeader << (S, SkyBlue) struct >> { 
+  ~text : String
+  ~body : some View 
+}
+class "PasscodeManagementView" as PasscodeManagementView << (S, SkyBlue) struct >> { 
+  ~dismiss
+  ~isPasscodeSet : Bool
+  -showingVerification
+  -showingChangePasscode
+  ~body : some View
+  -turnOffPasscode()
+  -changePasscode() 
+}
+class "ActionButton" as ActionButton << (S, SkyBlue) struct >> { 
+  ~title : String
+  ~icon : String
+  ~action : () -> Void
+  ~style : ButtonStyle
+  ~body : some View 
+}
+class "ButtonStyle" as ActionButton.ButtonStyle << (E, LightSteelBlue) enum >> { 
+  ~primary
+  ~destructive
+  ~backgroundColor : Color 
+}
+class "SecurityNote" as SecurityNote << (S, SkyBlue) struct >> { 
+  ~icon : String
+  ~text : String
+  ~color : Color
+  ~body : some View 
+}
+class "PasscodeVerificationView" as PasscodeVerificationView << (S, SkyBlue) struct >> { 
+  ~dismiss
+  ~isPresented : Bool
+  ~isPasscodeSet : Bool
+  -enteredPasscode
+  -showError
+  -shake
+  -dots : [Bool]
+  ~mode : VerificationMode
+  ~onSuccess : () -> Void
+  ~body : some View
+  -getDotColor(for:)
+  -handleInput(_:)
+  -handleNumberInput(_:)
+  -handleDelete()
+  -updateDots()
+  -verifyPasscode()
+  -triggerShake() 
+}
+class "VerificationMode" as PasscodeVerificationView.VerificationMode << (E, LightSteelBlue) enum >> { 
+  ~turnOff
+  ~change
+  ~title : String
+  ~subtitle : String 
+}
+class "PasscodeEntryView" as PasscodeEntryView << (S, SkyBlue) struct >> { 
+  ~isPasscodeEntered : Bool
+  -enteredPasscode
+  -showError
+  -shake
+  -dots : [Bool]
+  ~body : some View
+  -getDotColor(for:)
+  -handleInput(_:)
+  -handleNumberInput(_:)
+  -handleDelete()
+  -updateDots()
+  -verifyPasscode()
+  -triggerShake() 
+}
+class "KeychainHelper" as KeychainHelper << (S, SkyBlue) struct >> { 
+  ~{static} shared
+  -init()
+  -passcodeKey
+  -apiKey
+  ~savePasscode(_:)
+  ~getPasscode()
+  ~deletePasscode()
+  ~saveApiKey(_:)
+  ~getApiKey()
+  ~deleteApiKey() 
+}
+class "NumberButton" as NumberButton << (S, SkyBlue) struct >> { 
+  ~number : String
+  ~action : () -> Void
+  ~body : some View 
+}
+class "PasscodeSetupView" as PasscodeSetupView << (S, SkyBlue) struct >> { 
+  ~dismiss
+  -firstPasscode
+  -confirmPasscode
+  -isConfirming
+  ~isPasscodeSet : Bool
+  -showError
+  -shake
+  -dots : [Bool]
+  ~body : some View
+  -getDotColor(for:)
+  -handleInput(_:)
+  -handleNumberInput(_:)
+  -checkAndProceed()
+  -handleDelete()
+  -updateDots()
+  -handleNext()
+  -triggerShake() 
+}
+class "SecurityPageView" as SecurityPageView << (S, SkyBlue) struct >> { 
+  -showingPasscodeSetup
+  -showingPasscodeManagement
+  -isPasscodeSet
+  -useFaceID
+  ~body : some View 
+}
+class "SecurityStatusRow" as SecurityStatusRow << (S, SkyBlue) struct >> { 
+  ~title : String
+  ~icon : String
+  ~isEnabled : Bool
+  ~action : () -> Void
+  ~body : some View 
+}
+class "SecurityInfoRow" as SecurityInfoRow << (S, SkyBlue) struct >> { 
+  ~icon : String
+  ~text : String
+  ~color : Color
+  ~body : some View 
+}
+class "DefaultCurrencyView" as DefaultCurrencyView << (S, SkyBlue) struct >> { 
+  -currencyManager : CurrencyManager
+  ~dismiss
+  -viewContext
+  -searchText
+  -showingActionSheet
+  -selectedCurrency : Currency?
+  -hasExpenses : Bool
+  -preferredCurrencyCodes
+  -restrictedSearchTerms
+  -isSearchingRestrictedCurrency : Bool
+  -filteredCurrencies : [Currency]
+  -preferredCurrencies : [Currency]
+  -nonPreferredCurrencies : [Currency]
+  -searchBar : some View
+  -notSupportedView : some View
+  -currencyRow(_:)
+  -checkForExistingExpenses()
+  ~body : some View 
+}
+class "LastUpdatedBanner" as LastUpdatedBanner << (S, SkyBlue) struct >> { 
+  -rateManager
+  ~body : some View
+  -lastUpdateText : String 
+}
+class "iCloudSyncView" as iCloudSyncView << (S, SkyBlue) struct >> { 
+  -cloudKitManager : CloudKitManager
+  -dismiss
+  -viewContext
+  -iCloudSyncEnabled : Bool
+  -fetchedCategories : [Category]
+  -showingError : Bool
+  -errorMessage : String
+  ~body : some View
+  -statusRow : some View
+  -errorRow(_:)
+  -simulatorInfoRow : some View
+  -testSaveExpense()
+  -testSaveCategory()
+  -testFetchCategories()
+  -showError(_:) 
+}
+class "ImportResult" as ImportResult << (S, SkyBlue) struct >> { 
+  ~success : Bool
+  ~message : String
+  ~count : Int
+  ~{static} empty() 
+}
+class "DataAndStorageView" as DataAndStorageView << (S, SkyBlue) struct >> { 
+  -viewContext
+  -showingCategorySelection
+  -showingExportSheet
+  -selectedCategories : Set<Category>
+  -showingEraseActionMenu
+  -showingSuccessSheet
+  -showingImportSuccessSheet
+  -showingExportSuccess
+  -isExporting
+  -isImporting
+  -isErasing
+  -importResult
+  -categories : [Category]
+  ~body : some View
+  -exportDataWithLoading() 
+}
+class "DocumentPickerView" as DocumentPickerView << (S, SkyBlue) struct >> { 
+  ~onFilePicked : (URL?) -> Void
+  ~makeCoordinator()
+  ~makeUIViewController(context:)
+  ~updateUIViewController(_:context:) 
+}
+class "Coordinator" as DocumentPickerView.Coordinator << (C, DarkSeaGreen) >> { 
+  ~onFilePicked : (URL?) -> Void
+  ~init(onFilePicked:)
+  ~documentPicker(_:didPickDocumentsAt:)
+  ~documentPickerWasCancelled(_:) 
+}
+class "ActionButtonStyle" as ActionButtonStyle << (S, SkyBlue) struct >> { 
+  ~makeBody(configuration:) 
+}
+class "InfoRow" as InfoRow << (S, SkyBlue) struct >> { 
+  ~icon : String
+  ~text : String
+  ~color : Color
+  ~body : some View 
+}
+class "DataCategorySelection" as DataCategorySelection << (S, SkyBlue) struct >> { 
+  -dismiss
+  -viewContext
+  ~selectedCategories : Set<Category>
+  -selectAll
+  -searchText
+  ~categories : [Category]
+  -sortedCategories : [Category]
+  ~body : some View 
+}
+class "CategorySquare" as CategorySquare << (S, SkyBlue) struct >> { 
+  ~content : String
+  ~bgColor : Color
+  ~rotation : Double
+  ~isCounter : Bool
+  ~body : some View 
+}
+class "SquaresGroup" as SquaresGroup << (S, SkyBlue) struct >> { 
+  ~selectedCategories : Set<Category>
+  -squareFrameSize : CGFloat
+  -spacing : CGFloat
+  -bgColors : [Color]
+  -getColorForCategory(_:)
+  -totalWidth : CGFloat
+  -thirdSquareContent : String
+  ~body : some View 
+}
+class "SelectedCategoriesView" as SelectedCategoriesView << (S, SkyBlue) struct >> { 
+  ~selectedCategories : Set<Category>
+  ~body : some View 
+}
+class "ExportSheet" as ExportSheet << (S, SkyBlue) struct >> { 
+  -dismiss
+  -viewContext
+  -selectedCategories : Set<Category>
+  -showingCategorySelection
+  -isLoading
+  ~categories : [Category]
+  ~init(categories:)
+  ~body : some View
+  -categorySelectionText : String 
+}
+class "SuccessSheet" as SuccessSheet << (S, SkyBlue) struct >> { 
+  -dismiss
+  ~isLoading : Bool
+  ~message : String
+  ~loadingMessage : String
+  ~iconName : String
+  ~isError : Bool
+  -progress : CGFloat
+  -shouldDismiss : Bool
+  ~init(isLoading:message:loadingMessage:iconName:isError:)
+  ~body : some View
+  -startProgressAnimation()
+  -SuccessSheetContent() 
+}
+class "NotificationPreferences" as NotificationPreferences << (S, SkyBlue) struct >> { 
+  ~isNotificationsEnabled : Bool
+  ~selectedTimes : Set<ReminderTime>
+  ~customTime : Date 
+}
+class "ReminderTime" as ReminderTime << (E, LightSteelBlue) enum >> { 
+  ~morning
+  ~evening
+  ~custom
+  ~hour : Int
+  ~minute : Int 
+}
+class "NotificationManager" as NotificationManager << (C, DarkSeaGreen) >> { 
+  ~isNotificationsEnabled
+  ~selectedTimes : Set<ReminderTime>
+  ~customTime
+  -managedObjectContext : NSManagedObjectContext
+  ~init(context:)
+  -loadSettings()
+  -createUserSettings()
+  -saveSettings()
+  ~checkNotificationStatus()
+  ~requestPermission()
+  ~scheduleNotification(for:)
+  ~updateNotifications()
+  ~sendTestNotification() 
+}
+class "NotificationsView" as NotificationsView << (S, SkyBlue) struct >> { 
+  -managedObjectContext
+  -notificationManager : NotificationManager
+  ~init(context:)
+  ~body : some View 
+}
+class "SettingsRow" as SettingsRow << (S, SkyBlue) struct >> { 
+  ~title : String
+  ~icon : String
+  ~color : Color
+  ~body : some View 
+}
+class "ScrollController" as ScrollController << (C, DarkSeaGreen) >> { 
+  ~isScrollEnabled 
+}
+class "ExpenseEntryView" as ExpenseEntryView << (S, SkyBlue) struct >> { 
+  -dismiss
+  -currencyManager : CurrencyManager
+  -categoryManager : CategoryManager
+  -tagManager : TagManager
+  -colorScheme
+  -showingCalendar
+  -exchangeRate : String?
+  -isRecurring
+  -enableNotifications
+  -frequencyOptions
+  -recurringFrequency
+  -canBeRecurring : Bool
+  -lastSelectedCategoryKey
+  ~isPresented : Bool
+  ~expense : Expense?
+  ~onComplete : (() -> Void)?
+  -amount : String
+  -selectedCategory : Category?
+  -date : Date
+  -notes : String
+  -selectedCurrency : Currency?
+  -convertedAmount : String?
+  -historicalRates : [String: Decimal]?
+  -showingCurrencyPicker
+  -showingCategorySelector
+  -showingNotesSheet
+  -showingErrorAlert
+  -errorMessage
+  -showingDatePicker
+  -selectedTags : Set<Tag>
+  -tempTags : Set<Tag>
+  -shakeAmount : CGFloat
+  -lastEnteredDigit
+  -isSaving
+  -frequentCategories : [Category]
+  -scrollController
+  -sourceRate : Decimal?
+  -targetRate : Decimal?
+  -hasLoadedStoredRate
+  -isInitialSetup
+  -storedRate : Decimal?
+  -updateRates()
+  -loadFrequentCategories()
+  -triggerShake()
+  -defaultCurrency : Currency?
+  -isUsingHistoricalRates : Bool
+  -shouldShowConvertedAmount : Bool
+  -isEditMode : Bool
+  -saveButtonText : String
+  -navigationBar : some View
+  -amountSection : some View
+  -categoryButtonSection : some View
+  -bottomActionSection : some View
+  ~body : some View
+  -formattedAmount : String
+  -setupInitialData()
+  -setupEditMode(with:)
+  -updateConvertedAmount(bypassInitialSetup:)
+  -handleEditModeChanges()
+  -setupCreateMode()
+  -isValidInput()
+  -saveExpense() 
+}
+class "FrequentCategoryButton" as ExpenseEntryView.FrequentCategoryButton << (S, SkyBlue) struct >> { 
+  ~category : Category
+  ~isSelected : Bool
+  ~isLastSelected : Bool
+  ~action : () -> Void
+  ~body : some View 
+}
+class "ExpenseRow" as ExpenseRow << (S, SkyBlue) struct >> { 
+  -currencyManager : CurrencyManager
+  ~expense : Expense
+  -showingDeleteAlert
+  ~onDelete : (() -> Void)?
+  -icon : String
+  -category : String
+  -note : String?
+  -formattedOriginalAmount : String
+  -formattedConvertedAmount : String?
+  -isRecurring : Bool
+  ~body : some View 
+}
+class "NotesModalView" as NotesModalView << (S, SkyBlue) struct >> { 
+  ~dismiss
+  -tagManager : TagManager
+  ~notes : String
+  ~tempTags : Set<Tag>
+  -tempNotes : String
+  -isFocused : Bool
+  -{static} hashtagPattern
+  -highlightRules : [HighlightRule]
+  -tagExtractionTask : Task<Void, Never>?
+  ~init(notes:tempTags:)
+  -extractTempTags()
+  -insertTag(_:)
+  ~body : some View 
+}
+class "TagChip" as TagChip << (S, SkyBlue) struct >> { 
+  ~tag : Tag
+  ~isSelected : Bool
+  ~body : some View 
+}
+class "TagSheet" as TagSheet << (S, SkyBlue) struct >> { 
+  -dismiss
+  -tagManager : TagManager
+  ~selectedTags : Set<Tag>
+  -tempSelection : Set<Tag>
+  -searchText
+  ~filteredTags : [Tag]
+  ~body : some View 
+}
+class "BudgetWarningType" as BudgetWarningType << (E, LightSteelBlue) enum >> { 
+  ~approaching
+  ~exceeding 
+}
+class "BudgetWarningMessage" as BudgetWarningMessage << (S, SkyBlue) struct >> { 
+  ~type : BudgetWarningType
+  ~message : String
+  ~emoji : String 
+}
+class "CategoryBudgetMessages" as CategoryBudgetMessages << (S, SkyBlue) struct >> { 
+  ~{static} getMessage(amount:limit:remaining:over:currency:) 
+}
+class "BudgetWarningHelper" as BudgetWarningHelper << (C, DarkSeaGreen) >> { 
+  ~{static} checkBudgetWarning(for:amount:context:)
+  -{static} checkWarningMessage(for:amount:limit:currency:) 
+}
+class "ScrollOffsetPreferenceKey" as ScrollOffsetPreferenceKey << (S, SkyBlue) struct >> { 
+  ~{static} defaultValue : CGFloat
+  ~{static} reduce(value:nextValue:) 
+}
+class "EmptyStateView" as EmptyStateView << (S, SkyBlue) struct >> { 
+  ~type : EmptyStateType
+  ~body : some View 
+}
+class "EmptyStateType" as EmptyStateView.EmptyStateType << (E, LightSteelBlue) enum >> { 
+  ~search
+  ~category
+  ~icon : String
+  ~title : String
+  ~message : String 
+}
+class "FilterButton" as FilterButton << (S, SkyBlue) struct >> { 
+  ~label : String
+  ~isSelected : Bool
+  ~action : () -> Void
+  ~body : some View 
+}
+class "SecondarySmallButton" as SecondarySmallButton << (S, SkyBlue) struct >> { 
+  ~isEnabled : Bool
+  ~label : String
+  ~action : () -> Void
+  -colorScheme
+  ~body : some View 
+}
+class "FloatingActionButton" as FloatingActionButton << (S, SkyBlue) struct >> { 
+  ~icon : String
+  ~action : () -> Void
+  -colorScheme
+  ~body : some View 
+}
+class "BudgetButton" as BudgetButton << (S, SkyBlue) struct >> { 
+  ~body : some View 
+}
+class "SettingsButton" as SettingsButton << (S, SkyBlue) struct >> { 
+  ~body : some View 
+}
+class "CategoryMonthlyTrendView" as CategoryMonthlyTrendView << (S, SkyBlue) struct >> { 
+  -currencyManager : CurrencyManager
+  ~category : Category
+  ~data : [(Date, Decimal)]
+  -totalSpentIn6Months : Decimal
+  ~body : some View 
+}
+class "KeypadInputHelpers" as KeypadInputHelpers << (C, DarkSeaGreen) >> { 
+  ~{static} formatUserInput(_:)
+  ~{static} handleNumberInput(value:amount:lastEnteredDigit:triggerShake:)
+  ~{static} handleDelete(amount:)
+  ~{static} parseAmount(_:currencySymbol:)
+  ~{static} cleanDisplayAmount(_:currencySymbol:) 
+}
+class "FloatingSearchBar" as FloatingSearchBar << (S, SkyBlue) struct >> { 
+  ~text : String
+  ~isKeyboardVisible : Bool
+  -isFocused : Bool
+  ~placeholder : String
+  ~init(text:isKeyboardVisible:placeholder:)
+  ~body : some View 
+}
+class "DateFormatType" as DateFormatType << (E, LightSteelBlue) enum >> { 
+  ~onlyMonth
+  ~fullMonth
+  ~shortMonth
+  ~dayMonthYear
+  ~dayMonth
+  ~relative
+  ~custom(_:)
+  ~format : String 
+}
+class "DateFormatterUtil" as DateFormatterUtil << (C, DarkSeaGreen) >> { 
+  ~{static} shared
+  -formatters : [String: DateFormatter]
+  -calendar
+  -init()
+  ~formatter(for:)
+  ~string(from:format:)
+  ~date(from:format:)
+  ~frequencyLetter(for:)
+  -relativeString(from:)
+  ~startOfDay(for:)
+  ~isSameDay(_:_:)
+  ~nextDate(from:frequency:)
+  ~currentMonthInterval() 
+}
+class "TagListView" as TagListView << (S, SkyBlue) struct >> { 
+  -tagManager : TagManager
+  -searchText
+  -isEditing
+  -selectedTags
+  -showDeleteConfirmation
+  -firstSelection : Tag?
+  -secondSelection : Tag?
+  -thirdSelection : Tag?
+  -showAnimations
+  -showSuccessSheet
+  -isProcessingDeletion
+  -deletionCount
+  -showConfetti
+  -confettiCounter
+  -confettiEmoji
+  -isPresented
+  -selectedTagForEdit : Tag?
+  ~filteredTags : [Tag]
+  ~body : some View
+  -bottomSheet : some View
+  -toggleSelection(of:)
+  -resetSelections()
+  -resetUIAfterTagDeletion()
+  -deleteSelectedTagsWithSuccessSheet() 
+}
+class "TagSquare" as TagListView.TagSquare << (S, SkyBlue) struct >> { 
+  ~content : String
+  ~bgColor : Color
+  ~rotation : Double
+  ~isCounter : Bool
+  ~isAnimating : Bool
+  ~body : some View 
+}
+class "SquaresGroup" as TagListView.SquaresGroup << (S, SkyBlue) struct >> { 
+  ~selectedItems : Set<Tag>
+  ~firstSelection : Tag?
+  ~secondSelection : Tag?
+  ~thirdSelection : Tag?
+  ~showAnimations : [Bool]
+  -squareFrameSize : CGFloat
+  -spacing : CGFloat
+  -totalWidth : CGFloat
+  ~body : some View 
+}
+class "BlurView" as TagListView.BlurView << (S, SkyBlue) struct >> { 
+  ~style : UIBlurEffect.Style
+  ~makeUIView(context:)
+  ~updateUIView(_:context:) 
+}
+class "SearchBar" as SearchBar << (S, SkyBlue) struct >> { 
+  ~text : String
+  ~body : some View 
+}
+class "CoreDataTest" as CoreDataTest << (C, DarkSeaGreen) >> { 
+  ~runTest() 
+}
+class "ExpensaApp" as ExpensaApp << (S, SkyBlue) struct >> { 
+  ~persistenceController
+  -appSetupManager : AppSetupManager
+  -themeManager
+  -currencyManager
+  -categoryManager
+  -recurringManager
+  -tagManager
+  -cloudKitManager
+  -cloudKitSyncManager
+  -isPasscodeSet
+  -isPasscodeEntered
+  ~init()
+  ~body : some Scene
+  -setupAfterViewLoad()
+  -registerBackgroundTasks()
+  -handleCloudKitSyncTask(_:)
+  -scheduleCloudKitSyncTask() 
+}
+class "AppSetupManager" as AppSetupManager << (C, DarkSeaGreen) >> { 
+  -context : NSManagedObjectContext
+  ~init(context:)
+  ~performInitialSetup()
+  -setupInitialData()
+  ~setupShortcuts()
+  ~setupBackgroundTasks()
+  ~scheduleRecurringExpensesTask()
+  ~handleRecurringExpensesTask(_:)
+  ~setupCurrencyTasks()
+  -scheduleHistoricalRateCleanup()
+  -handleHistoricalRatesCleanup(_:)
+  -scheduleNextYearlyCleanup() 
+}
+class "BackgroundTaskManager" as BackgroundTaskManager << (C, DarkSeaGreen) >> { 
+  ~{static} shared
+  -init()
+  ~scheduleRecurringExpenseTask()
+  -budgetTaskIdentifier
+  ~scheduleAutomaticBudgetTask()
+  ~handleAutomaticBudgetTask(_:) 
+}
+class "CloudKitSyncManager" as CloudKitSyncManager << (C, DarkSeaGreen) >> { 
+  ~{static} shared
+  -cloudKitManager
+  -syncTimer : Timer?
+  -syncDelay : TimeInterval
+  -pendingExpenses
+  -deletedExpenseIDs
+  ~isSyncing
+  ~lastSyncDate : Date?
+  ~syncError : String?
+  -init()
+  ~queueExpenseForSync(_:)
+  ~queueExpenseDeletion(_:)
+  -scheduleSync()
+  -performSync()
+  ~forceSyncNow()
+  ~cancelPendingSyncs()
+  -savePendingOperations()
+  -loadPendingOperations() 
+}
+class "CloudKitError" as CloudKitError << (E, LightSteelBlue) enum >> { 
+  ~invalidData 
+}
+class "CloudKitManager" as CloudKitManager << (C, DarkSeaGreen) >> { 
+  ~container : CKContainer
+  ~publicDatabase : CKDatabase
+  ~privateDatabase : CKDatabase
+  ~isSignedInToiCloud : Bool
+  ~error : String?
+  ~permissionStatus : Bool
+  ~init()
+  ~saveRecord(_:)
+  ~fetchRecords(recordType:predicate:)
+  ~saveCategory(_:)
+  ~fetchCategories()
+  ~saveExpense(_:)
+  ~saveRecurringExpense(_:)
+  ~deleteRecord(withID:)
+  ~deleteExpense(withID:)
+  ~deleteCategory(withID:)
+  ~deleteTag(withID:)
+  ~deleteRecurringExpense(withID:)
+  ~fetchExpenses()
+  ~fetchCategory(withId:)
+  ~saveTag(_:)
+  ~fetchTags()
+  ~getiCloudStatus()
+  ~modifyRecord(_:)
+  ~requestPermission() 
+}
+class "SubscriptionsSection" as SubscriptionsSection << (S, SkyBlue) struct >> { 
+  ~recurringExpenses : FetchedResults<RecurringExpense>
+  -currencyManager : CurrencyManager
+  -currentMonthSubscriptions : [RecurringExpense]
+  ~body : some View 
+}
+class "BudgetInfo" as BudgetInfo << (S, SkyBlue) struct >> { 
+  ~amount : Decimal
+  ~remaining : Decimal
+  ~currency : Currency
+  ~formattedRemaining : String
+  ~formattedTotal : String
+  ~formattedOverspent : String
+  ~isOverspent : Bool 
+}
+class "OverspentCategoryInfo" as OverspentCategoryInfo << (S, SkyBlue) struct >> { 
+  ~name : String
+  ~amount : Decimal
+  ~budgetAmount : Decimal
+  ~overAmount : Decimal
+  ~currency : Currency
+  ~formattedOverAmount : String 
+}
+class "TotalSpentRow" as TotalSpentRow << (S, SkyBlue) struct >> { 
+  -currencyManager : CurrencyManager
+  ~expenses : FetchedResults<Expense>
+  ~selectedDate : Date
+  -currentMonthBudget : FetchedResults<Budget>
+  -cachedTotalSpent : Decimal
+  -overspentCategories : [OverspentCategoryInfo]
+  -totalSpent : Decimal
+  -formattedMonth : String
+  -budgetInfo : BudgetInfo?
+  ~init(expenses:selectedDate:)
+  -titleText()
+  -amountText()
+  -budgetStatusText()
+  -overspentCategoriesText()
+  ~body : some View
+  -updateTotalSpent()
+  -checkOverspentCategories() 
+}
+class "RecentExpensesSection" as RecentExpensesSection << (S, SkyBlue) struct >> { 
+  ~fetchedExpenses : FetchedResults<Expense>
+  ~selectedExpense : Expense?
+  -recentExpenses : [Expense]
+  ~body : some View
+  -updateRecentExpenses() 
+}
+class "CategorySpendingSection" as CategorySpendingSection << (S, SkyBlue) struct >> { 
+  ~categorizedExpenses : [(Category, [Expense])]
+  ~fetchedExpenses : FetchedResults<Expense>
+  -totalExpensesAmount : Decimal
+  ~body : some View
+  -updateTotalExpenses() 
+}
+class "UncategorizedExpensesView" as UncategorizedExpensesView << (S, SkyBlue) struct >> { 
+  -currencyManager : CurrencyManager
+  -uncategorizedExpenses : FetchedResults<Expense>
+  -categoryAmount : Decimal
+  ~init(context:)
+  ~body : some View 
+}
+class "LottieView" as LottieView << (S, SkyBlue) struct >> { 
+  ~name : String
+  ~loopCount : Int
+  ~delay : TimeInterval
+  ~makeUIView(context:)
+  ~updateUIView(_:context:)
+  ~makeCoordinator() 
+}
+class "Coordinator" as LottieView.Coordinator << (C, DarkSeaGreen) >> { 
+  ~setupAnimation(_:loopCount:delay:)
+  -playAnimation(_:loopCount:delay:) 
+}
+class "UncategorizedExpensesListView" as UncategorizedExpensesListView << (S, SkyBlue) struct >> { 
+  -viewContext
+  -currencyManager : CurrencyManager
+  -selectedExpense : Expense?
+  -uncategorizedExpenses : FetchedResults<Expense>
+  ~init()
+  ~body : some View 
+}
+class "CategoryCircleIcon" as CategoryCircleIcon << (S, SkyBlue) struct >> { 
+  ~icon : String
+  ~size : CGFloat
+  ~iconSize : CGFloat
+  ~color : Color
+  ~body : some View 
+}
+class "CircularProgressView" as CircularProgressView << (S, SkyBlue) struct >> { 
+  ~progress : Double
+  ~isOverBudget : Bool
+  ~body : some View 
+}
+class "TopCategoriesSection" as TopCategoriesSection << (S, SkyBlue) struct >> { 
+  -currencyManager
+  ~categorizedExpenses : [(Category, [Expense])]
+  ~fetchedExpenses : FetchedResults<Expense>
+  ~budget : Budget?
+  ~budgetManager : BudgetManager?
+  ~expenseManager : ExpenseDataManager?
+  ~maxCategories : Int
+  ~showViewAllButton : Bool
+  -totalExpensesAmount : Decimal
+  ~init(categorizedExpenses:fetchedExpenses:budget:budgetManager:expenseManager:maxCategories:showViewAllButton:)
+  -hasCategoryBudgets : Bool
+  ~body : some View
+  -displayCategoriesWithBudgets(budget:budgetManager:expenseManager:)
+  -displayCategoriesWithoutBudgets()
+  -updateTotalExpenses() 
+}
+class "VariableBlurView" as VariableBlurView << (S, SkyBlue) struct >> { 
+  ~radius : Double
+  ~maskHeight : CGFloat
+  ~fromTop : Bool
+  -{static} maskCache : [String: UIImage]
+  ~init(radius:maskHeight:fromTop:)
+  ~makeUIView(context:)
+  ~updateUIView(_:context:) 
+}
+class "VariableBlurModifier" as VariableBlurModifier << (S, SkyBlue) struct >> { 
+  -isReduceTransparencyEnabled
+  ~radius : Double
+  ~maskHeight : CGFloat
+  ~fromTop : Bool
+  ~body(content:) 
+}
+class "EmptyHomePage" as EmptyHomePage << (S, SkyBlue) struct >> { 
+  ~body : some View 
+}
+class "HomePage" as HomePage << (S, SkyBlue) struct >> { 
+  -viewContext
+  -currencyManager : CurrencyManager
+  -recurringExpenses : FetchedResults<RecurringExpense>
+  -allExpensesEver : FetchedResults<Expense>
+  -budgetManager
+  -expenseManager
+  ~isPresentingExpenseEntry : Bool
+  ~selectedExpense : Expense?
+  -refreshBudget : Bool
+  ~fetchedExpenses : FetchedResults<Expense>
+  ~categorizedExpenses : [(Category, [Expense])]
+  ~filterManager : ExpenseFilterManager
+  ~currentBudget : Budget?
+  -shouldShowEmptyState : Bool
+  ~body : some View 
+}
+class "NavigationDestination" as NavigationDestination << (E, LightSteelBlue) enum >> { 
+  ~allExpenses
+  ~allCategories
+  ~allSubscriptions
+  ~budgetview
+  ~uncategorizedExpenses 
+}
+class "ContentView" as ContentView << (S, SkyBlue) struct >> { 
+  -themeManager : ThemeManager
+  -viewContext
+  -currencyManager : CurrencyManager
+  -filterManager
+  -accentColorManager
+  -isPresentingExpenseEntry
+  -selectedExpense : Expense?
+  -currentBudget : Budget?
+  -fetchRequest : FetchRequest<Expense>
+  -fetchedExpenses : FetchedResults<Expense>
+  ~init()
+  -categorizedExpenses : [(Category, [Expense])]
+  -isPresentingBudgetView
+  -isPresentingSettingsView
+  ~body : some View
+  -updateFetchRequestPredicate(for:) 
+}
+class "CurrencyListView" as CurrencyListView << (S, SkyBlue) struct >> { 
+  ~dismiss
+  -currencyManager : CurrencyManager
+  ~selectedCurrency : Currency?
+  -searchText
+  -isKeyboardVisible
+  -{static} preferredCurrencyCodes
+  -{static} restrictedSearchTerms
+  -isSearchingRestrictedCurrency : Bool
+  -filteredCurrencies : [Currency]
+  -preferredCurrencies : [Currency]
+  -nonPreferredCurrencies : [Currency]
+  -updateFilteredLists()
+  -currencyRow(_:)
+  ~body : some View 
+}
+class "KeyboardAwareModifier" as CurrencyListView.KeyboardAwareModifier << (S, SkyBlue) struct >> { 
+  ~isVisible : Bool
+  ~body(content:) 
+}
+class "NotSupportedView" as CurrencyListView.NotSupportedView << (S, SkyBlue) struct >> { 
+  ~body : some View 
+}
+class "RateDebugView" as RateDebugView << (S, SkyBlue) struct >> { 
+  ~dismiss
+  -debugMessages : [String]
+  ~body : some View 
+}
+class "RecurringExpenseRow" as RecurringExpenseRow << (S, SkyBlue) struct >> { 
+  -currencyManager : CurrencyManager
+  ~template : RecurringExpense
+  ~colorScheme
+  -icon : String
+  -category : String
+  -note : String?
+  -formattedOriginalAmount : String
+  -formattedConvertedAmount : String?
+  -formattedNextDueDate : String
+  -frequencyLetter : String
+  ~body : some View 
+}
+class "RecurringExpenseDetailView" as RecurringExpenseDetailView << (S, SkyBlue) struct >> { 
+  -viewContext
+  -dismiss
+  -currencyManager : CurrencyManager
+  -categoryManager : CategoryManager
+  ~template : RecurringExpense?
+  ~onDelete : () -> Void
+  -showingEditSheet
+  -showingDeleteAlert
+  -loadTemplateDetails()
+  -deleteTemplate()
+  -tempTemplate : TemplateDraft?
+  ~body : some View 
+}
+class "TemplateDraft" as TemplateDraft << (S, SkyBlue) struct >> { 
+  ~amount : Decimal
+  ~category : Category?
+  ~currency : String
+  ~frequency : String
+  ~nextDueDate : Date
+  ~notes : String?
+  ~notificationEnabled : Bool
+  ~init(from:) 
+}
+class "TemplateEditView" as TemplateEditView << (S, SkyBlue) struct >> { 
+  -dismiss
+  -viewContext
+  -currencyManager : CurrencyManager
+  -categoryManager : CategoryManager
+  ~isPresented : Bool
+  ~template : RecurringExpense
+  -amount : String
+  -selectedCategory : Category?
+  -selectedCurrency : String
+  -frequency : String
+  -nextDueDate : Date
+  -notes : String
+  -notificationEnabled : Bool
+  -convertedAmount : String?
+  -showingCategorySelector
+  -showingCurrencyPicker
+  -showingNotesSheet
+  -showingErrorAlert
+  -errorMessage
+  -tempTags : Set<Tag>
+  -frequencyOptions
+  -dateFormatter : DateFormatter
+  -minimumDate : Date
+  -validateNextDueDate(_:)
+  -defaultCurrency : Currency?
+  -shouldShowConvertedAmount : Bool
+  -isUsingHistoricalRates : Bool
+  ~body : some View
+  -loadTemplateData()
+  -updateConvertedAmount()
+  -saveTemplate() 
+}
+class "RecurringExpenseManager" as RecurringExpenseManager << (C, DarkSeaGreen) >> { 
+  ~{static} shared
+  -context : NSManagedObjectContext
+  ~activeTemplates : [RecurringExpense]
+  ~isGeneratingExpenses
+  -init(context:)
+  ~loadActiveTemplates()
+  ~createRecurringExpense(amount:category:currency:frequency:startDate:notes:notificationEnabled:)
+  ~generateUpcomingExpenses()
+  -shouldCreateExpenseFor(date:)
+  ~updateRecurringTemplate(template:amount:category:currency:frequency:startDate:notes:notificationEnabled:)
+  -generateMissingExpenses(for:from:to:)
+  -hasExpenseForDate(template:date:)
+  -deleteFutureExpenses(for:)
+  -createExpenseFromTemplate(template:forDate:)
+  +calculateNextDate(from:frequency:)
+  ~cleanupAndRegenerateFutureExpenses()
+  -saveContext() 
+}
+class "RecurrenceListView" as RecurrenceListView << (S, SkyBlue) struct >> { 
+  -viewContext
+  -currencyManager : CurrencyManager
+  -templates : FetchedResults<RecurringExpense>
+  -selectedTemplate : RecurringExpense?
+  -showingDetailView
+  -showingAddExpense
+  -showingYearlyTotal
+  ~body : some View
+  -deleteTemplate(_:) 
+}
+class "CategoryLimitsSection" as CategoryLimitsSection << (S, SkyBlue) struct >> { 
+  -currencyManager
+  ~budget : Budget
+  ~budgetManager : BudgetManager
+  ~expenseManager : ExpenseDataManager
+  ~body : some View 
+}
+class "CategoryLimitRow" as CategoryLimitRow << (S, SkyBlue) struct >> { 
+  ~category : Category?
+  ~name : String?
+  ~icon : String?
+  ~amount : Decimal
+  ~currency : Currency
+  ~init(category:amount:currency:)
+  ~init(name:icon:amount:currency:)
+  ~body : some View 
+}
+class "BudgetRow" as BudgetRow << (S, SkyBlue) struct >> { 
+  ~budget : Budget
+  ~onEdit : () -> Void
+  ~onDelete : () -> Void
+  -currencyManager
+  -isUpdating
+  -budgetManager
+  -expenseManager
+  ~body : some View
+  -getSortedCategoryBudgets(_:)
+  -MonthlyBudgetSection()
+  -ProgressBar(monthlyPercentage:)
+  -ActionButtons() 
+}
+class "CardView" as CardView << (S, SkyBlue) struct >> { 
+  -colorScheme
+  ~emoji : String?
+  ~categoryIcons : Bool
+  ~title : String
+  ~description : String
+  ~buttonTitle : String
+  ~buttonAction : () -> Void
+  ~isDisabled : Bool
+  ~customContent : AnyView?
+  ~init(emoji:categoryIcons:title:description:buttonTitle:buttonAction:isDisabled:customContent:)
+  ~body : some View 
+}
+class "IconCircle" as IconCircle << (S, SkyBlue) struct >> { 
+  ~emoji : String
+  ~size : CGFloat
+  ~body : some View 
+}
+class "BudgetSetCardView" as BudgetSetCardView << (S, SkyBlue) struct >> { 
+  -colorScheme
+  ~emoji : String
+  ~amount : String
+  ~action : () -> Void
+  ~body : some View 
+}
+class "BudgetDisplayData" as BudgetDisplayData << (S, SkyBlue) struct >> { 
+  ~budget : Budget
+  ~amount : Decimal
+  ~amountFormatted : String
+  ~spent : Decimal
+  ~spentFormatted : String
+  ~monthlyPercentage : Double
+  ~monthlyPercentageFormatted : String
+  ~categoryBudgets : [CategoryBudgetDisplayData] 
+}
+class "CategoryBudgetDisplayData" as CategoryBudgetDisplayData << (S, SkyBlue) struct >> { 
+  ~id
+  ~category : Category
+  ~amount : Decimal
+  ~amountFormatted : String
+  ~spent : Decimal
+  ~spentFormatted : String
+  ~remaining : Decimal
+  ~remainingFormatted : String
+  ~percentage : Double
+  ~percentageFormatted : String
+  ~currency : Currency
+  ~expenseCount : Int 
+}
+class "BudgetEditData" as BudgetEditData << (S, SkyBlue) struct >> { 
+  ~id : UUID
+  ~budget : Budget 
+}
+class "BudgetViewModel" as BudgetViewModel << (C, DarkSeaGreen) >> { 
+  ~currentBudget : BudgetDisplayData?
+  ~isLoading
+  ~selectedDate
+  ~errorMessage : String?
+  ~budgetToEdit : BudgetEditData?
+  ~showDeleteAlert
+  ~showAddBudget
+  -budgetManager
+  -expenseManager
+  -currencyConverter
+  -fetchedBudgets : [String: Budget]
+  -cachedDisplayData : [String: BudgetDisplayData]
+  -currencyChangeObserver : NSObjectProtocol?
+  ~init()
+  ~deinit
+  -handleCurrencyChange()
+  ~dateChanged(to:)
+  ~editCurrentBudget()
+  ~deleteBudget()
+  ~budgetModified()
+  ~isCurrentMonth : Bool
+  ~dismissAlerts()
+  -clearAllCaches()
+  -fetchBudgetForSelectedDate()
+  -processBudget(_:forKey:)
+  -fetchBudgetFromCoreData(for:)
+  -createBudgetDisplayData(for:)
+  -formatDateToMonthKey(_:) 
+}
+class "MonthlyLimitView" as MonthlyLimitView << (S, SkyBlue) struct >> { 
+  -dismiss
+  ~amount : String
+  -localAmount : String
+  -shakeAmount : CGFloat
+  -lastEnteredDigit
+  -currencyManager : CurrencyManager
+  ~onSave : (() -> Void)?
+  -defaultCurrency : Currency?
+  -formattedAmount : String
+  ~body : some View
+  -triggerShake()
+  -saveAmount() 
+}
+class "BudgetForm" as BudgetForm << (S, SkyBlue) struct >> { 
+  -dismiss
+  -colorScheme
+  -amount : String
+  -showAlert
+  -alertMessage
+  -alertType : AlertType
+  -isProcessing
+  -showCategorySheet
+  -selectedCategories : Set<Category>
+  -categoryLimits : [Category: String]
+  -selectedCategoryForLimit : Category?
+  -showMonthlyLimitView
+  -isInNavigationFlow : Bool
+  -budgetManager
+  -currencyManager
+  -currencyConverter
+  -existingBudget : Budget?
+  -defaultCurrency : Currency?
+  -isValidInput : Bool
+  ~init(initialAmount:isInNavigationFlow:)
+  ~init(budget:)
+  -allocatedAmount : Decimal
+  -leftToAllocate : Decimal?
+  ~body : some View
+  -validateAndSaveBudget()
+  -saveBudget()
+  -formatAmount(_:) 
+}
+class "AlertType" as BudgetForm.AlertType << (E, LightSteelBlue) enum >> { 
+  ~error
+  ~limitExceeded 
+}
+class "CategoryLimitsStats" as BudgetForm.CategoryLimitsStats << (S, SkyBlue) struct >> { 
+  ~categoriesWithLimits : Int
+  ~totalCategories : Int
+  ~leftToAllocate : Decimal?
+  ~currency : Currency?
+  ~currencyFormatter : (Decimal, Currency) -> String
+  -colorScheme
+  ~body : some View 
+}
+class "CategoryBudgetRow" as BudgetForm.CategoryBudgetRow << (S, SkyBlue) struct >> { 
+  -colorScheme
+  ~category : Category
+  ~limit : String?
+  ~onSetLimit : () -> Void
+  ~body : some View 
+}
+class "StandardMultiSelectionBehavior" as StandardMultiSelectionBehavior << (S, SkyBlue) struct >> { 
+  ~selectedCategories : Set<Category>
+  ~onCategorySelected(_:)
+  ~isSelected(_:) 
+}
+class "CategorySheet" as CategorySheet << (S, SkyBlue) struct >> { 
+  -dismiss
+  -categoryManager : CategoryManager
+  -selectionBehavior : MultiCategorySelectionBehavior
+  -searchText
+  -categories : [Category]
+  -hasLoaded : Bool
+  -navigateToNewCategory : Bool
+  -filteredCategories : [Category]
+  ~init(selectedCategories:)
+  -updateCategories()
+  -loadData()
+  ~body : some View 
+}
+class "CategoryRow" as CategoryRow << (S, SkyBlue) struct >> { 
+  ~category : Category
+  ~isSelected : Bool
+  ~body : some View 
+}
+class "CategoryLimitSheet" as CategoryLimitSheet << (S, SkyBlue) struct >> { 
+  -dismiss
+  ~category : Category
+  ~categoryLimits : [Category: String]
+  ~selectedCategories : Set<Category>
+  -amount : String
+  -shakeAmount : CGFloat
+  -lastEnteredDigit
+  -showDeleteAlert
+  -currencyManager : CurrencyManager
+  -currencyConverter
+  -defaultCurrency : Currency?
+  -formattedAmount : String
+  ~body : some View
+  -triggerShake()
+  -saveLimit() 
+}
+class "EmptyBudgetView" as EmptyBudgetView << (S, SkyBlue) struct >> { 
+  ~selectedDate : Date
+  ~isCurrentMonth : Bool
+  ~onAddBudget : () -> Void
+  ~body : some View 
+}
+class "BudgetView" as BudgetView << (S, SkyBlue) struct >> { 
+  -colorScheme
+  -viewModel
+  -monthSwitcherView : some View
+  ~body : some View
+  -budgetContentView(_:)
+  -monthlyBudgetSection(_:)
+  -categoryBudgetsSection(_:)
+  -actionButtonsView() 
+}
+class "ProgressBar" as ProgressBar << (S, SkyBlue) struct >> { 
+  ~percentage : Double
+  ~body : some View 
+}
+class "CategoryBudgetRowView" as CategoryBudgetRowView << (S, SkyBlue) struct >> { 
+  ~categoryData : CategoryBudgetDisplayData
+  -colorScheme
+  ~body : some View 
+}
+class "View" as View << (X, Orchid) extension >> { 
+  ~if(_:transform:) 
+}
+class "Array" as Array << (X, Orchid) extension >> {  
+}
+class "ExpenseRow" as ExpenseRow0 << (X, Orchid) extension >> { 
+  ~{static} from(expense:onDelete:) 
+}
+class "View" as View1 << (X, Orchid) extension >> { 
+  ~blurAnimation(isAnimating:) 
+}
+class "Calendar" as Calendar << (X, Orchid) extension >> { 
+  -startOfMonth(for:) 
+}
+class "Calendar" as Calendar2 << (X, Orchid) extension >> { 
+  -startOfMonth(for:)
+  -endOfMonth(for:) 
+}
+class "Calendar" as Calendar3 << (X, Orchid) extension >> { 
+  -startOfMonth(for:) 
+}
+class "Color" as Color << (X, Orchid) extension >> { 
+  ~{static} customChartColors : [Color]
+  ~init(hex:) 
+}
+class "Calendar" as Calendar4 << (X, Orchid) extension >> { 
+  -startOfMonth(for:)
+  -endOfMonth(for:) 
+}
+class "Calendar" as Calendar5 << (X, Orchid) extension >> { 
+  -startOfMonth(for:) 
+}
+class "View" as View6 << (X, Orchid) extension >> { 
+  ~withNavigationButtons() 
+}
+class "String" as String << (X, Orchid) extension >> { 
+  ~trim() 
+}
+class "Date" as Date << (X, Orchid) extension >> { 
+  ~formatted(_:) 
+}
+class "Category" as Category << (X, Orchid) extension >> { 
+  ~toCKRecord()
+  ~{static} fromCKRecord(_:) 
+}
+class "Expense" as Expense << (X, Orchid) extension >> { 
+  ~toCKRecord()
+  ~{static} fromCKRecord(_:) 
+}
+class "RecurringExpense" as RecurringExpense << (X, Orchid) extension >> { 
+  ~toCKRecord()
+  ~{static} fromCKRecord(_:) 
+}
+class "Tag" as Tag << (X, Orchid) extension >> { 
+  ~toCKRecord()
+  ~{static} fromCKRecord(_:) 
+}
+class "UIBlurEffect" as UIBlurEffect << (X, Orchid) extension >> { 
+  +{static} variableBlurEffect(radius:imageMask:) 
+}
+class "View" as View7 << (X, Orchid) extension >> { 
+  ~variableBlur(radius:maskHeight:fromTop:) 
+}
+class "Name" as Notification.Name << (X, Orchid) extension >> { 
+  ~{static} budgetUpdated 
+}
+class "RecurringExpenseManager" as RecurringExpenseManager8 << (X, Orchid) extension >> { 
+  ~{static} calculateMonthlyTotal(for:defaultCurrency:currencyConverter:) 
+}
+View <|-- SettingsView : inherits
+View <|-- NavigationRow : inherits
+View <|-- SectionHeader : inherits
+View <|-- PasscodeManagementView : inherits
+View <|-- ActionButton : inherits
+View <|-- SecurityNote : inherits
+View <|-- PasscodeVerificationView : inherits
+View <|-- PasscodeEntryView : inherits
+View <|-- NumberButton : inherits
+View <|-- PasscodeSetupView : inherits
+View <|-- SecurityPageView : inherits
+View <|-- SecurityStatusRow : inherits
+View <|-- SecurityInfoRow : inherits
+View <|-- DefaultCurrencyView : inherits
+View <|-- LastUpdatedBanner : inherits
+View <|-- iCloudSyncView : inherits
+View <|-- DataAndStorageView : inherits
+UIViewControllerRepresentable <|-- DocumentPickerView : inherits
+NSObject <|-- DocumentPickerView.Coordinator : inherits
+UIDocumentPickerDelegate <|-- DocumentPickerView.Coordinator : inherits
+ButtonStyle <|-- ActionButtonStyle : inherits
+View <|-- InfoRow : inherits
+View <|-- DataCategorySelection : inherits
+View <|-- CategorySquare : inherits
+View <|-- SquaresGroup : inherits
+View <|-- SelectedCategoriesView : inherits
+View <|-- ExportSheet : inherits
+View <|-- SuccessSheet : inherits
+Codable <|-- NotificationPreferences : inherits
+String -- ReminderTime : inherits
+CaseIterable -- ReminderTime : inherits
+Codable -- ReminderTime : inherits
+ObservableObject <|-- NotificationManager : inherits
+View <|-- NotificationsView : inherits
+View <|-- SettingsRow : inherits
+ObservableObject <|-- ScrollController : inherits
+View <|-- ExpenseEntryView : inherits
+View <|-- ExpenseEntryView.FrequentCategoryButton : inherits
+View <|-- ExpenseRow : inherits
+View <|-- NotesModalView : inherits
+View <|-- TagChip : inherits
+View <|-- TagSheet : inherits
+PreferenceKey <|-- ScrollOffsetPreferenceKey : inherits
+View <|-- EmptyStateView : inherits
+View <|-- FilterButton : inherits
+View <|-- AllExpenses : inherits
+View <|-- GroupedExpensesView : inherits
+View <|-- NumericKeypad : inherits
+PreviewProvider <|-- NumericKeypad_Previews : inherits
+View <|-- ExpenseDetailView : inherits
+View <|-- ExpenseButton : inherits
+View <|-- CategoryButton : inherits
+View <|-- SaveButton : inherits
+View <|-- CalendarSheet : inherits
+UIViewRepresentable <|-- CalendarViewWrapper : inherits
+NSObject <|-- CalendarViewWrapper.Coordinator : inherits
+UICalendarViewDelegate <|-- CalendarViewWrapper.Coordinator : inherits
+UICalendarSelectionSingleDateDelegate <|-- CalendarViewWrapper.Coordinator : inherits
+ObservableObject <|-- ExpenseDataManager : inherits
+GeometryEffect <|-- ShakeEffect : inherits
+ViewModifier <|-- BlurAnimation : inherits
+ViewModifier <|-- NumberAnimationModifier : inherits
+View <|-- CategorySelectorView : inherits
+View <|-- AddCategoryItem : inherits
+View <|-- CategoryItemView : inherits
+UITextField <|-- EmojiTextField : inherits
+UIViewRepresentable <|-- EmojiTextFieldRepresentable : inherits
+NSObject <|-- EmojiTextFieldRepresentable.Coordinator : inherits
+UITextFieldDelegate <|-- EmojiTextFieldRepresentable.Coordinator : inherits
+View <|-- CategoryFormView : inherits
+String -- ExpenseSorting : inherits
+CaseIterable -- ExpenseSorting : inherits
+View <|-- MonthlyTrendView : inherits
+View <|-- ExpensesByCategoryView : inherits
+View <|-- CategoryListView : inherits
+View <|-- CategoryListView.SearchBar : inherits
+View <|-- CategoryListView.CategorySquare : inherits
+View <|-- CategoryListView.SquaresGroup : inherits
+UIViewRepresentable <|-- CategoryListView.BlurView : inherits
+View <|-- AllCategoriesView : inherits
+View <|-- CategoryIconView : inherits
+View <|-- GroupedExpenseRow : inherits
+View <|-- CategoryAmountView : inherits
+View <|-- CategoryExpensesRow : inherits
+ObservableObject <|-- TagManager : inherits
+ObservableObject <|-- CategoryManager : inherits
+ObservableObject <|-- ExpenseFilterManager : inherits
+ObservableObject <|-- BudgetManager : inherits
+LocalizedError -- BudgetManager.BudgetError : inherits
+ObservableObject <|-- CurrencyManager : inherits
+View <|-- PeriodSelectorView : inherits
+View <|-- PeriodPickerView : inherits
+String -- PeriodPickerView.DateRangeMode : inherits
+CaseIterable -- PeriodPickerView.DateRangeMode : inherits
+Identifiable -- PeriodPickerView.DateRangeMode : inherits
+UIViewRepresentable <|-- MonthYearPickerView : inherits
+NSObject <|-- MonthYearPickerView.Coordinator : inherits
+View <|-- DateRangePickerView : inherits
+View <|-- PeriodPresetsView : inherits
+String -- AccentColorOption : inherits
+CaseIterable -- AccentColorOption : inherits
+Identifiable -- AccentColorOption : inherits
+ObservableObject <|-- AccentColorManager : inherits
+String -- ColorScheme : inherits
+CaseIterable -- ColorScheme : inherits
+ObservableObject <|-- ThemeManager : inherits
+ObservableObject <|-- HistoricalRateManager : inherits
+Codable <|-- HistoricalRateManager.RatesResponse : inherits
+EntityQuery <|-- CategoryQuery : inherits
+@enduml

@@ -15,7 +15,7 @@ struct ExpenseRow: View {
     var onDelete: (() -> Void)?
     
     private var icon: String {
-        expense.category?.icon ?? "❓"
+        expense.category?.icon ?? "🤷‍♂️"
     }
     
     private var category: String {

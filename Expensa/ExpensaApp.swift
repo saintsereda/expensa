@@ -97,7 +97,7 @@ struct ExpensaApp: App {
     private func setupAfterViewLoad() {
         // Generate recurring expenses after view and StateObjects are properly initialized
         Task {
-            await recurringManager.generateUpcomingExpenses()
+            recurringManager.generateUpcomingExpenses()
         }
     }
     
