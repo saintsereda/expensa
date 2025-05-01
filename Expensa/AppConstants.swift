@@ -8,5 +8,5 @@
 import Foundation
 
 extension Notification.Name {
-    static let budgetUpdated = Notification.Name("budgetUpdated")
+    static let budgetUpdated = Notification.Name("BudgetUpdated")
 }
