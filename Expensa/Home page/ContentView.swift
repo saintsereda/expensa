@@ -33,7 +33,7 @@ struct ContentView: View {
         
         let request = NSFetchRequest<Expense>(entityName: "Expense")
         request.sortDescriptors = [
-            NSSortDescriptor(keyPath: \Expense.createdAt, ascending: false)
+            NSSortDescriptor(keyPath: \Expense.date, ascending: false)
         ]
         request.predicate = NSPredicate(
             format: "date >= %@ AND date <= %@",

@@ -54,6 +54,7 @@ class RecurringExpenseManager: ObservableObject {
         notes: String?,
         notificationEnabled: Bool = true
     ) -> RecurringExpense? {
+        // Set template's next due date to start of day (midnight)
         let expenseDate = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: startDate)!
         
         guard let defaultCurrency = CurrencyManager.shared.defaultCurrency,
@@ -116,13 +117,23 @@ class RecurringExpenseManager: ObservableObject {
                 let convertedAmount = conversion.amount
                 let conversionRate = conversion.rate
                 
+                // Create the expense with current time instead of midnight
+                let now = Date()
+                let calendar = Calendar.current
+                let currentTimeExpenseDate = calendar.date(
+                    bySettingHour: calendar.component(.hour, from: now),
+                    minute: calendar.component(.minute, from: now),
+                    second: calendar.component(.second, from: now),
+                    of: calendar.startOfDay(for: startDate)
+                )!
+                
                 let expense = Expense(context: context)
                 expense.id = UUID()
                 expense.amount = NSDecimalNumber(decimal: amount)
                 expense.convertedAmount = NSDecimalNumber(decimal: convertedAmount)
                 expense.conversionRate = NSDecimalNumber(decimal: conversionRate)
                 expense.category = category
-                expense.date = expenseDate
+                expense.date = currentTimeExpenseDate  // Using current time instead of midnight
                 expense.notes = notes
                 expense.currency = currency
                 expense.createdAt = Date()
@@ -134,7 +145,7 @@ class RecurringExpenseManager: ObservableObject {
                 expense.recurringExpense = template
                 expense.isPaid = true
                 
-                template.lastGeneratedDate = expenseDate
+                template.lastGeneratedDate = expenseDate  // This can still use midnight
                 template.nextDueDate = calculateNextDate(from: expenseDate, frequency: frequency)
                 
                 do {
@@ -331,7 +342,14 @@ class RecurringExpenseManager: ObservableObject {
             return
         }
         
-        let expenseDate = Calendar.current.date(bySettingHour: 0, minute: 0, second: 0, of: date)!
+        let now = Date()
+        let calendar = Calendar.current
+        let expenseDate = calendar.date(
+            bySettingHour: calendar.component(.hour, from: now),
+            minute: calendar.component(.minute, from: now),
+            second: calendar.component(.second, from: now),
+            of: calendar.startOfDay(for: date)
+        )!
         print("Expense date set to: \(expenseDate)")
 
         guard let conversion = CurrencyConverter.shared.convertAmount(
