@@ -1,99 +1,21 @@
 //
-//  PeriodSelectorView.swift
+//  PeriodPickerView.swift (Modified)
 //  Expensa
 //
-//  Created by Andrew Sereda on 11.04.2025.
+//  Created by Andrew Sereda on 02.05.2025.
 //
 
 import Foundation
 import SwiftUI
 
-// MARK: - Period Selector View
-struct PeriodSelectorView: View {
-    @ObservedObject var filterManager: ExpenseFilterManager
-    @Binding var showingDatePicker: Bool
-    
-    @State private var dragOffset: CGFloat = 0
-    @State private var isDragging = false
-    
-    var body: some View {
-        HStack {
-            // Previous period button
-            Button(action: { changePeriod(isNext: false) }) {
-                Image(systemName: "chevron.left")
-                    .foregroundColor(.secondary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-            
-            Spacer()
-            
-            // Period text - tap to open date picker
-            Button(action: {
-                showingDatePicker = true
-            }) {
-                Text(filterManager.formattedPeriod())
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                    .padding(.vertical, 8)
-            }
-            .offset(x: dragOffset)
-            .gesture(
-                DragGesture()
-                    .onChanged { gesture in
-                        isDragging = true
-                        let maxDrag: CGFloat = 110
-                        dragOffset = max(-maxDrag, min(maxDrag, gesture.translation.width))
-                    }
-                    .onEnded { gesture in
-                        let threshold: CGFloat = 80
-                        
-                        if dragOffset > threshold {
-                            changePeriod(isNext: false)
-                        } else if dragOffset < -threshold {
-                            changePeriod(isNext: true)
-                        }
-                        
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            dragOffset = 0
-                        }
-                        
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            isDragging = false
-                        }
-                    }
-            )
-            
-            Spacer()
-            
-            // Next period button
-            Button(action: { changePeriod(isNext: true) }) {
-                Image(systemName: "chevron.right")
-                    .foregroundColor(.secondary)
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
-            }
-        }
-        .padding(.horizontal, 8)
-    }
-    
-    // Function to change period
-    private func changePeriod(isNext: Bool) {
-        // Provide haptic feedback
-        let generator = UINotificationFeedbackGenerator()
-        
-        // Change the period using filter manager
-        filterManager.changePeriod(next: isNext)
-        
-        // Give success feedback
-        generator.notificationOccurred(.success)
-    }
-}
-
-// MARK: - Period Picker Sheet
+// MARK: - Period Picker Sheet with Callback
 struct PeriodPickerView: View {
-    @ObservedObject var filterManager: ExpenseFilterManager
+    // We'll keep filterManager for initial state, but not modify it directly
+    let filterManager: ExpenseFilterManager
     @Binding var showingDatePicker: Bool
+    
+    // New callback for period selection
+    var onPeriodSelected: (Date, Date, Bool) -> Void
     
     @State private var startDate: Date
     @State private var endDate: Date
@@ -107,9 +29,14 @@ struct PeriodPickerView: View {
         var id: String { self.rawValue }
     }
     
-    init(filterManager: ExpenseFilterManager, showingDatePicker: Binding<Bool>) {
+    init(
+        filterManager: ExpenseFilterManager,
+        showingDatePicker: Binding<Bool>,
+        onPeriodSelected: @escaping (Date, Date, Bool) -> Void
+    ) {
         self.filterManager = filterManager
         self._showingDatePicker = showingDatePicker
+        self.onPeriodSelected = onPeriodSelected
         self._startDate = State(initialValue: filterManager.selectedDate)
         self._endDate = State(initialValue: filterManager.endDate)
         self._selectedMode = State(initialValue: filterManager.isRangeMode ? .customRange : .singleMonth)
@@ -156,12 +83,11 @@ struct PeriodPickerView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Apply") {
                         HapticFeedback.play()
-                        // Apply selected dates based on mode
-                        if selectedMode == .singleMonth {
-                            filterManager.resetToSingleMonthMode(date: startDate)
-                        } else {
-                            filterManager.setDateRange(start: startDate, end: endDate)
-                        }
+                        
+                        // Instead of directly updating filterManager,
+                        // call the callback with the selected period
+                        let isRangeMode = selectedMode != .singleMonth
+                        onPeriodSelected(startDate, endDate, isRangeMode)
                         
                         showingDatePicker = false
                     }
@@ -172,6 +98,77 @@ struct PeriodPickerView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .presentationDetents([.height(400)])
+    }
+}
+
+// MARK: - Period Selector View
+struct PeriodSelectorView: View {
+    // Now takes a callback instead of directly modifying filterManager
+    var formattedPeriod: String
+    var onPreviousPeriod: () -> Void
+    var onNextPeriod: () -> Void
+    var onSelectPeriod: () -> Void
+    
+    @State private var dragOffset: CGFloat = 0
+    @State private var isDragging = false
+    
+    var body: some View {
+        HStack {
+            // Previous period button
+            Button(action: onPreviousPeriod) {
+                Image(systemName: "chevron.left")
+                    .foregroundColor(.secondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+            
+            Spacer()
+            
+            // Period text - tap to open date picker
+            Button(action: onSelectPeriod) {
+                Text(formattedPeriod)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                    .padding(.vertical, 8)
+            }
+            .offset(x: dragOffset)
+            .gesture(
+                DragGesture()
+                    .onChanged { gesture in
+                        isDragging = true
+                        let maxDrag: CGFloat = 110
+                        dragOffset = max(-maxDrag, min(maxDrag, gesture.translation.width))
+                    }
+                    .onEnded { gesture in
+                        let threshold: CGFloat = 80
+                        
+                        if dragOffset > threshold {
+                            onPreviousPeriod()
+                        } else if dragOffset < -threshold {
+                            onNextPeriod()
+                        }
+                        
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            dragOffset = 0
+                        }
+                        
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            isDragging = false
+                        }
+                    }
+            )
+            
+            Spacer()
+            
+            // Next period button
+            Button(action: onNextPeriod) {
+                Image(systemName: "chevron.right")
+                    .foregroundColor(.secondary)
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+            }
+        }
+        .padding(.horizontal, 8)
     }
 }
 
@@ -275,10 +272,6 @@ struct PeriodPresetsView: View {
         case last6Months
         case yearToDate
         case lastYear
-        case q1
-        case q2
-        case q3
-        case q4
     }
     
     var body: some View {
@@ -313,34 +306,6 @@ struct PeriodPresetsView: View {
                     presetButton("Last Year", preset: .lastYear) {
                         setLastYear()
                         selectedPreset = .lastYear
-                    }
-                    
-                    Divider()
-                        .padding(.vertical, 8)
-                    
-                    Text("Quarters")
-                        .font(.headline)
-                        .padding(.horizontal)
-                        .padding(.bottom, 8)
-                    
-                    presetButton("Q1 (Jan-Mar)", preset: .q1) {
-                        setQuarter(1)
-                        selectedPreset = .q1
-                    }
-                    
-                    presetButton("Q2 (Apr-Jun)", preset: .q2) {
-                        setQuarter(2)
-                        selectedPreset = .q2
-                    }
-                    
-                    presetButton("Q3 (Jul-Sep)", preset: .q3) {
-                        setQuarter(3)
-                        selectedPreset = .q3
-                    }
-                    
-                    presetButton("Q4 (Oct-Dec)", preset: .q4) {
-                        setQuarter(4)
-                        selectedPreset = .q4
                     }
                 }
                 .padding(.horizontal)
@@ -427,28 +392,6 @@ struct PeriodPresetsView: View {
             if calendar.isDate(startDate, inSameDayAs: lastYearStart) && calendar.isDate(endDate, inSameDayAs: lastYearEndWithTime) {
                 selectedPreset = .lastYear
                 return
-            }
-        }
-        
-        // Check quarters
-        for quarter in 1...4 {
-            let startMonth = (quarter - 1) * 3 + 1
-            let startComponents = DateComponents(year: thisYear, month: startMonth, day: 1)
-            
-            if let quarterStart = calendar.date(from: startComponents),
-               let quarterEnd = calendar.date(byAdding: DateComponents(month: 3, day: -1), to: quarterStart) {
-                
-                let quarterEndWithTime = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: quarterEnd) ?? quarterEnd
-                if calendar.isDate(startDate, inSameDayAs: quarterStart) && calendar.isDate(endDate, inSameDayAs: quarterEndWithTime) {
-                    switch quarter {
-                    case 1: selectedPreset = .q1
-                    case 2: selectedPreset = .q2
-                    case 3: selectedPreset = .q3
-                    case 4: selectedPreset = .q4
-                    default: break
-                    }
-                    return
-                }
             }
         }
         
@@ -543,23 +486,6 @@ struct PeriodPresetsView: View {
             endComponents.day = 31
             
             if let lastDay = calendar.date(from: endComponents) {
-                startDate = firstDay
-                endDate = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: lastDay) ?? lastDay
-            }
-        }
-    }
-    
-    private func setQuarter(_ quarter: Int) {
-        let year = calendar.component(.year, from: Date())
-        let startMonth = (quarter - 1) * 3 + 1
-        
-        var startComponents = DateComponents()
-        startComponents.year = year
-        startComponents.month = startMonth
-        startComponents.day = 1
-        
-        if let firstDay = calendar.date(from: startComponents) {
-            if let lastDay = calendar.date(byAdding: DateComponents(month: 3, day: -1), to: firstDay) {
                 startDate = firstDay
                 endDate = calendar.date(bySettingHour: 23, minute: 59, second: 59, of: lastDay) ?? lastDay
             }

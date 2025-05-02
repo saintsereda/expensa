@@ -58,8 +58,8 @@ struct BudgetView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack {
-                //                monthSwitcherView
-                //                    .padding(.vertical)
+                                monthSwitcherView
+                                    .padding(.vertical)
                 
                 if viewModel.isLoading {
                     ProgressView()

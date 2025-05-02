@@ -1,8 +1,8 @@
 //
-//  AllCategoriesView.swift
+//  AllCategoriesView.swift (Modified)
 //  Expensa
 //
-//  Created by Andrew Sereda on 31.10.2024.
+//  Created by Andrew Sereda on 02.05.2025.
 //
 
 import Foundation
@@ -15,90 +15,33 @@ struct AllCategoriesView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @EnvironmentObject private var currencyManager: CurrencyManager
     
+    // Using the new view model
+    @StateObject private var viewModel = AllCategoriesViewModel()
+    
     // State
-    @StateObject private var filterManager = ExpenseFilterManager()
     @State private var showingDatePicker = false
-    @State private var currentBudget: Budget?
-    
-    // Fetch Request
-    @FetchRequest private var fetchedExpenses: FetchedResults<Expense>
-    
-    // Computed property for categorized expenses
-    private var categorizedExpenses: [(Category, [Expense])] {
-        guard !fetchedExpenses.isEmpty else {
-            return []
-        }
-        
-        let categories = Set(fetchedExpenses.compactMap { $0.category })
-        let categoryTuples = categories.map { category in
-            (
-                category,
-                fetchedExpenses.filter { $0.category == category }
-            )
-        }
-        return categoryTuples.sorted { first, second in
-            let firstAmount = ExpenseDataManager.shared.calculateTotalAmount(for: first.1)
-            let secondAmount = ExpenseDataManager.shared.calculateTotalAmount(for: second.1)
-            
-            // First sort by amount spent (descending)
-            if firstAmount != secondAmount {
-                return firstAmount > secondAmount
-            }
-            
-            // If amounts are equal, sort by category name (ascending)
-            return (first.0.name ?? "") < (second.0.name ?? "")
-        }
-    }
-    
-    // Total expenses amount directly from ExpenseDataManager
-    private var totalExpensesAmount: Decimal {
-        ExpenseDataManager.shared.calculateTotalAmount(for: Array(fetchedExpenses))
-    }
-    
-    // Initialization with custom fetch request
-    init() {
-        // Create and configure fetch request
-        let request = NSFetchRequest<Expense>(entityName: "Expense")
-        request.sortDescriptors = [
-            NSSortDescriptor(keyPath: \Expense.createdAt, ascending: false)
-        ]
-        
-        // Initialize date filtering
-        let filterManager = ExpenseFilterManager()
-        let initialInterval = filterManager.currentPeriodInterval()
-        request.predicate = NSPredicate(
-            format: "date >= %@ AND date <= %@",
-            initialInterval.start as NSDate,
-            initialInterval.end as NSDate
-        )
-        
-        // Initialize the fetch request
-        self._fetchedExpenses = FetchRequest(
-            fetchRequest: request
-        )
-    }
     
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Spent in \(filterManager.formattedPeriod())")
+                    Text("Spent in \(viewModel.filterManager.formattedPeriod())")
                         .font(.body)
                         .foregroundColor(.primary).opacity(0.64)
                         .contentTransition(.numericText())
-                        .animation(.spring(response: 0.4, dampingFraction: 0.95), value: filterManager.formattedPeriod())
+                        .animation(.spring(response: 0.4, dampingFraction: 0.95), value: viewModel.filterManager.formattedPeriod())
                     
                     // Total Amount Display
                     if let defaultCurrency = currencyManager.defaultCurrency {
                         Text(CurrencyConverter.shared.formatAmount(
-                            totalExpensesAmount,
+                            viewModel.totalExpensesAmount,
                             currency: defaultCurrency
                         ))
                         .font(.system(size: 32, weight: .regular, design: .rounded))
                         .foregroundColor(.primary)
                         .contentTransition(.numericText())
                         .animation(.spring(response: 0.4, dampingFraction: 0.95), value: CurrencyConverter.shared.formatAmount(
-                            totalExpensesAmount,
+                            viewModel.totalExpensesAmount,
                             currency: defaultCurrency
                         ))
                     }
@@ -107,23 +50,23 @@ struct AllCategoriesView: View {
                 
                 // Segmented Line Chart
                 SegmentedLineChartView(
-                    categorizedExpenses: categorizedExpenses,
-                    totalExpenses: totalExpensesAmount,
+                    categorizedExpenses: viewModel.categorizedExpenses,
+                    totalExpenses: viewModel.totalExpensesAmount,
                     height: 24,
                     segmentSpacing: 2
                 )
                 .padding(.horizontal, 16)
                 
                 // Categories list with updated GroupedExpenseRow
-                if !categorizedExpenses.isEmpty {
+                if !viewModel.categorizedExpenses.isEmpty {
                     VStack(alignment: .leading, spacing: 16) {
                         VStack(spacing: 4) {
-                            ForEach(categorizedExpenses, id: \.0.id) { categoryData in
+                            ForEach(viewModel.categorizedExpenses, id: \.0.id) { categoryData in
                                 let category = categoryData.0
                                 let expenses = categoryData.1
                                 
                                 // Get the CategoryBudget if available
-                                let categoryBudget = currentBudget?.categoryBudgets?
+                                let categoryBudget = viewModel.currentBudget?.categoryBudgets?
                                     .compactMap { $0 as? CategoryBudget }
                                     .first { $0.category == category }
                                 
@@ -137,8 +80,8 @@ struct AllCategoriesView: View {
                                     expenses: expenses,
                                     budget: categoryBudget,
                                     totalSpent: spent,
-                                    selectedDate: filterManager.selectedDate,
-                                    filterManager: filterManager // Pass filter manager
+                                    selectedDate: viewModel.filterManager.selectedDate,
+                                    filterManager: viewModel.filterManager // Pass filter manager
                                 )
                                 .background(Color(UIColor.systemGray6))
                                 .cornerRadius(12)
@@ -180,50 +123,30 @@ struct AllCategoriesView: View {
                 }
             }
         }
-        // Update when filter parameters change
-        .onChange(of: filterManager.selectedDate) { _, _ in
-            updateFetchRequestPredicate()
-            updateBudget()
-        }
-        .onChange(of: filterManager.endDate) { _, _ in
-            updateFetchRequestPredicate()
-        }
-        .onChange(of: filterManager.isRangeMode) { _, _ in
-            updateFetchRequestPredicate()
-        }
         
         // Initial loading
         .onAppear {
-            updateBudget()
+            // No need to update here as the viewModel handles this in init
         }
         .sheet(isPresented: $showingDatePicker) {
-            // Period picker sheet
-            PeriodPickerView(filterManager: filterManager, showingDatePicker: $showingDatePicker)
-        }
-    }
-    
-    // Helper methods
-    private func updateFetchRequestPredicate() {
-        // Get current date interval based on filter mode
-        let interval = filterManager.currentPeriodInterval()
-        
-        fetchedExpenses.nsPredicate = NSPredicate(
-            format: "date >= %@ AND date <= %@",
-            interval.start as NSDate,
-            interval.end as NSDate
-        )
-    }
-    
-    private func updateBudget() {
-        Task {
-            // For range selection, we'll use the budget from the starting month
-            // In a more comprehensive solution, we might want to aggregate budgets across months
-            currentBudget = await BudgetManager.shared.getBudgetFor(month: filterManager.selectedDate)
+            // Period picker sheet with callback
+            PeriodPickerView(
+                filterManager: viewModel.filterManager,
+                showingDatePicker: $showingDatePicker
+            ) { startDate, endDate, isRangeMode in
+                // Handle period selection through the view model
+                viewModel.applyPeriodSelection(
+                    startDate: startDate,
+                    endDate: endDate,
+                    isRangeMode: isRangeMode
+                )
+            }
         }
     }
 }
 
-// MARK: - Updated GroupedExpenseRow to display period-aware info
+// Keep existing components
+
 struct CategoryIconView: View {
     let category: Category
     let budget: CategoryBudget?
@@ -318,7 +241,6 @@ struct GroupedExpenseRow: View {
     }
 }
 
-// MARK: - Clarified CategoryAmountView
 struct CategoryAmountView: View {
     let category: Category
     let budget: CategoryBudget?
