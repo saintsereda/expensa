@@ -85,35 +85,42 @@ class ExpenseFilterManager: ObservableObject {
     
     // Format the period for display
     func formattedPeriod() -> String {
-        let dateFormatter = DateFormatter()
-        
-        if isRangeMode {
-            // Get year components
-            let calendar = Calendar.current
-            let startYear = calendar.component(.year, from: selectedDate)
-            let endYear = calendar.component(.year, from: endDate)
-            
-            if startYear == endYear {
-                // Same year format: "Jan - Apr 2025"
-                dateFormatter.dateFormat = "MMM"
-                let startMonth = dateFormatter.string(from: selectedDate)
-                let endMonth = dateFormatter.string(from: endDate)
-                dateFormatter.dateFormat = "yyyy"
-                let year = dateFormatter.string(from: selectedDate)
-                return "\(startMonth) - \(endMonth) \(year)"
-            } else {
-                // Different years format: "Dec 2024 - Feb 2025"
-                dateFormatter.dateFormat = "MMM yyyy"
-                let startFormatted = dateFormatter.string(from: selectedDate)
-                let endFormatted = dateFormatter.string(from: endDate)
-                return "\(startFormatted) - \(endFormatted)"
-            }
-        } else {
-            // Single month format: "January 2025"
-            dateFormatter.dateFormat = "MMMM yyyy"
-            return dateFormatter.string(from: selectedDate)
-        }
-    }
+         let dateFormatter = DateFormatter()
+         
+         if isRangeMode {
+             // Get year and month components
+             let calendar = Calendar.current
+             let startYear = calendar.component(.year, from: selectedDate)
+             let endYear = calendar.component(.year, from: endDate)
+             let startMonth = calendar.component(.month, from: selectedDate)
+             let endMonth = calendar.component(.month, from: endDate)
+             
+             // Check if it's actually just a single month period displayed as a range
+             if startYear == endYear && startMonth == endMonth {
+                 // It's a single month - display as "Month Year"
+                 dateFormatter.dateFormat = "MMM yyyy"
+                 return dateFormatter.string(from: selectedDate)
+             } else if startYear == endYear {
+                 // Same year format: "Jan - Apr 2025"
+                 dateFormatter.dateFormat = "MMM"
+                 let startMonthStr = dateFormatter.string(from: selectedDate)
+                 let endMonthStr = dateFormatter.string(from: endDate)
+                 dateFormatter.dateFormat = "yyyy"
+                 let year = dateFormatter.string(from: selectedDate)
+                 return "\(startMonthStr) - \(endMonthStr) \(year)"
+             } else {
+                 // Different years format: "Dec 2024 - Feb 2025"
+                 dateFormatter.dateFormat = "MMM yyyy"
+                 let startFormatted = dateFormatter.string(from: selectedDate)
+                 let endFormatted = dateFormatter.string(from: endDate)
+                 return "\(startFormatted) - \(endFormatted)"
+             }
+         } else {
+             // Single month format: "January 2025"
+             dateFormatter.dateFormat = "MMM yyyy"
+             return dateFormatter.string(from: selectedDate)
+         }
+     }
     
     // Set a custom date range
     func setDateRange(start: Date, end: Date) {

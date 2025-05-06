@@ -3,7 +3,7 @@
 //  Expensa
 //
 //  Created by Andrew Sereda on 20.03.2025.
-//
+// карточка емпті cta для створення бюджету 
 
 import Foundation
 import SwiftUI
