@@ -95,7 +95,7 @@ struct BudgetProgressCard: View {
                             let firstCategory = overspentCategories[0]
                             let remainingCount = overspentCategories.count - 1
                             
-                            Text("You've overspent \"\(firstCategory.name)\" and \(remainingCount) \(remainingCount == 1 ? "category" : "categories")")
+                            Text("You've overspent \"\(firstCategory.name)\" and \(remainingCount) \(remainingCount == 1 ? "" : "categories")")
                                 .font(.system(.subheadline, design: .rounded))
                                 .foregroundColor(.white)
                         }
@@ -143,7 +143,7 @@ struct BudgetProgressCard: View {
                 }
             }
             .padding(16)
-            .background(Color.white.opacity(0.08))
+            .background(Color.white.opacity(0.1))
             .cornerRadius(16)
             .onAppear {
                 checkOverspentCategories()

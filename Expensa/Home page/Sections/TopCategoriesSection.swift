@@ -141,7 +141,7 @@ struct TopCategoriesSection: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .topLeading)
-            .background(Color.white.opacity(0.16))
+            .background(Color.white.opacity(0.1))
             .cornerRadius(16)
             .onAppear {
                 // Calculate total once on appear

@@ -3,7 +3,7 @@
 //  Expensa
 //
 //  Created by Andrew Sereda on 26.10.2024.
-//  HomePage.swift push to github check
+//  
 
 import SwiftUI
 import CoreData
@@ -67,6 +67,9 @@ struct HomePage: View {
     private var shouldShowEmptyState: Bool {
         allExpensesEver.isEmpty && currentBudget == nil
     }
+    
+    // Use the cached totalSpent from TotalSpentRow instead of recalculating
+    @State private var totalSpent: Decimal = 0
 
     var body: some View {
         ZStack {
@@ -80,23 +83,13 @@ struct HomePage: View {
                             Spacer()
                             TotalSpentRow(
                                 expenses: fetchedExpenses,
-                                selectedDate: filterManager.selectedDate
+                                selectedDate: filterManager.selectedDate,
+                                onTotalSpentCalculated: { amount in
+                                    totalSpent = amount
+                                }
                             )
                             .padding(.horizontal, 12)
-                            //
-                            //                            DailySpendingProgressGraph(
-                            //                                expenses: Array(fetchedExpenses),
-                            //                                selectedDate: filterManager.selectedDate
-                            //                            )
                             
-                            //                            SpendingProgressGraph(
-                            //                                expenses: Array(fetchedExpenses),
-                            //                                selectedDate: filterManager.selectedDate
-                            //                            )
-                            //                            CumulativeSpendingGraph(
-                            //                                expenses: Array(fetchedExpenses),
-                            //                                selectedDate: filterManager.selectedDate
-                            //                                )
                             MonthlyComparisonChart(
                                 currentMonthExpenses: Array(fetchedExpenses),
                                 selectedDate: filterManager.selectedDate
@@ -109,13 +102,14 @@ struct HomePage: View {
                                 .padding(.horizontal, 12)
                                 .environmentObject(currencyManager)
                             
-                            //                        if let budget = currentBudget {
-                            //                            CategoryLimitsSection(
-                            //                                budget: budget,
-                            //                                budgetManager: budgetManager,
-                            //                                expenseManager: expenseManager
-                            //                            )
-                            //                        } else {
+                            if let _ = currentBudget {
+                                BudgetProgressCard(
+                                    expenses: fetchedExpenses,
+                                    budget: currentBudget,
+                                    totalSpent: totalSpent
+                                )
+                                .padding(.horizontal, 12)
+                            }
                             
                             TopCategoriesSection(
                                 categorizedExpenses: categorizedExpenses,
@@ -125,12 +119,6 @@ struct HomePage: View {
                                 expenseManager: expenseManager
                             )
                             .padding(.horizontal, 12)
-                            
-                            //                            CategorySpendingSection(
-                            //                                categorizedExpenses: categorizedExpenses,
-                            //                                fetchedExpenses: fetchedExpenses
-                            //                            )
-                            //                        }
                             
                             if !recurringExpenses.isEmpty {
                                 SubscriptionsSection(

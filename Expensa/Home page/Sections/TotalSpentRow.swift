@@ -15,6 +15,9 @@ struct TotalSpentRow: View {
     let expenses: FetchedResults<Expense>
     let selectedDate: Date
     
+    // Add a callback to notify parent when total is calculated
+    var onTotalSpentCalculated: ((Decimal) -> Void)?
+    
     // Cache the total spent value
     @State private var cachedTotalSpent: Decimal = 0
     
@@ -87,5 +90,8 @@ struct TotalSpentRow: View {
         cachedTotalSpent = expenses.reduce(Decimal(0)) { sum, expense in
             sum + (expense.convertedAmount?.decimalValue ?? expense.amount?.decimalValue ?? 0)
         }
+        
+        // Notify parent view about the new value
+        onTotalSpentCalculated?(cachedTotalSpent)
     }
 }

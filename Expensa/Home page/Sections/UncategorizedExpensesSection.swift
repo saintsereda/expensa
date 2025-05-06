@@ -68,7 +68,7 @@ struct UncategorizedExpensesView: View {
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.white.opacity(0.16))
+                .background(Color.white.opacity(0.1))
                 .cornerRadius(16)
                 .contentTransition(.numericText())
             }
