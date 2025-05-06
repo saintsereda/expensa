@@ -161,6 +161,88 @@ struct TotalSpentRow: View {
     }
     
     @ViewBuilder
+    private func budgetProgressCard() -> some View {
+        if let info = budgetInfo {
+            VStack(alignment: .leading, spacing: 12) {
+                // Budget status text with three cases
+                VStack(alignment: .leading, spacing: 4) {
+                    if info.isOverspent {
+                        // Case 3: Budget is overspent
+                        Text("🙈 Budget overspent")
+                            .font(.system(.body, design: .rounded))
+                            .foregroundColor(.white)
+                        Text("You're \(info.formattedOverspent) over your monthly budget")
+                            .font(.system(.subheadline, design: .rounded))
+                            .foregroundColor(.white)
+                    } else if !overspentCategories.isEmpty {
+                        // Case 2: Budget on track but categories are overspent
+                        Text("👌🏻 Budget still on track")
+                            .font(.system(.body, design: .rounded))
+                            .foregroundColor(.white)
+                        
+                        if overspentCategories.count == 1 {
+                            Text("You've overspent \"\(overspentCategories[0].name)\" category")
+                                .font(.system(.subheadline, design: .rounded))
+                                .foregroundColor(.white)
+                        } else {
+                            let firstCategory = overspentCategories[0]
+                            let remainingCount = overspentCategories.count - 1
+                            
+                            Text("You've overspent \"\(firstCategory.name)\" and \(remainingCount) \(remainingCount == 1 ? "category" : "categories")")
+                                .font(.system(.subheadline, design: .rounded))
+                                .foregroundColor(.white)
+                        }
+                    } else {
+                        // Case 1: Budget on track, no categories overspent
+                        Text("👌🏻 Budget on track")
+                            .font(.system(.body, design: .rounded))
+                            .foregroundColor(.white)
+                    }
+                }
+                
+                // Progress bar
+                ZStack(alignment: .leading) {
+                    // Background track
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke((info.isOverspent ? Color(hex: "FF9090").opacity(0.16) : Color.white.opacity(0.12)), lineWidth: 1)
+                        .frame(height: 44)
+                    
+                    // Fill
+                    let percentage = min(1.0, Double(truncating: (totalSpent / info.amount) as NSDecimalNumber))
+                    
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(info.isOverspent ? Color(hex: "FF9090").opacity(0.16) : Color.white.opacity(0.16))
+                        .frame(width: max(0, CGFloat(percentage) * (UIScreen.main.bounds.width - 54)), height: 44)
+                        .animation(.spring(response: 0.4, dampingFraction: 0.95), value: percentage)
+                    
+                    // Text overlay showing remaining / total
+                    HStack {
+                        // Remaining amount on the left
+                        Text(info.isOverspent
+                            ? "\(info.formattedOverspent) over"
+                            : "\(info.formattedRemaining) left")
+                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .foregroundColor(.white)
+                            .padding(.leading, 12)
+                        
+                        Spacer()
+                        
+                        // "of total" on the right
+                        Text("of \(info.formattedTotal)")
+                            .font(.system(size: 15, weight: .medium, design: .rounded))
+                            .foregroundColor(.white)
+                            .padding(.trailing, 12)
+                    }
+                }
+            }
+            .padding(16)
+            .background(Color.white.opacity(0.08))
+            .cornerRadius(16)
+            .padding(.top, 12)
+        }
+    }
+    
+    @ViewBuilder
     private func overspentCategoriesText() -> some View {
         if !overspentCategories.isEmpty {
             VStack(alignment: .center, spacing: 4) {
@@ -193,10 +275,12 @@ struct TotalSpentRow: View {
             amountText()
                 .frame(maxWidth: .infinity, alignment: .center)
                 
-            budgetStatusText()
+        //    budgetStatusText()
+            
+            budgetProgressCard()
             
             // Add the category overspent warning
-            overspentCategoriesText()
+          //  overspentCategoriesText()
         }
         .onAppear {
             updateTotalSpent()
