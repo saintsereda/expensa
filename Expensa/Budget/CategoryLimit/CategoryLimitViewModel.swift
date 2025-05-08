@@ -18,6 +18,7 @@ class CategoryLimitViewModel: ObservableObject {
     @Published var showDeleteAlert = false
     @Published var shakeAmount: CGFloat = 0
     @Published var lastEnteredDigit = ""
+    @Published var isNewCategory: Bool = false
     
     // MARK: - Public Properties
     let category: Category
@@ -54,11 +55,13 @@ class CategoryLimitViewModel: ObservableObject {
     init(
         category: Category,
         categoryLimits: Binding<[Category: String]>,
-        selectedCategories: Binding<Set<Category>>
+        selectedCategories: Binding<Set<Category>>,
+        isNewCategory: Bool = false
     ) {
         self.category = category
         self.categoryLimitsBinding = categoryLimits
         self.selectedCategoriesBinding = selectedCategories
+        self.isNewCategory = isNewCategory
         
         // Pre-fill existing amount if any
         if let existingAmount = categoryLimits.wrappedValue[category] {
@@ -92,6 +95,12 @@ class CategoryLimitViewModel: ObservableObject {
             if let amountDecimal = parseAmount(amount) {
                 let formattedLimit = formatAmount(amountDecimal)
                 categoryLimitsBinding.wrappedValue[category] = formattedLimit
+                
+                // Only add to selectedCategories if this is a new category
+                if isNewCategory {
+                    selectedCategoriesBinding.wrappedValue.insert(category)
+                }
+                
                 return true
             } else {
                 errorMessage = "Invalid amount"

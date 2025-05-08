@@ -203,8 +203,12 @@ class BudgetFormViewModel: ObservableObject {
         }
     }
     
-    func selectCategory(_ category: Category) {
-        selectedCategories.insert(category)
+    // Updated method that makes adding to selectedCategories optional
+    func selectCategory(_ category: Category, addToSelected: Bool = false) {
+        if addToSelected {
+            selectedCategories.insert(category)
+        }
+        // Otherwise don't add to selectedCategories yet - will be done in CategoryLimitSheet on save
     }
     
     func removeCategory(_ category: Category) {

@@ -153,7 +153,8 @@ struct BudgetForm: View {
                 CategoryLimitSheet(
                     category: category,
                     categoryLimits: $viewModel.categoryLimits,
-                    selectedCategories: $viewModel.selectedCategories
+                    selectedCategories: $viewModel.selectedCategories,
+                    isNewCategory: !viewModel.selectedCategories.contains(category)
                 )
             }
             .navigationDestination(isPresented: $viewModel.showMonthlyLimitView) {
@@ -167,10 +168,10 @@ struct BudgetForm: View {
                 )
                 .onDisappear {
                     if let category = selectedCategory {
-                        // Add to selected categories
-                        viewModel.selectCategory(category)
-                        // Then navigate to category limit sheet
+                        // Just navigate to category limit sheet
+                        // Don't add to selectedCategories yet - that happens in CategoryLimitSheet if user saves
                         viewModel.selectedCategoryForLimit = category
+                        
                         // Reset selection for next time
                         selectedCategory = nil
                     }

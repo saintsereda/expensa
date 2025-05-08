@@ -16,12 +16,14 @@ struct CategoryLimitSheet: View {
     init(
         category: Category,
         categoryLimits: Binding<[Category: String]>,
-        selectedCategories: Binding<Set<Category>>
+        selectedCategories: Binding<Set<Category>>,
+        isNewCategory: Bool = false
     ) {
         _viewModel = StateObject(wrappedValue: CategoryLimitViewModel(
             category: category,
             categoryLimits: categoryLimits,
-            selectedCategories: selectedCategories
+            selectedCategories: selectedCategories,
+            isNewCategory: isNewCategory
         ))
     }
     
@@ -97,8 +99,18 @@ struct CategoryLimitSheet: View {
                 
                 // Bottom actions
                 HStack {
-                    // Show delete button if this category already has a limit
-                    if viewModel.hasExistingLimit {
+                    // Show different button based on context
+                    if viewModel.isNewCategory {
+                        // Cancel button for new categories
+                        Button("Cancel") {
+                            // No need to add the category to selectedCategories since it's canceled
+                            dismiss()
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                    } else if viewModel.hasExistingLimit {
+                        // Delete button for existing limits
                         Button(role: .destructive) {
                             viewModel.showDeleteAlert = true
                         } label: {
@@ -112,12 +124,8 @@ struct CategoryLimitSheet: View {
                             .cornerRadius(8)
                         }
                     } else {
-                        // Add Cancel button for new limits
+                        // Cancel button for existing categories with no limit
                         Button("Cancel") {
-                            // If it's a new category with no limit, remove it from selected categories
-                            if !viewModel.hasExistingLimit {
-                                viewModel.removeCategory()
-                            }
                             dismiss()
                         }
                         .foregroundColor(.primary)
@@ -127,7 +135,7 @@ struct CategoryLimitSheet: View {
                     
                     Spacer()
                     
-                    // Change button text based on whether we're setting a new limit or updating
+                    // Determine button label based on context
                     let buttonLabel = viewModel.hasExistingLimit ? "Update limit" : "Set limit"
                     
                     SaveButton(
@@ -135,6 +143,8 @@ struct CategoryLimitSheet: View {
                         label: buttonLabel,
                         action: {
                             if viewModel.saveLimit() {
+                                // Now the category will only be added to selectedCategories
+                                // if the user taps Save and it's a new category (handled in viewModel.saveLimit())
                                 dismiss()
                             }
                         }
