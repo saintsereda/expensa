@@ -152,12 +152,39 @@ struct ExportSheet: View {
     @Environment(\.managedObjectContext) private var viewContext
     @State private var selectedCategories: Set<Category>
     @State private var showingCategorySelection = false
+    @State private var showingDatePicker = false
     @State private var isLoading = false
+    @State private var errorMessage: String? = nil
+    @State private var showingErrorAlert = false
+    
+    // Create a filter manager for handling date selection
+    @StateObject private var filterManager = ExpenseFilterManager()
+    
     let categories: [Category]
     
     init(categories: [Category]) {
         self.categories = categories
         _selectedCategories = State(initialValue: Set(categories))
+    }
+    
+    private var formattedPeriod: String {
+        return filterManager.formattedPeriod()
+    }
+    
+    private func onPreviousPeriod() {
+        filterManager.changePeriod(next: false)
+    }
+    
+    private func onNextPeriod() {
+        filterManager.changePeriod(next: true)
+    }
+    
+    private func onPeriodSelected(start: Date, end: Date, isRange: Bool) {
+        if isRange {
+            filterManager.setDateRange(start: start, end: end)
+        } else {
+            filterManager.resetToSingleMonthMode(date: start)
+        }
     }
     
     var body: some View {
@@ -168,11 +195,8 @@ struct ExportSheet: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Extra space after navigation title
-                 //   Color.clear.frame(height: 16)
-                    
                     // Dropdowns section
-                    VStack(spacing: 8) { // Added 8px spacing between rows
+                    VStack(spacing: 8) {
                         // Categories Menu
                         Button {
                             showingCategorySelection = true
@@ -200,25 +224,28 @@ struct ExportSheet: View {
                             .cornerRadius(16)
                         }
                         
-                        // Time Period Menu (disabled)
-                        HStack {
-                            Text("Time Period")
-                                .foregroundColor(.primary)
-                            
-                            Spacer()
-                            
-                            Text("Soon")
-                                .foregroundColor(.gray)
-                            
-                            Image(systemName: "chevron.right")
-                                .foregroundColor(Color(uiColor: .tertiaryLabel))
-                                .font(.system(size: 14, weight: .semibold))
+                        // Time Period Menu (now enabled)
+                        Button {
+                            showingDatePicker = true
+                        } label: {
+                            HStack {
+                                Text("Time Period")
+                                    .foregroundColor(.primary)
+                                
+                                Spacer()
+                                
+                                Text(formattedPeriod)
+                                    .foregroundColor(.gray)
+                                
+                                Image(systemName: "chevron.right")
+                                    .foregroundColor(Color(uiColor: .tertiaryLabel))
+                                    .font(.system(size: 14, weight: .semibold))
+                            }
+                            .padding(.horizontal, 16)
+                            .frame(height: 56)
+                            .background(Color(uiColor: .systemGray6))
+                            .cornerRadius(16)
                         }
-                        .padding(.horizontal, 16)
-                        .frame(height: 56)
-                        .background(Color(uiColor: .systemGray5))
-                        .cornerRadius(16)
-                        .opacity(0.5)
                     }
                     .padding(.horizontal, 16)
                     
@@ -229,11 +256,20 @@ struct ExportSheet: View {
                         Button(action: {
                             isLoading = true
                             
-                            // Start the export process
-                            exportData(context: viewContext, categories: Array(selectedCategories)) { success in
+                            // Get the current date interval from filter manager
+                            let dateInterval = filterManager.currentPeriodInterval()
+                            
+                            // Start the export process with date range
+                            exportData(
+                                context: viewContext,
+                                categories: Array(selectedCategories),
+                                startDate: dateInterval.start,
+                                endDate: dateInterval.end
+                            ) { success, message in
                                 // Update loading state on the main thread
                                 DispatchQueue.main.async {
                                     isLoading = false
+                                    
                                     if success {
                                         // First dismiss this sheet
                                         dismiss()
@@ -242,6 +278,10 @@ struct ExportSheet: View {
                                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                                             presentShareSheetAfterDismissal()
                                         }
+                                    } else if let errorMsg = message {
+                                        // Handle error with in-sheet alert
+                                        errorMessage = errorMsg
+                                        showingErrorAlert = true
                                     }
                                 }
                             }
@@ -266,14 +306,21 @@ struct ExportSheet: View {
                         .disabled(selectedCategories.isEmpty || isLoading)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 16)
-                        .padding(.bottom, 24) // Additional bottom padding to make total 40px
+                        .padding(.bottom, 24)
                     }
                 }
             }
             .navigationTitle("Export data")
             .navigationBarTitleDisplayMode(.inline)
+            .alert(isPresented: $showingErrorAlert) {
+                Alert(
+                    title: Text("Export Error"),
+                    message: Text(errorMessage ?? "An unknown error occurred"),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
         }
-        .presentationDetents([.height(280)])
+        .presentationDetents([.height(480)])
         .presentationDragIndicator(.visible)
         .presentationCornerRadius(32)
         .sheet(isPresented: $showingCategorySelection) {
@@ -282,17 +329,13 @@ struct ExportSheet: View {
                 categories: categories
             )
         }
-    }
-    
-    private var categorySelectionText: String {
-        if selectedCategories.isEmpty {
-            return "All categories"
-        } else if selectedCategories.count == categories.count {
-            return "All categories"
-        } else if selectedCategories.count == 1 {
-            return selectedCategories.first?.name ?? "1 category"
-        } else {
-            return "\(selectedCategories.count) categories"
+        .sheet(isPresented: $showingDatePicker) {
+            // Use our filter manager for the period picker
+            PeriodPickerView(
+                filterManager: filterManager,
+                showingDatePicker: $showingDatePicker,
+                onPeriodSelected: onPeriodSelected
+            )
         }
     }
 }

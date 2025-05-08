@@ -13,14 +13,36 @@ import UIKit
 var lastExportedFilePath: URL?
 
 // Main export function with completion handler
-func exportData(context: NSManagedObjectContext, categories: [Category], completion: @escaping (Bool) -> Void = { _ in }) {
+func exportData(
+    context: NSManagedObjectContext,
+    categories: [Category],
+    startDate: Date? = nil,
+    endDate: Date? = nil,
+    completion: @escaping (Bool, String?) -> Void = { _, _ in }
+) {
     let fetchRequest: NSFetchRequest<Expense> = Expense.fetchRequest()
     
-    // Add predicate to filter by selected categories
+    // Create predicates array to combine multiple filters
+    var predicates: [NSPredicate] = []
+    
+    // Add category filter if specified
     if !categories.isEmpty {
-        fetchRequest.predicate = NSPredicate(format: "category IN %@", categories)
+        predicates.append(NSPredicate(format: "category IN %@", categories))
     }
     
+    // Add date range filter if specified
+    if let start = startDate, let end = endDate {
+        predicates.append(NSPredicate(format: "date >= %@ AND date <= %@", start as NSDate, end as NSDate))
+    }
+    
+    // Combine predicates if we have multiple
+    if predicates.count > 1 {
+        fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
+    } else if predicates.count == 1 {
+        fetchRequest.predicate = predicates.first
+    }
+    
+    // Add sort descriptor to sort by date (ascending order)
     fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]
     
     do {
@@ -30,8 +52,8 @@ func exportData(context: NSManagedObjectContext, categories: [Category], complet
         // Check if there are no expenses to export
         if expenses.isEmpty {
             print("No expenses to export.")
-            showAlert(message: "No expenses to export for the selected categories.")
-            completion(false)
+            // Return error message instead of showing alert
+            completion(false, "No expenses to export for the selected filters.")
             return
         }
         
@@ -58,10 +80,15 @@ func exportData(context: NSManagedObjectContext, categories: [Category], complet
             csvText.append(row)
         }
         
-        // Define file path and write the CSV data
-        let fileName = "ExpensaExport_\(DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short)).csv"
+        // Create a more descriptive filename including date range
+        let startDateStr = dateFormatter.string(from: startDate ?? Date())
+        let endDateStr = dateFormatter.string(from: endDate ?? Date())
+        let dateRangeStr = startDate != nil && endDate != nil ? "_\(startDateStr)_to_\(endDateStr)" : ""
+        
+        let fileName = "ExpensaExport\(dateRangeStr)_\(DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .short)).csv"
             .replacingOccurrences(of: "/", with: "-")
             .replacingOccurrences(of: ":", with: "-")
+        
         let path = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(fileName)
         try csvText.write(to: path, atomically: true, encoding: .utf8)
         
@@ -71,31 +98,31 @@ func exportData(context: NSManagedObjectContext, categories: [Category], complet
         // Add a small delay to simulate processing time
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             // Notify completion with success
-            completion(true)
+            completion(true, nil)
             
             // We'll handle the share sheet later
         }
         
     } catch {
         print("Failed to fetch expenses or write CSV file: \(error)")
-        showAlert(message: "Failed to export data. Please try again.")
-        completion(false)
+        // Return error message instead of showing alert
+        completion(false, "Failed to export data. Please try again.")
     }
 }
 
 // Function to show alerts
-func showAlert(message: String) {
-    DispatchQueue.main.async {
-        let alert = UIAlertController(title: "Export", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
-        
-        // Find the active scene to present the alert
-        if let windowScene = UIApplication.shared.connectedScenes
-            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
-            windowScene.windows.first?.rootViewController?.present(alert, animated: true)
-        }
-    }
-}
+//func showAlert(message: String) {
+//    DispatchQueue.main.async {
+//        let alert = UIAlertController(title: "Export", message: message, preferredStyle: .alert)
+//        alert.addAction(UIAlertAction(title: "OK", style: .default))
+//        
+//        // Find the active scene to present the alert
+//        if let windowScene = UIApplication.shared.connectedScenes
+//            .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+//            windowScene.windows.first?.rootViewController?.present(alert, animated: true)
+//        }
+//    }
+//}
 
 // Function to present the share sheet after dismissal of export sheet
 func presentShareSheetAfterDismissal() {
