@@ -20,14 +20,15 @@ class BudgetFormViewModel: ObservableObject {
     @Published var showCategorySheet = false
     @Published var showMonthlyLimitView = false
     @Published var isProcessing = false
-    @Published var alertMessage = ""
-    @Published var alertType: AlertType = .error
-    @Published var showAlert = false
+    @Published var errorMessage = ""
+    @Published var showErrorAlert = false
+    @Published var budgetSaved = false
     
     // MARK: - Alert Types
-    enum AlertType {
-        case error
-        case limitExceeded
+    enum ValidationResult {
+        case valid
+        case limitExceeded(message: String)
+        case error(message: String)
     }
     
     // MARK: - Private Properties
@@ -109,18 +110,21 @@ class BudgetFormViewModel: ObservableObject {
     }
     
     // MARK: - Public Methods
-    func validateAndSaveBudget() async {
-        // If no amount is set but we have category limits, save directly
+    
+    // Show error alert
+    func showErrorAlert(message: String) {
+        errorMessage = message
+        showErrorAlert = true
+    }
+    
+    func validateBudget() async -> ValidationResult {
+        // If no amount is set but we have category limits, it's valid
         if amount.isEmpty && !categoryLimits.isEmpty {
-            await saveBudget()
-            return
+            return .valid
         }
         
         guard let totalBudget = parseAmount(amount) else {
-            alertType = .error
-            alertMessage = BudgetManager.BudgetError.invalidAmount.errorDescription ?? ""
-            showAlert = true
-            return
+            return .error(message: BudgetManager.BudgetError.invalidAmount.errorDescription ?? "Invalid amount")
         }
         
         // Calculate sum of category limits
@@ -128,11 +132,26 @@ class BudgetFormViewModel: ObservableObject {
         
         // Check if category limits exceed total budget
         if totalCategoryLimits > totalBudget {
-            alertType = .limitExceeded
-            alertMessage = "The sum of category limits (\(formatAmount(totalCategoryLimits))) exceeds your monthly budget (\(formatAmount(totalBudget))). Do you want to edit the limits or proceed anyway?"
-            showAlert = true
-        } else {
+            let message = "The sum of category limits (\(formatAmount(totalCategoryLimits))) exceeds your monthly budget (\(formatAmount(totalBudget)))."
+            return .limitExceeded(message: message)
+        }
+        
+        return .valid
+    }
+    
+    
+    func validateAndSaveBudget() async {
+        let result = await validateBudget()
+        
+        switch result {
+        case .valid:
             await saveBudget()
+        case .limitExceeded(let message):
+            errorMessage = message
+            showErrorAlert = true
+        case .error(let message):
+            errorMessage = message
+            showErrorAlert = true
         }
     }
     
@@ -171,11 +190,15 @@ class BudgetFormViewModel: ObservableObject {
             try? await budgetManager.updateBudgetAmountFromCategories(budget)
             
             NotificationCenter.default.post(name: Notification.Name("BudgetUpdated"), object: nil)
+            
+            // Mark as saved and ready to dismiss
+            budgetSaved = true
         } catch {
             await MainActor.run {
-                alertType = .error
-                alertMessage = error.localizedDescription
-                showAlert = true
+                errorMessage = error.localizedDescription
+                showErrorAlert = true
+                // Don't dismiss on error
+                budgetSaved = false
             }
         }
     }

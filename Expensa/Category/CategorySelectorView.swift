@@ -9,10 +9,6 @@ import SwiftUI
 import CoreData
 import Combine
 
-import SwiftUI
-import CoreData
-import Combine
-
 struct CategorySelectorView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var categoryManager: CategoryManager
@@ -27,21 +23,39 @@ struct CategorySelectorView: View {
     @State private var navigateToNewCategory: Bool = false
     @State private var isKeyboardVisible = false
     
+    // Optional filter to exclude certain categories
+    private let excludedCategories: Set<Category>
+    
     private let lastSelectedCategoryKey = "lastSelectedCategoryID"
     
+    // Default initializer for backward compatibility
     init(selectedCategory: Binding<Category?>) {
         self._selectedCategory = selectedCategory
+        self.excludedCategories = []
     }
     
-    // Function to update categories based on search text
+    // New initializer with excluded categories parameter
+    init(selectedCategory: Binding<Category?>, excludedCategories: Set<Category> = []) {
+        self._selectedCategory = selectedCategory
+        self.excludedCategories = excludedCategories
+    }
+    
+    // Function to update categories based on search text and excluded categories
     private func updateCategories() {
-        let allCategories = categoryManager.getCategories()
+        var allCategories = categoryManager.getCategories()
+        
+        // Filter out excluded categories
+        if !excludedCategories.isEmpty {
+            allCategories = allCategories.filter { category in
+                !excludedCategories.contains(category)
+            }
+        }
         
         if searchText.isEmpty {
-            // Show all categories when search is empty
+            // Show filtered categories when search is empty
             categories = allCategories
         } else {
-            // Filter by search text
+            // Filter by search text and excluded categories
             categories = allCategories.filter { category in
                 (category.name ?? "").localizedCaseInsensitiveContains(searchText)
             }

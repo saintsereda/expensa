@@ -14,8 +14,12 @@ struct BudgetForm: View {
     @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel: BudgetFormViewModel
     @State private var isInNavigationFlow: Bool = false
+    @State private var showCategorySelectorView = false
+    @State private var selectedCategory: Category?
+    @State private var showConfirmationDialog = false
+    @State private var dialogMessage = ""
     
-    // Initialize for new budget
+    // Initialize for new budget (with amount already set from MonthlyLimitView)
     init(initialAmount: String = "", isInNavigationFlow: Bool = false) {
         _viewModel = StateObject(wrappedValue: BudgetFormViewModel(initialAmount: initialAmount))
         self._isInNavigationFlow = State(initialValue: isInNavigationFlow)
@@ -31,25 +35,13 @@ struct BudgetForm: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
-                    // Monthly budget section
-                    VStack(spacing: 16) {
-                        if viewModel.amount.isEmpty {
-                            // Show CardView when no budget is set
-                            CardView(
-                                emoji: "🗓",
-                                title: "Limit for all expenses",
-                                description: "Take control of your budget by setting a single spending limit for the entire month",
-                                buttonTitle: "Set limit",
-                                buttonAction: { viewModel.showMonthlyLimitView = true }
-                            )
-                        } else {
-                            // Show BudgetSetCardView when budget is set
-                            BudgetSetCardView(
-                                emoji: "🗓",
-                                amount: viewModel.formatAmount(viewModel.parseAmount(viewModel.amount) ?? 0),
-                                action: { viewModel.showMonthlyLimitView = true }
-                            )
-                        }
+                    // Monthly budget section - simplified to just show the current amount
+                    if !viewModel.amount.isEmpty {
+                        BudgetSetCardView(
+                            emoji: "🗓",
+                            amount: viewModel.formatAmount(viewModel.parseAmount(viewModel.amount) ?? 0),
+                            action: { viewModel.showMonthlyLimitView = true }
+                        )
                     }
                     
                     // Categories Section
@@ -60,8 +52,8 @@ struct BudgetForm: View {
                                 categoryIcons: true,
                                 title: "Limits for specific categories",
                                 description: "Customize your spending by setting individual limits for different categories",
-                                buttonTitle: "Select categories",
-                                buttonAction: { viewModel.showCategorySheet = true },
+                                buttonTitle: "Select category",
+                                buttonAction: { showCategorySelectorView = true },
                                 isDisabled: false
                             )
                         } else {
@@ -101,8 +93,8 @@ struct BudgetForm: View {
                                 // Add SecondarySmallButton for adding more categories
                                 SecondarySmallButton(
                                     isEnabled: true,
-                                    label: "Adjust categories",
-                                    action: { viewModel.showCategorySheet = true }
+                                    label: "Add category",
+                                    action: { showCategorySelectorView = true }
                                 )
                                 .padding(.top, 8)
                             }
@@ -131,7 +123,7 @@ struct BudgetForm: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 16)
             }
-            .navigationTitle(viewModel.isEditing ? "Edit budget" : "Add budget")
+            .navigationTitle(viewModel.isEditing ? "Edit budget" : "Set category limits")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(
                 leading: Button("Cancel") {
@@ -140,18 +132,23 @@ struct BudgetForm: View {
                 .foregroundColor(.primary),
                 trailing: Button("Save") {
                     Task {
-                        await viewModel.validateAndSaveBudget()
-                        dismiss()
+                        let validationResult = await viewModel.validateBudget()
+                        
+                        switch validationResult {
+                        case .valid:
+                            await viewModel.saveBudget()
+                        case .limitExceeded(let message):
+                            dialogMessage = message
+                            showConfirmationDialog = true
+                        case .error(let message):
+                            viewModel.showErrorAlert(message: message)
+                        }
                     }
                 }
                 .foregroundColor(.primary)
                 .disabled(!viewModel.isValidInput)
             )
             .navigationBarBackButtonHidden(isInNavigationFlow)
-            .navigationDestination(isPresented: $viewModel.showCategorySheet) {
-                CategorySheet(selectedCategories: $viewModel.selectedCategories)
-            }
-            // Using navigationDestination instead of sheet for consistent experience
             .navigationDestination(item: $viewModel.selectedCategoryForLimit) { category in
                 CategoryLimitSheet(
                     category: category,
@@ -159,27 +156,53 @@ struct BudgetForm: View {
                     selectedCategories: $viewModel.selectedCategories
                 )
             }
-            .interactiveDismissDisabled()
-            .disabled(viewModel.isProcessing)
-            .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
-                switch viewModel.alertType {
-                case .error:
-                    Button("OK", role: .cancel) { }
-                case .limitExceeded:
-                    Button("Edit Limits", role: .cancel) { }
-                    Button("Save Anyway") {
-                        Task {
-                            await viewModel.saveBudget()
-                            dismiss()
-                        }
-                    }
-                }
-            }
-            // Navigation destination to the monthly limit view
             .navigationDestination(isPresented: $viewModel.showMonthlyLimitView) {
                 MonthlyLimitView(amount: $viewModel.amount)
             }
+            .sheet(isPresented: $showCategorySelectorView) {
+                // Pass the currently selected categories as excluded categories
+                CategorySelectorView(
+                    selectedCategory: $selectedCategory,
+                    excludedCategories: viewModel.selectedCategories
+                )
+                .onDisappear {
+                    if let category = selectedCategory {
+                        // Add to selected categories
+                        viewModel.selectCategory(category)
+                        // Then navigate to category limit sheet
+                        viewModel.selectedCategoryForLimit = category
+                        // Reset selection for next time
+                        selectedCategory = nil
+                    }
+                }
+            }
             .interactiveDismissDisabled()
+            .disabled(viewModel.isProcessing)
+            // Regular alert for errors
+            .alert(viewModel.errorMessage, isPresented: $viewModel.showErrorAlert) {
+                Button("OK", role: .cancel) { }
+            }
+            // Confirmation dialog for limit exceeded
+            .confirmationDialog(
+                "Category limits exceed budget",
+                isPresented: $showConfirmationDialog,
+                titleVisibility: .visible
+            ) {
+                Button("Edit limits", role: .cancel) { }
+                Button("Save anyway", role: .destructive) {
+                    Task {
+                        await viewModel.saveBudget()
+                    }
+                }
+            } message: {
+                Text(dialogMessage)
+            }
+            // Watch for budget saved state to dismiss the view
+            .onChange(of: viewModel.budgetSaved) { _, isSaved in
+                if isSaved {
+                    dismiss()
+                }
+            }
         }
     }
 }

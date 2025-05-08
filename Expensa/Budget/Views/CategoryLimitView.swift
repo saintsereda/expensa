@@ -130,12 +130,31 @@ struct CategoryLimitSheet: View {
                             .background(Color(UIColor.systemGray6))
                             .cornerRadius(8)
                         }
+                    } else {
+                        // Add Cancel button for new limits
+                        Button("Cancel") {
+                            // If it's a new category with no limit, remove it from selected categories
+                            if categoryLimits[category] == nil {
+                                selectedCategories.remove(category)
+                            }
+                            dismiss()
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
                     }
                     
                     Spacer()
                     
-                    SaveButton(isEnabled: true, label: "Set limit", action: saveLimit)
-                        .tint(.primary)
+                    // Change button text based on whether we're setting a new limit or updating
+                    let buttonLabel = categoryLimits[category] == nil ? "Set limit" : "Update limit"
+                    
+                    SaveButton(
+                        isEnabled: !amount.isEmpty,
+                        label: buttonLabel,
+                        action: saveLimit
+                    )
+                    .tint(.primary)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 32)

@@ -8,6 +8,9 @@
 import SwiftUI
 import Foundation
 
+import SwiftUI
+import Foundation
+
 struct MonthlyLimitView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var amount: String
@@ -38,11 +41,31 @@ struct MonthlyLimitView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Instructions
-                Text("Set monthly limit")
-                    .font(.headline)
-                    .foregroundColor(.gray)
-                    .padding(.top, 16)
+                // Title and instruction
+                VStack(spacing: 12) {
+                    // Emoji icon
+                    ZStack {
+                        Circle()
+                            .fill(Color.primary.opacity(0.1))
+                            .frame(width: 64, height: 64)
+                        
+                        Text("🗓")
+                            .font(.system(size: 32))
+                    }
+                    .padding(.top, 20)
+                    
+                    Text("Set monthly budget")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                        .multilineTextAlignment(.center)
+                        
+                    Text("Enter the total amount you want to budget for the month")
+                        .font(.body)
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                }
+                .padding(.bottom, 16)
                 
                 // Amount display section
                 VStack(alignment: .leading, spacing: 8) {
@@ -103,15 +126,33 @@ struct MonthlyLimitView: View {
                 
                 // Bottom action
                 HStack {
+                    // Cancel button
+                    Button("Cancel") {
+                        // Clear amount before dismissing to signal cancellation
+                        localAmount = ""
+                        amount = ""
+                        dismiss()
+                    }
+                    .foregroundColor(.primary)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    
                     Spacer()
-                    SaveButton(isEnabled: true, label: "Set limit", action: saveAmount)
-                        .tint(.primary)
+                    
+                    SaveButton(
+                        isEnabled: !localAmount.isEmpty,
+                        label: "Continue",
+                        action: saveAmount
+                    )
+                    .tint(.primary)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 32)
             }
             .navigationTitle("Monthly Budget")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)
+            .interactiveDismissDisabled()
             .onAppear {
                 // Pre-fill with existing amount
                 if !amount.isEmpty {
@@ -123,7 +164,7 @@ struct MonthlyLimitView: View {
         }
     }
     
-    // We only need to keep the triggerShake method locally since it references local state
+    // Trigger shake method for invalid input
     private func triggerShake() {
         withAnimation(.linear(duration: 0.3)) {
             shakeAmount = 1
@@ -135,13 +176,24 @@ struct MonthlyLimitView: View {
     }
     
     private func saveAmount() {
-        // Only update the binding when save is explicitly tapped
+        // Update the binding when save/continue is tapped
         if !localAmount.isEmpty {
-            amount = localAmount
+            // Format the amount using CurrencyConverter
+            if let amountDecimal = KeypadInputHelpers.parseAmount(
+                localAmount,
+                currencySymbol: currencyManager.defaultCurrency?.symbol
+            ) {
+                amount = CurrencyConverter.shared.formatAmount(
+                    amountDecimal,
+                    currency: currencyManager.defaultCurrency ?? Currency()
+                )
+            } else {
+                amount = localAmount
+            }
+            
+            // Call the onSave callback if provided
+            onSave?()
         }
-        
-        // Call the onSave callback if provided
-        onSave?()
         
         // Return to parent view
         dismiss()

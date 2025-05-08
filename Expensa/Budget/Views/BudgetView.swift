@@ -13,6 +13,12 @@ struct BudgetView: View {
     @Environment(\.colorScheme) private var colorScheme
     @StateObject private var viewModel = BudgetViewModel()
     
+    // Add state for direct monthly limit flow
+    @State private var showMonthlyLimitDirectly = false
+    @State private var showBudgetFormWithAmount = false
+    @State private var newBudgetAmount = ""
+    @State private var showDeleteConfirmation = false
+    
     private var monthSwitcherView: some View {
         Menu {
             // Current month option
@@ -58,8 +64,8 @@ struct BudgetView: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack {
-                                monthSwitcherView
-                                    .padding(.vertical)
+                monthSwitcherView
+                    .padding(.vertical)
                 
                 if viewModel.isLoading {
                     ProgressView()
@@ -70,20 +76,37 @@ struct BudgetView: View {
                     EmptyBudgetView(
                         selectedDate: viewModel.selectedDate,
                         isCurrentMonth: viewModel.isCurrentMonth,
-                        onAddBudget: { viewModel.showAddBudget = true }
+                        onAddBudget: {
+                            // Show monthly limit view first
+                            showMonthlyLimitDirectly = true
+                        }
                     )
                     .transition(.opacity)
                 }
             }
             .padding(.vertical)
         }
-        .sheet(isPresented: $viewModel.showAddBudget) {
-            BudgetForm()
+        // Sheet for showing the monthly limit view directly
+        .sheet(isPresented: $showMonthlyLimitDirectly) {
+            MonthlyLimitView(amount: $newBudgetAmount, onSave: {
+                if !newBudgetAmount.isEmpty {
+                    // Close this sheet and show the budget form with amount
+                    showBudgetFormWithAmount = true
+                }
+            })
+            .presentationCornerRadius(32)
+        }
+        // Sheet for showing the budget form with pre-filled amount
+        .sheet(isPresented: $showBudgetFormWithAmount) {
+            BudgetForm(initialAmount: newBudgetAmount)
                 .presentationCornerRadius(32)
                 .onDisappear {
+                    // Clear the amount and refresh data when form is closed
+                    newBudgetAmount = ""
                     viewModel.budgetModified()
                 }
         }
+        // Sheet for editing existing budget
         .sheet(item: $viewModel.budgetToEdit) { editData in
             BudgetForm(budget: editData.budget)
                 .presentationCornerRadius(32)
@@ -91,7 +114,11 @@ struct BudgetView: View {
                     viewModel.budgetModified()
                 }
         }
-        .alert("Delete Budget", isPresented: $viewModel.showDeleteAlert) {
+        .confirmationDialog(
+            "Delete Budget",
+            isPresented: $showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
             Button("Cancel", role: .cancel) {
                 viewModel.dismissAlerts()
             }
@@ -115,6 +142,13 @@ struct BudgetView: View {
                 Text(message)
             } else {
                 Text("An error occurred")
+            }
+        }
+        .onChange(of: showMonthlyLimitDirectly) { _, newValue in
+            // If MonthlyLimitView was dismissed and we have an amount,
+            // show the BudgetForm with that amount
+            if !newValue && !newBudgetAmount.isEmpty && !showBudgetFormWithAmount {
+                showBudgetFormWithAmount = true
             }
         }
         .disabled(viewModel.isLoading)
@@ -171,9 +205,6 @@ struct BudgetView: View {
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }
-            //
-            //                // Progress bar
-            //                ProgressBar(percentage: budgetData.monthlyPercentage)
             
             SecondarySmallButton(
                 isEnabled: true,
@@ -211,7 +242,7 @@ struct BudgetView: View {
             SecondarySmallButton(
                 isEnabled: true,
                 label: "Delete budget",
-                action: { viewModel.showDeleteAlert = true }
+                action: { showDeleteConfirmation = true }
             )
         }
     }
