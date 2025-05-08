@@ -21,6 +21,8 @@ func exportData(context: NSManagedObjectContext, categories: [Category], complet
         fetchRequest.predicate = NSPredicate(format: "category IN %@", categories)
     }
     
+    fetchRequest.sortDescriptors = [NSSortDescriptor(key: "date", ascending: true)]
+    
     do {
         // Fetch expenses from Core Data
         let expenses = try context.fetch(fetchRequest)
