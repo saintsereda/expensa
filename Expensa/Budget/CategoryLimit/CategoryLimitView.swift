@@ -3,6 +3,7 @@
 //  Expensa
 //
 //  Created by Andrew Sereda on 18.03.2025.
+//  Updated on 08.05.2025.
 //
 
 import Foundation
@@ -10,31 +11,18 @@ import SwiftUI
 
 struct CategoryLimitSheet: View {
     @Environment(\.dismiss) private var dismiss
-    let category: Category
-    @Binding var categoryLimits: [Category: String]
-    @Binding var selectedCategories: Set<Category>
+    @StateObject private var viewModel: CategoryLimitViewModel
     
-    // State for numeric keypad
-    @State private var amount: String = ""
-    @State private var shakeAmount: CGFloat = 0
-    @State private var lastEnteredDigit = ""
-    @State private var showDeleteAlert = false
-    
-    @EnvironmentObject private var currencyManager: CurrencyManager
-    
-    private let currencyConverter = CurrencyConverter.shared
-    
-    private var defaultCurrency: Currency? {
-        currencyManager.defaultCurrency
-    }
-    
-    private var formattedAmount: String {
-        // Clean up amount to avoid double currency symbols
-        var cleanedAmount = amount
-            .replacingOccurrences(of: defaultCurrency?.symbol ?? "$", with: "")
-            .trim()
-        
-        return KeypadInputHelpers.formatUserInput(cleanedAmount)
+    init(
+        category: Category,
+        categoryLimits: Binding<[Category: String]>,
+        selectedCategories: Binding<Set<Category>>
+    ) {
+        _viewModel = StateObject(wrappedValue: CategoryLimitViewModel(
+            category: category,
+            categoryLimits: categoryLimits,
+            selectedCategories: selectedCategories
+        ))
     }
     
     var body: some View {
@@ -43,9 +31,9 @@ struct CategoryLimitSheet: View {
                 
                 // Category Info
                 VStack(spacing: 8) {
-                    Text(category.icon ?? "🔹")
+                    Text(viewModel.category.icon ?? "🔹")
                         .font(.system(size: 48))
-                    Text(category.name ?? "")
+                    Text(viewModel.category.name ?? "")
                         .font(.title2)
                         .fontWeight(.semibold)
                 }
@@ -60,8 +48,8 @@ struct CategoryLimitSheet: View {
                 // Amount display section
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .center, spacing: 0) {
-                        if amount.isEmpty {
-                            if let currency = defaultCurrency {
+                        if viewModel.amount.isEmpty {
+                            if let currency = viewModel.defaultCurrency {
                                 let symbol = currency.symbol ?? currency.code ?? ""
                                 let isUSD = currency.code == "USD"
                                 Text(isUSD ? "\(symbol)0" : "0 \(symbol)")
@@ -73,11 +61,11 @@ struct CategoryLimitSheet: View {
                                     .padding(.horizontal, 16)
                             }
                         } else {
-                            if let currency = defaultCurrency {
+                            if let currency = viewModel.defaultCurrency {
                                 let symbol = currency.symbol ?? currency.code ?? ""
                                 let isUSD = currency.code == "USD"
                                 
-                                Text(isUSD ? "\(symbol)\(formattedAmount)" : "\(formattedAmount) \(symbol)")
+                                Text(isUSD ? "\(symbol)\(viewModel.formattedAmount)" : "\(viewModel.formattedAmount) \(symbol)")
                                     .font(.system(size: 72, weight: .medium, design: .rounded))
                                     .foregroundColor(.primary)
                                     .contentTransition(.numericText())
@@ -89,7 +77,7 @@ struct CategoryLimitSheet: View {
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .modifier(ShakeEffect(amount: 10, shakesPerUnit: 3, animatableData: shakeAmount))
+                    .modifier(ShakeEffect(amount: 10, shakesPerUnit: 3, animatableData: viewModel.shakeAmount))
                 }
                 .padding(.vertical, 32)
                 .padding(.horizontal, 16)
@@ -99,17 +87,10 @@ struct CategoryLimitSheet: View {
                 // Numeric keypad
                 NumericKeypad(
                     onNumberTap: { value in
-                        // Use shared helper method
-                        KeypadInputHelpers.handleNumberInput(
-                            value: value,
-                            amount: &amount,
-                            lastEnteredDigit: &lastEnteredDigit,
-                            triggerShake: triggerShake
-                        )
+                        viewModel.handleNumberInput(value: value)
                     },
                     onDelete: {
-                        // Use shared helper method
-                        KeypadInputHelpers.handleDelete(amount: &amount)
+                        viewModel.handleDelete()
                     }
                 )
                 .padding(.bottom, 20)
@@ -117,9 +98,9 @@ struct CategoryLimitSheet: View {
                 // Bottom actions
                 HStack {
                     // Show delete button if this category already has a limit
-                    if categoryLimits[category] != nil {
+                    if viewModel.hasExistingLimit {
                         Button(role: .destructive) {
-                            showDeleteAlert = true
+                            viewModel.showDeleteAlert = true
                         } label: {
                             HStack {
                                 Image(systemName: "trash")
@@ -134,8 +115,8 @@ struct CategoryLimitSheet: View {
                         // Add Cancel button for new limits
                         Button("Cancel") {
                             // If it's a new category with no limit, remove it from selected categories
-                            if categoryLimits[category] == nil {
-                                selectedCategories.remove(category)
+                            if !viewModel.hasExistingLimit {
+                                viewModel.removeCategory()
                             }
                             dismiss()
                         }
@@ -147,68 +128,45 @@ struct CategoryLimitSheet: View {
                     Spacer()
                     
                     // Change button text based on whether we're setting a new limit or updating
-                    let buttonLabel = categoryLimits[category] == nil ? "Set limit" : "Update limit"
+                    let buttonLabel = viewModel.hasExistingLimit ? "Update limit" : "Set limit"
                     
                     SaveButton(
-                        isEnabled: !amount.isEmpty,
+                        isEnabled: viewModel.isValidInput,
                         label: buttonLabel,
-                        action: saveLimit
+                        action: {
+                            if viewModel.saveLimit() {
+                                dismiss()
+                            }
+                        }
                     )
                     .tint(.primary)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 32)
             }
-            .navigationTitle("Category Limit")
+            .navigationTitle("Category limit")
             .navigationBarTitleDisplayMode(.inline)
-            .alert("Remove Category Budget", isPresented: $showDeleteAlert) {
+            // Replace alert with confirmationDialog
+            .confirmationDialog(
+                "Remove category budget",
+                isPresented: $viewModel.showDeleteAlert,
+                titleVisibility: .visible
+            ) {
                 Button("Cancel", role: .cancel) { }
                 Button("Remove", role: .destructive) {
-                    // Remove both the limit and the category
-                    categoryLimits.removeValue(forKey: category)
-                    selectedCategories.remove(category)
+                    viewModel.removeCategory()
                     dismiss()
                 }
             } message: {
-                Text("Are you sure you want to remove the budget for \(category.name ?? "")?")
+                Text("Are you sure you want to remove the budget for \(viewModel.category.name ?? "")?")
             }
-            .onAppear {
-                // Pre-fill existing amount if any
-                if let existingAmount = categoryLimits[category] {
-                    // Clean the amount before displaying it
-                    amount = KeypadInputHelpers.cleanDisplayAmount(
-                        existingAmount,
-                        currencySymbol: currencyManager.defaultCurrency?.symbol
-                    )
-                }
-            }
-        }
-    }
-    
-    // MARK: - Helper Methods
-    
-    private func triggerShake() {
-        withAnimation(.linear(duration: 0.3)) {
-            shakeAmount = 1
-        }
-        // Reset after animation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            shakeAmount = 0
-        }
-    }
-    
-    private func saveLimit() {
-        if !amount.isEmpty {
-            if let amountDecimal = KeypadInputHelpers.parseAmount(
-                amount,
-                currencySymbol: currencyManager.defaultCurrency?.symbol
-            ) {
-                categoryLimits[category] = currencyConverter.formatAmount(
-                    amountDecimal,
-                    currency: currencyManager.defaultCurrency ?? Currency()
+            .alert(isPresented: $viewModel.showErrorAlert) {
+                Alert(
+                    title: Text("Invalid amount"),
+                    message: Text(viewModel.errorMessage ?? "Please enter a valid amount"),
+                    dismissButton: .default(Text("OK"))
                 )
             }
         }
-        dismiss()
     }
 }

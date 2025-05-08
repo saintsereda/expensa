@@ -2,40 +2,23 @@
 //  MonthlyLimitView.swift
 //  Expensa
 //
-//  Created by Andrew Sereda on 18.03.2025.
+//  Created on 18.03.2025.
+//  Updated on 08.05.2025.
 //
-
-import SwiftUI
-import Foundation
 
 import SwiftUI
 import Foundation
 
 struct MonthlyLimitView: View {
     @Environment(\.dismiss) private var dismiss
-    @Binding var amount: String
-    
-    // Local state for amount editing
-    @State private var localAmount: String = ""
-    @State private var shakeAmount: CGFloat = 0
-    @State private var lastEnteredDigit = ""
-    
-    @EnvironmentObject private var currencyManager: CurrencyManager
+    @StateObject private var viewModel: MonthlyLimitViewModel
     
     // Add callback for save action
     var onSave: (() -> Void)?
     
-    private var defaultCurrency: Currency? {
-        currencyManager.defaultCurrency
-    }
-    
-    private var formattedAmount: String {
-        // Use helper to format amount
-        let cleanedAmount = localAmount
-            .replacingOccurrences(of: defaultCurrency?.symbol ?? "$", with: "")
-            .trim()
-        
-        return KeypadInputHelpers.formatUserInput(cleanedAmount)
+    init(amount: Binding<String>, onSave: (() -> Void)? = nil) {
+        _viewModel = StateObject(wrappedValue: MonthlyLimitViewModel(amountBinding: amount))
+        self.onSave = onSave
     }
     
     var body: some View {
@@ -70,8 +53,8 @@ struct MonthlyLimitView: View {
                 // Amount display section
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .center, spacing: 0) {
-                        if localAmount.isEmpty {
-                            if let currency = defaultCurrency {
+                        if viewModel.localAmount.isEmpty {
+                            if let currency = viewModel.defaultCurrency {
                                 let symbol = currency.symbol ?? currency.code ?? ""
                                 let isUSD = currency.code == "USD"
                                 Text(isUSD ? "\(symbol)0" : "0 \(symbol)")
@@ -83,11 +66,11 @@ struct MonthlyLimitView: View {
                                     .padding(.horizontal, 16)
                             }
                         } else {
-                            if let currency = defaultCurrency {
+                            if let currency = viewModel.defaultCurrency {
                                 let symbol = currency.symbol ?? currency.code ?? ""
                                 let isUSD = currency.code == "USD"
                                 
-                                Text(isUSD ? "\(symbol)\(formattedAmount)" : "\(formattedAmount) \(symbol)")
+                                Text(isUSD ? "\(symbol)\(viewModel.formattedAmount)" : "\(viewModel.formattedAmount) \(symbol)")
                                     .font(.system(size: 72, weight: .medium, design: .rounded))
                                     .foregroundColor(.primary)
                                     .contentTransition(.numericText())
@@ -99,7 +82,7 @@ struct MonthlyLimitView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .modifier(ShakeEffect(amount: 10, shakesPerUnit: 3, animatableData: shakeAmount))
+                    .modifier(ShakeEffect(amount: 10, shakesPerUnit: 3, animatableData: viewModel.shakeAmount))
                 }
                 .padding(.vertical, 32)
                 .padding(.horizontal, 16)
@@ -109,17 +92,10 @@ struct MonthlyLimitView: View {
                 // Numeric keypad
                 NumericKeypad(
                     onNumberTap: { value in
-                        // Use shared helper method
-                        KeypadInputHelpers.handleNumberInput(
-                            value: value,
-                            amount: &localAmount,
-                            lastEnteredDigit: &lastEnteredDigit,
-                            triggerShake: triggerShake
-                        )
+                        viewModel.handleNumberInput(value: value)
                     },
                     onDelete: {
-                        // Use shared helper method
-                        KeypadInputHelpers.handleDelete(amount: &localAmount)
+                        viewModel.handleDelete()
                     }
                 )
                 .padding(.bottom, 20)
@@ -128,9 +104,7 @@ struct MonthlyLimitView: View {
                 HStack {
                     // Cancel button
                     Button("Cancel") {
-                        // Clear amount before dismissing to signal cancellation
-                        localAmount = ""
-                        amount = ""
+                        viewModel.cancelInput()
                         dismiss()
                     }
                     .foregroundColor(.primary)
@@ -140,62 +114,33 @@ struct MonthlyLimitView: View {
                     Spacer()
                     
                     SaveButton(
-                        isEnabled: !localAmount.isEmpty,
+                        isEnabled: viewModel.isValidInput,
                         label: "Continue",
-                        action: saveAmount
+                        action: {
+                            if viewModel.saveAmount() {
+                                // Call the onSave callback if provided
+                                onSave?()
+                                // Return to parent view
+                                dismiss()
+                            }
+                        }
                     )
                     .tint(.primary)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 32)
             }
-            .navigationTitle("Monthly Budget")
+            .navigationTitle("Monthly иudget")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
             .interactiveDismissDisabled()
-            .onAppear {
-                // Pre-fill with existing amount
-                if !amount.isEmpty {
-                    let symbol = defaultCurrency?.symbol ?? "$"
-                    // Use clean display helper
-                    localAmount = KeypadInputHelpers.cleanDisplayAmount(amount, currencySymbol: symbol)
-                }
-            }
-        }
-    }
-    
-    // Trigger shake method for invalid input
-    private func triggerShake() {
-        withAnimation(.linear(duration: 0.3)) {
-            shakeAmount = 1
-        }
-        // Reset after animation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            shakeAmount = 0
-        }
-    }
-    
-    private func saveAmount() {
-        // Update the binding when save/continue is tapped
-        if !localAmount.isEmpty {
-            // Format the amount using CurrencyConverter
-            if let amountDecimal = KeypadInputHelpers.parseAmount(
-                localAmount,
-                currencySymbol: currencyManager.defaultCurrency?.symbol
-            ) {
-                amount = CurrencyConverter.shared.formatAmount(
-                    amountDecimal,
-                    currency: currencyManager.defaultCurrency ?? Currency()
+            .alert(isPresented: $viewModel.showErrorAlert) {
+                Alert(
+                    title: Text("Invalid фmount"),
+                    message: Text(viewModel.errorMessage ?? "Please enter a valid amount"),
+                    dismissButton: .default(Text("OK"))
                 )
-            } else {
-                amount = localAmount
             }
-            
-            // Call the onSave callback if provided
-            onSave?()
         }
-        
-        // Return to parent view
-        dismiss()
     }
 }
