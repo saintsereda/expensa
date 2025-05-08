@@ -91,6 +91,16 @@ class MonthlyLimitViewModel: ObservableObject {
         amountBinding.wrappedValue = ""
     }
     
+    // Add a method that preserves the original amount when going back
+    func preserveAmount() {
+        // Just save the current amount without clearing
+        if !localAmount.isEmpty {
+            if let amountDecimal = parseAmount(localAmount) {
+                amountBinding.wrappedValue = formatAmount(amountDecimal)
+            }
+        }
+    }
+    
     // MARK: - Helper Methods
     func parseAmount(_ formattedAmount: String) -> Decimal? {
         return KeypadInputHelpers.parseAmount(formattedAmount, currencySymbol: defaultCurrency?.symbol)

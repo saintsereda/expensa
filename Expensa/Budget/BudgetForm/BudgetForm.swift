@@ -157,7 +157,7 @@ struct BudgetForm: View {
                 )
             }
             .navigationDestination(isPresented: $viewModel.showMonthlyLimitView) {
-                MonthlyLimitView(amount: $viewModel.amount)
+                MonthlyLimitView(amount: $viewModel.amount, isFromBudgetForm: true)
             }
             .sheet(isPresented: $showCategorySelectorView) {
                 // Pass the currently selected categories as excluded categories

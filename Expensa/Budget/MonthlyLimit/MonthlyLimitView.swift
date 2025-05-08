@@ -16,9 +16,19 @@ struct MonthlyLimitView: View {
     // Add callback for save action
     var onSave: (() -> Void)?
     
+    // Flag to indicate if this view is being shown from BudgetForm
+    var isFromBudgetForm: Bool = false
+    
     init(amount: Binding<String>, onSave: (() -> Void)? = nil) {
         _viewModel = StateObject(wrappedValue: MonthlyLimitViewModel(amountBinding: amount))
         self.onSave = onSave
+        self.isFromBudgetForm = false
+    }
+    
+    // Add a specialized initializer for when shown from BudgetForm
+    init(amount: Binding<String>, isFromBudgetForm: Bool) {
+        _viewModel = StateObject(wrappedValue: MonthlyLimitViewModel(amountBinding: amount))
+        self.isFromBudgetForm = isFromBudgetForm
     }
     
     var body: some View {
@@ -41,7 +51,7 @@ struct MonthlyLimitView: View {
                         .font(.title2)
                         .fontWeight(.semibold)
                         .multilineTextAlignment(.center)
-                        
+                    
                     Text("Enter the total amount you want to budget for the month")
                         .font(.body)
                         .foregroundColor(.gray)
@@ -102,20 +112,33 @@ struct MonthlyLimitView: View {
                 
                 // Bottom action
                 HStack {
-                    // Cancel button
-                    Button("Cancel") {
-                        viewModel.cancelInput()
-                        dismiss()
+                    // Different button label based on context
+                    if isFromBudgetForm {
+                        // Back button when accessed from BudgetForm
+                        Button("Back") {
+                            // Simply dismiss without clearing the amount
+                            dismiss()
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                    } else {
+                        // Standard Cancel button for initial setup
+                        Button("Cancel") {
+                            viewModel.cancelInput()
+                            dismiss()
+                        }
+                        .foregroundColor(.primary)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
                     }
-                    .foregroundColor(.primary)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
                     
                     Spacer()
                     
+                    // Different button label based on context
                     SaveButton(
                         isEnabled: viewModel.isValidInput,
-                        label: "Continue",
+                        label: isFromBudgetForm ? "Save" : "Continue",
                         action: {
                             if viewModel.saveAmount() {
                                 // Call the onSave callback if provided
@@ -130,13 +153,13 @@ struct MonthlyLimitView: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 32)
             }
-            .navigationTitle("Monthly иudget")
+            .navigationTitle("Monthly Budget")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarBackButtonHidden(true)
             .interactiveDismissDisabled()
             .alert(isPresented: $viewModel.showErrorAlert) {
                 Alert(
-                    title: Text("Invalid фmount"),
+                    title: Text("Invalid Amount"),
                     message: Text(viewModel.errorMessage ?? "Please enter a valid amount"),
                     dismissButton: .default(Text("OK"))
                 )
