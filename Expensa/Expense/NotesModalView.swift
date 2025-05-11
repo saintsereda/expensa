@@ -84,11 +84,46 @@ struct NotesModalView: View {
         guard let tagName = tag.name else { return }
         let tagText = "#\(tagName) "
         
-        // Simple approach: just append the tag at the end
-        tempNotes = tempNotes + tagText
-        
-        // Make sure the text field has focus
-        isFocused = true
+        if let textView = textView {
+            // Get the current cursor position
+            let currentPosition = textView.selectedRange
+            
+            // If there's a valid cursor position
+            if currentPosition.location != NSNotFound {
+                // Create an NSString from our current text
+                let nsString = tempNotes as NSString
+                
+                // Insert the tag at the cursor position
+                let newText = nsString.replacingCharacters(in: currentPosition, with: tagText)
+                tempNotes = newText
+                
+                // Calculate new cursor position
+                let newPosition = currentPosition.location + tagText.count
+                
+                // Important: Wait a tiny bit for the text view to update before setting cursor
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    // Set the cursor position after the inserted tag
+                    textView.selectedRange = NSRange(location: newPosition, length: 0)
+                    
+                    // Make sure textView has focus
+                    textView.becomeFirstResponder()
+                }
+            } else {
+                // Fallback: append to the end
+                tempNotes = tempNotes + tagText
+                
+                // Set cursor to the end
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    let endPosition = tempNotes.count
+                    textView.selectedRange = NSRange(location: endPosition, length: 0)
+                    textView.becomeFirstResponder()
+                }
+            }
+        } else {
+            // Fallback if textView reference isn't available
+            tempNotes = tempNotes + tagText
+            isFocused = true
+        }
         
         // Add haptic feedback
         HapticFeedback.play()
@@ -98,7 +133,6 @@ struct NotesModalView: View {
         NavigationView {
             VStack(spacing: 0) {
                 // Use HighlightedTextEditor with the introspect callback
-                // The introspect method is defined in the HighlightedTextEditor extension
                 HighlightedTextEditor(text: $tempNotes, highlightRules: highlightRules)
                     .introspect(callback: introspectCallback)
                     .focused($isFocused)
@@ -156,7 +190,6 @@ struct NotesModalView: View {
         }
     }
 }
-
 
 // Tag chip component
 struct TagChip: View {
