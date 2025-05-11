@@ -1,6 +1,7 @@
 import SwiftUI
 import HighlightedTextEditor
 import CoreData
+import UIKit
 
 struct NotesModalView: View {
     @Environment(\.dismiss) var dismiss
@@ -10,10 +11,19 @@ struct NotesModalView: View {
     @State private var tempNotes: String
     @FocusState private var isFocused: Bool
     
-    // Static regular expression to match hashtags - more efficient
+    // Store a reference to the UITextView for direct manipulation
+    @State private var textView: UITextView?
+    
+    // Regex pattern for highlighting hashtags in the editor
     private static let hashtagPattern = try! NSRegularExpression(pattern: "#\\w+", options: [])
     
-    // Memoized highlighting rules
+    // Complete hashtag extraction pattern for when saving
+    private static let completeTagPattern = try! NSRegularExpression(
+        pattern: "#(\\w+)(?=\\s|[.,;:!?)]|$)",
+        options: []
+    )
+    
+    // Highlighting rules
     private let highlightRules: [HighlightRule] = [
         HighlightRule(
             pattern: NotesModalView.hashtagPattern,
@@ -23,8 +33,12 @@ struct NotesModalView: View {
         )
     ]
     
-    // Debounced extraction to reduce frequency
-    @State private var tagExtractionTask: Task<Void, Never>?
+    // Callback to get access to the text view
+    private var introspectCallback: IntrospectCallback {
+        return { editor in
+            self.textView = editor.textView
+        }
+    }
     
     init(notes: Binding<String>, tempTags: Binding<Set<Tag>>) {
         self._notes = notes
@@ -32,72 +46,65 @@ struct NotesModalView: View {
         self._tempNotes = State(initialValue: notes.wrappedValue)
     }
     
-    private func extractTempTags() {
-        // Cancel previous extraction task if it exists
-        tagExtractionTask?.cancel()
+    // Extract tags only when saving
+    private func extractFinalTags() {
+        let text = tempNotes
+        let range = NSRange(location: 0, length: text.utf16.count)
         
-        // Create a new extraction task with a slight delay
-        tagExtractionTask = Task {
-            // Add a small delay to avoid extracting on every keystroke
-            try? await Task.sleep(nanoseconds: 300_000_000) // 300ms
-            
-            if Task.isCancelled { return }
-            
-            await MainActor.run {
-                // Extract all hashtags from the text
-                let range = NSRange(location: 0, length: tempNotes.utf16.count)
-                let matches = NotesModalView.hashtagPattern.matches(in: tempNotes, options: [], range: range)
+        // Use the complete tag pattern to find only properly formed hashtags
+        let matches = NotesModalView.completeTagPattern.matches(in: text, options: [], range: range)
+        
+        // Clear existing temp tags
+        tempTags.removeAll()
+        
+        // Process each match
+        for match in matches {
+            // The first capture group contains just the tag name without the #
+            if match.numberOfRanges >= 2,
+               let tagNameRange = Range(match.range(at: 1), in: text) {
                 
-                // Clear existing temp tags
-                tempTags.removeAll()
+                let tagName = String(text[tagNameRange])
                 
-                // Create temporary tags
-                for match in matches {
-                    if let range = Range(match.range, in: tempNotes) {
-                        let tagText = String(tempNotes[range])
-                        let tagName = String(tagText.dropFirst()) // Remove # from the beginning
-                        
-                        // Try to find existing tag first
-                        if let existingTag = tagManager.findTag(name: tagName) {
-                            tempTags.insert(existingTag)
-                        } else {
-                            // Create temporary tag without saving to CoreData
-                            let tempTag = tagManager.createTemporaryTag(name: tagName)
-                            tempTags.insert(tempTag)
-                        }
-                    }
+                // Skip empty tags
+                guard !tagName.isEmpty else { continue }
+                
+                // Try to find existing tag first
+                if let existingTag = tagManager.findTag(name: tagName) {
+                    tempTags.insert(existingTag)
+                } else {
+                    // Create temporary tag without saving to CoreData
+                    let tempTag = tagManager.createTemporaryTag(name: tagName)
+                    tempTags.insert(tempTag)
                 }
             }
         }
     }
     
     private func insertTag(_ tag: Tag) {
-        // Insert tag at cursor position or end of text
         guard let tagName = tag.name else { return }
         let tagText = "#\(tagName) "
         
-        // Add the tag to the text
-        tempNotes.append(tagText)
+        // Simple approach: just append the tag at the end
+        tempNotes = tempNotes + tagText
         
-        // Add to temp tags
-        if !tempTags.contains(tag) {
-            tempTags.insert(tag)
-        }
+        // Make sure the text field has focus
+        isFocused = true
+        
+        // Add haptic feedback
+        HapticFeedback.play()
     }
     
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Text editor with optimized performance
+                // Use HighlightedTextEditor with the introspect callback
+                // The introspect method is defined in the HighlightedTextEditor extension
                 HighlightedTextEditor(text: $tempNotes, highlightRules: highlightRules)
+                    .introspect(callback: introspectCallback)
                     .focused($isFocused)
                     .padding()
-                    .onChange(of: tempNotes) { _, _ in
-                        // Debounced tag extraction
-                        extractTempTags()
-                    }
                 
-                // Bottom tag scroll section
+                // Bottom tag selection section
                 VStack(spacing: 0) {
                     Divider()
                     
@@ -131,8 +138,9 @@ struct NotesModalView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
+                        // Only extract tags when saving
+                        extractFinalTags()
                         notes = tempNotes
-                        extractTempTags()
                         HapticFeedback.play()
                         dismiss()
                     }
@@ -140,7 +148,7 @@ struct NotesModalView: View {
             }
             .foregroundColor(.primary)
             .onAppear {
-                // Slight delay before setting focus to allow view to fully render
+                // Focus the text editor with a slight delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                     isFocused = true
                 }
@@ -148,6 +156,7 @@ struct NotesModalView: View {
         }
     }
 }
+
 
 // Tag chip component
 struct TagChip: View {
