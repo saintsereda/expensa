@@ -166,7 +166,7 @@ struct HomePage: View {
         .navigationDestination(for: NavigationDestination.self) { destination in
             switch destination {
             case .allExpenses:
-                AllExpenses()
+                AllExpensesView()
                     .toolbar(.hidden, for: .tabBar)
             case .allCategories:
                 AllCategoriesView()
