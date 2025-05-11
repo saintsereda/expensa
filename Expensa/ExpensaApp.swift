@@ -98,6 +98,10 @@ struct ExpensaApp: App {
         // Generate recurring expenses after view and StateObjects are properly initialized
         Task {
             recurringManager.generateUpcomingExpenses()
+            
+            // Schedule notifications for upcoming recurring expenses
+            // This will only run if notifications are enabled in settings
+            recurringManager.scheduleNotificationsForUpcomingExpenses()
         }
     }
     

@@ -48,25 +48,32 @@ class NotificationRepository {
     }
     
     private func createUserSettings() -> UserSettings {
-        let userSettings = UserSettings(context: managedObjectContext)
-        userSettings.id = UUID()
-        userSettings.theme = "system"  // Default theme
-        userSettings.timeZone = TimeZone.current.identifier  // Current time zone
-        
-        // Set initial notification preferences
-        let initialPreferences = NotificationPreferences(
-            isNotificationsEnabled: false,
-            selectedTimes: [],
-            customTime: Date()
-        )
-        userSettings.notificationPreferences = try? JSONEncoder().encode(initialPreferences)
-        
-        do {
-            try managedObjectContext.save()
-        } catch {
-            print("Error creating user settings: \(error)")
+            let userSettings = UserSettings(context: managedObjectContext)
+            userSettings.id = UUID()
+            userSettings.theme = "system"  // Default theme
+            userSettings.timeZone = TimeZone.current.identifier  // Current time zone
+            
+            // Set default notification time to 10:00 AM
+            let calendar = Calendar.current
+            let defaultTime = calendar.date(bySettingHour: 10, minute: 0, second: 0, of: Date()) ?? Date()
+            
+            // Set initial notification preferences
+            let initialPreferences = NotificationPreferences(
+                isNotificationsEnabled: false,
+                selectedTimes: [],
+                customTime: Date(),
+                isRecurringExpenseNotificationsEnabled: false,
+                recurringExpenseNotificationTime: defaultTime,
+                recurringExpenseReminderDays: 1
+            )
+            userSettings.notificationPreferences = try? JSONEncoder().encode(initialPreferences)
+            
+            do {
+                try managedObjectContext.save()
+            } catch {
+                print("Error creating user settings: \(error)")
+            }
+            
+            return userSettings
         }
-        
-        return userSettings
-    }
 }

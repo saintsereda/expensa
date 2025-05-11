@@ -416,6 +416,24 @@ struct NavigationRow: View {
     }
 }
 
+struct DaySelectorPill: View {
+    let day: Int
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text("\(day) day\(day > 1 ? "s" : "")")
+                .font(.system(size: 14, weight: isSelected ? .semibold : .regular))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(isSelected ? Color.accentColor : Color(UIColor.systemGray5))
+                .foregroundColor(isSelected ? .white : .primary)
+                .cornerRadius(16)
+        }
+    }
+}
+
 struct SectionHeader: View {
     let text: String
     

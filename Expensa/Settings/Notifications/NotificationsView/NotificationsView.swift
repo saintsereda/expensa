@@ -28,7 +28,7 @@ struct NotificationsView: View {
                         color: .orange
                     )
                 }
-                .onChange(of: viewModel.isNotificationsEnabled) { newValue in
+                .onChange(of: viewModel.isNotificationsEnabled) { newValue, _ in
                     if newValue {
                         viewModel.requestPermission()
                     } else {
@@ -64,7 +64,7 @@ struct NotificationsView: View {
                                     selection: $viewModel.customTime,
                                     displayedComponents: .hourAndMinute
                                 )
-                                .onChange(of: viewModel.customTime) { _ in
+                                .onChange(of: viewModel.customTime) { _,_ in
                                     viewModel.updateNotifications()
                                 }
                             }
@@ -73,6 +73,50 @@ struct NotificationsView: View {
                 } header: {
                     SectionHeader(text: "Reminder Times")
                 }
+                // Recurring Expenses Section
+                Section {
+                    Toggle(isOn: $viewModel.isRecurringExpenseNotificationsEnabled) {
+                        NavigationRow(
+                            title: "Recurring expense reminders",
+                            subtitle: viewModel.isRecurringExpenseNotificationsEnabled ? "You'll be notified before recurring expenses" : "Notifications are disabled",
+                            icon: "repeat.circle.fill",
+                            color: .green
+                        )
+                    }
+                    
+                    if viewModel.isRecurringExpenseNotificationsEnabled {
+                        // Time picker
+                        DatePicker(
+                            "Reminder time",
+                            selection: $viewModel.recurringExpenseNotificationTime,
+                            displayedComponents: .hourAndMinute
+                        )
+                        
+                        // Period selector pills
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Remind me before")
+                                .font(.body)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    ForEach(viewModel.reminderDayOptions, id: \.self) { day in
+                                        DaySelectorPill(
+                                            day: day,
+                                            isSelected: viewModel.recurringExpenseReminderDays == day,
+                                            action: {
+                                                viewModel.recurringExpenseReminderDays = day
+                                            }
+                                        )
+                                    }
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        }
+                    }
+                } header: {
+                    SectionHeader(text: "Recurring expenses")
+                }
+
                 
                 // Test notification section
                 Section {

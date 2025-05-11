@@ -22,6 +22,133 @@ class RecurringExpenseManager: ObservableObject {
         loadActiveTemplates()
     }
     
+    // MARK: - Notification Management
+        
+        func scheduleNotificationsForUpcomingExpenses() {
+            // First, get notification preferences from repository
+            let repository = NotificationRepository(context: context)
+            guard let preferences = repository.loadNotificationPreferences(),
+                  preferences.isNotificationsEnabled &&
+                  preferences.isRecurringExpenseNotificationsEnabled else {
+                print("📱 Recurring expense notifications not enabled")
+                return
+            }
+            
+            // Get the reminder days before setting
+            let reminderDays = preferences.recurringExpenseReminderDays
+            let notificationTime = preferences.recurringExpenseNotificationTime
+            
+            print("📱 Checking for expenses due in \(reminderDays) days")
+            
+            // Calculate the range of dates to check for notifications
+            // We want to find expenses that are due exactly N days from now
+            let calendar = Calendar.current
+            let today = calendar.startOfDay(for: Date())
+            let targetDate = calendar.date(byAdding: .day, value: reminderDays, to: today)!
+            
+            // Fetch templates that have a next due date matching our target date
+            let fetchRequest: NSFetchRequest<RecurringExpense> = RecurringExpense.fetchRequest()
+            fetchRequest.predicate = NSPredicate(
+                format: "(status == %@) AND (notificationEnabled == YES) AND (nextDueDate >= %@) AND (nextDueDate < %@)",
+                "Active",
+                targetDate as NSDate,
+                calendar.date(byAdding: .day, value: 1, to: targetDate)! as NSDate
+            )
+            
+            do {
+                let templates = try context.fetch(fetchRequest)
+                
+                if templates.isEmpty {
+                    print("📱 No templates found with expenses due in \(reminderDays) days")
+                    return
+                }
+                
+                print("📱 Found \(templates.count) templates with expenses due in \(reminderDays) days")
+                
+                // Schedule notifications for these templates
+                for template in templates {
+                    scheduleNotificationFor(
+                        template: template,
+                        reminderDays: reminderDays,
+                        notificationTime: notificationTime
+                    )
+                }
+            } catch {
+                print("❌ Error fetching templates for notifications: \(error)")
+            }
+        }
+        
+        private func scheduleNotificationFor(template: RecurringExpense, reminderDays: Int, notificationTime: Date) {
+            guard let templateId = template.id,
+                  let dueDate = template.nextDueDate,
+                  let category = template.category else {
+                return
+            }
+            
+            // Extract the hour and minute from the notification time preference
+            let calendar = Calendar.current
+            let timeComponents = calendar.dateComponents([.hour, .minute], from: notificationTime)
+            
+            // Create a date for the notification that combines the target date with the preferred time
+            var notificationDateComponents = calendar.dateComponents([.year, .month, .day], from: calendar.startOfDay(for: Date()))
+            notificationDateComponents.hour = timeComponents.hour
+            notificationDateComponents.minute = timeComponents.minute
+            
+            guard let notificationDate = calendar.date(from: notificationDateComponents) else { return }
+            
+            // Only schedule if notification time is in the future
+            if notificationDate <= Date() {
+                print("📱 Skipping notification for past time: \(notificationDate)")
+                return
+            }
+            
+            // Format the amount for the notification
+            let amountString: String
+            if let amount = template.amount?.decimalValue,
+               let currencyCode = template.currency,
+               let currency = CurrencyManager.shared.fetchCurrency(withCode: currencyCode) {
+                amountString = CurrencyManager.shared.currencyConverter.formatAmount(amount, currency: currency)
+            } else {
+                amountString = "Unknown amount"
+            }
+            
+            // Create the notification
+            let content = UNMutableNotificationContent()
+            content.title = "Upcoming Recurring Expense"
+            content.body = "\(category.name ?? "An expense") of \(amountString) is due \(reminderDays == 1 ? "tomorrow" : "in \(reminderDays) days")"
+            content.sound = .default
+            
+            // Create an identifier that includes the template ID to avoid duplicates
+            let identifier = "recurringExpense-\(templateId.uuidString)"
+            
+            // Set up the trigger for the notification time
+            let triggerDate = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: notificationDate)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerDate, repeats: false)
+            
+            // Create and schedule the notification request
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+            
+            UNUserNotificationCenter.current().add(request) { error in
+                if let error = error {
+                    print("❌ Error scheduling notification: \(error)")
+                } else {
+                    print("✅ Scheduled notification for \(template.category?.name ?? "expense") due on \(dueDate.formatted())")
+                }
+            }
+        }
+        
+        func removeAllRecurringExpenseNotifications() {
+            UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
+                let identifiers = requests.filter { $0.identifier.hasPrefix("recurringExpense-") }
+                                         .map { $0.identifier }
+                
+                if !identifiers.isEmpty {
+                    UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiers)
+                    print("📱 Removed \(identifiers.count) recurring expense notifications")
+                }
+            }
+        }
+    
     // MARK: - Template Management
     
     func loadActiveTemplates() {
@@ -100,6 +227,20 @@ class RecurringExpenseManager: ObservableObject {
                 context.rollback()
                 template = nil
                 return
+            }
+            if notificationEnabled {
+                let repository = NotificationRepository(context: context)
+                if let preferences = repository.loadNotificationPreferences(),
+                   preferences.isNotificationsEnabled &&
+                    preferences.isRecurringExpenseNotificationsEnabled {
+                    if let template = template {
+                        scheduleNotificationFor(
+                            template: template,
+                            reminderDays: preferences.recurringExpenseReminderDays,
+                            notificationTime: preferences.recurringExpenseNotificationTime
+                        )
+                    }
+                }
             }
         }
         

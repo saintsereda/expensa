@@ -34,6 +34,30 @@ class NotificationViewModel: ObservableObject {
         }
     }
     
+    // Recurring expense notification properties
+    @Published var isRecurringExpenseNotificationsEnabled = false {
+        didSet {
+            if oldValue != isRecurringExpenseNotificationsEnabled {
+                saveSettings()
+                updateRecurringExpenseNotifications()
+            }
+        }
+    }
+    
+    @Published var recurringExpenseNotificationTime = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date() {
+        didSet {
+            saveSettings()
+            updateRecurringExpenseNotifications()
+        }
+    }
+    
+    @Published var recurringExpenseReminderDays = 1 {
+        didSet {
+            saveSettings()
+            updateRecurringExpenseNotifications()
+        }
+    }
+    
     private let repository: NotificationRepository
     private let notificationManager = NotificationManager.shared
     
@@ -44,27 +68,39 @@ class NotificationViewModel: ObservableObject {
     }
     
     func loadSettings() {
-        if let preferences = repository.loadNotificationPreferences() {
-            isNotificationsEnabled = preferences.isNotificationsEnabled
-            selectedTimes = preferences.selectedTimes
-            customTime = preferences.customTime
-            
-            // Reschedule notifications if enabled
-            if isNotificationsEnabled {
-                updateNotifications()
+            if let preferences = repository.loadNotificationPreferences() {
+                isNotificationsEnabled = preferences.isNotificationsEnabled
+                selectedTimes = preferences.selectedTimes
+                customTime = preferences.customTime
+                
+                // Load recurring expense notification settings
+                isRecurringExpenseNotificationsEnabled = preferences.isRecurringExpenseNotificationsEnabled
+                recurringExpenseNotificationTime = preferences.recurringExpenseNotificationTime
+                recurringExpenseReminderDays = preferences.recurringExpenseReminderDays
+                
+                // Reschedule notifications if enabled
+                if isNotificationsEnabled {
+                    updateNotifications()
+                }
+                
+                if isRecurringExpenseNotificationsEnabled {
+                    updateRecurringExpenseNotifications()
+                }
             }
         }
-    }
-    
-    func saveSettings() {
-        let preferences = NotificationPreferences(
-            isNotificationsEnabled: isNotificationsEnabled,
-            selectedTimes: selectedTimes,
-            customTime: customTime
-        )
         
-        repository.saveNotificationPreferences(preferences)
-    }
+        func saveSettings() {
+            let preferences = NotificationPreferences(
+                isNotificationsEnabled: isNotificationsEnabled,
+                selectedTimes: selectedTimes,
+                customTime: customTime,
+                isRecurringExpenseNotificationsEnabled: isRecurringExpenseNotificationsEnabled,
+                recurringExpenseNotificationTime: recurringExpenseNotificationTime,
+                recurringExpenseReminderDays: recurringExpenseReminderDays
+            )
+            
+            repository.saveNotificationPreferences(preferences)
+        }
     
     func checkNotificationStatus() {
         notificationManager.checkPermissionStatus { authorized in
@@ -81,20 +117,35 @@ class NotificationViewModel: ObservableObject {
     }
     
     func updateNotifications() {
-        notificationManager.removeAllScheduledNotifications()
-        
-        if isNotificationsEnabled {
-            for reminderTime in selectedTimes {
-                if reminderTime == .custom {
-                    notificationManager.scheduleNotification(for: reminderTime, customTime: customTime)
-                } else {
-                    notificationManager.scheduleNotification(for: reminderTime)
+            notificationManager.removeAllScheduledNotifications()
+            
+            if isNotificationsEnabled {
+                for reminderTime in selectedTimes {
+                    if reminderTime == .custom {
+                        notificationManager.scheduleNotification(for: reminderTime, customTime: customTime)
+                    } else {
+                        notificationManager.scheduleNotification(for: reminderTime)
+                    }
                 }
             }
         }
-    }
     
     func sendTestNotification() {
-        notificationManager.sendTestNotification()
+            notificationManager.sendTestNotification()
+        }
+        
+    func updateRecurringExpenseNotifications() {
+        // First remove any existing notifications for recurring expenses
+        RecurringExpenseManager.shared.removeAllRecurringExpenseNotifications()
+        
+        // Then schedule new ones if enabled
+        if isNotificationsEnabled && isRecurringExpenseNotificationsEnabled {
+            RecurringExpenseManager.shared.scheduleNotificationsForUpcomingExpenses()
+        }
     }
+        
+        // Available reminder day options
+        var reminderDayOptions: [Int] {
+            return [1, 3, 5, 7]
+        }
 }

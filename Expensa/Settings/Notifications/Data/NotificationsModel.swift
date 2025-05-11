@@ -12,6 +12,11 @@ struct NotificationPreferences: Codable {
     var isNotificationsEnabled: Bool
     var selectedTimes: Set<ReminderTime>
     var customTime: Date
+    
+    // Recurring expense notification settings
+    var isRecurringExpenseNotificationsEnabled: Bool = false
+    var recurringExpenseNotificationTime: Date = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date()) ?? Date()
+    var recurringExpenseReminderDays: Int = 1
 }
 
 /// Represents different times for notification reminders

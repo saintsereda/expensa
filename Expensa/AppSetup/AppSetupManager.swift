@@ -56,26 +56,65 @@ class AppSetupManager {
     }
     
     func setupBackgroundTasks() {
-        print("Setting up background tasks...")
-        
-        BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: "com.sereda.Expensa.recurringExpenses",
-            using: .main
-        ) { task in
-            self.handleRecurringExpensesTask(task as! BGProcessingTask)
+            print("Setting up background tasks...")
+            
+            BGTaskScheduler.shared.register(
+                forTaskWithIdentifier: "com.sereda.Expensa.recurringExpenses",
+                using: .main
+            ) { task in
+                self.handleRecurringExpensesTask(task as! BGProcessingTask)
+            }
+            print("✅ Registered recurring expenses task")
+            
+            // Register budget task
+            BGTaskScheduler.shared.register(
+                forTaskWithIdentifier: "com.sereda.Expensa.automaticBudget",
+                using: .main
+            ) { task in
+                BackgroundTaskManager.shared.handleAutomaticBudgetTask(task)
+            }
+            print("✅ Registered automatic budget task")
+            BackgroundTaskManager.shared.scheduleAutomaticBudgetTask()
+            
+            // Register notification check task
+            BGTaskScheduler.shared.register(
+                forTaskWithIdentifier: "com.sereda.Expensa.notificationCheck",
+                using: .main
+            ) { task in
+                self.handleNotificationCheckTask(task as! BGProcessingTask)
+            }
+            print("✅ Registered notification check task")
+            scheduleNotificationCheckTask()
         }
-        print("✅ Registered recurring expenses task")
-        
-        // Register budget task
-        BGTaskScheduler.shared.register(
-            forTaskWithIdentifier: "com.sereda.Expensa.automaticBudget",
-            using: .main
-        ) { task in
-            BackgroundTaskManager.shared.handleAutomaticBudgetTask(task)
+    
+    func scheduleNotificationCheckTask() {
+            let request = BGProcessingTaskRequest(identifier: "com.sereda.Expensa.notificationCheck")
+            request.requiresNetworkConnectivity = false
+            request.requiresExternalPower = false
+            
+            // Schedule to run once per day (24 hours)
+            request.earliestBeginDate = Date(timeIntervalSinceNow: 6 * 3600) // Check every 6 hours
+            
+            do {
+                try BGTaskScheduler.shared.submit(request)
+                print("✅ Scheduled notification check task")
+            } catch {
+                print("❌ Could not schedule notification check task: \(error)")
+            }
         }
-        print("✅ Registered automatic budget task")
-        BackgroundTaskManager.shared.scheduleAutomaticBudgetTask()
-    }
+        
+        func handleNotificationCheckTask(_ task: BGProcessingTask) {
+            task.expirationHandler = {
+                task.setTaskCompleted(success: false)
+            }
+            
+            // Check for upcoming expenses that need notifications
+            RecurringExpenseManager.shared.scheduleNotificationsForUpcomingExpenses()
+            
+            // Schedule the next check
+            scheduleNotificationCheckTask()
+            task.setTaskCompleted(success: true)
+        }
     
     func scheduleRecurringExpensesTask() {
         let request = BGProcessingTaskRequest(identifier: "com.sereda.Expensa.recurringExpenses")
