@@ -111,6 +111,11 @@ struct HomePage: View {
                                 .padding(.horizontal, 12)
                             }
                             
+                            if !allExpensesEver.isEmpty {
+                                InsightsSection()
+                                    .padding(.horizontal, 12)
+                            }
+                            
                             TopCategoriesSection(
                                 categorizedExpenses: categorizedExpenses,
                                 fetchedExpenses: fetchedExpenses,
@@ -182,6 +187,10 @@ struct HomePage: View {
                 UncategorizedExpensesListView()
                     .toolbar(.hidden, for: .tabBar)
                     .environmentObject(currencyManager)
+            case .weeklyRecap:
+                WeeklyRecapView()
+                    .toolbar(.hidden, for: .tabBar)
+                    .environmentObject(currencyManager)
             }
         }
         .sheet(item: $selectedExpense) { _ in
@@ -223,4 +232,5 @@ enum NavigationDestination {
     case allSubscriptions
     case budgetview
     case uncategorizedExpenses
+    case weeklyRecap
 }

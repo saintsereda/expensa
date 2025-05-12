@@ -93,3 +93,20 @@ struct GroupedExpensesView: View {
         }
     }
 }
+// Preview
+#Preview {
+    let context = CoreDataStack.shared.context
+    let expense = Expense(context: context)
+    expense.id = UUID()
+    expense.amount = NSDecimalNumber(value: 25.99)
+    expense.convertedAmount = NSDecimalNumber(value: 25.99)
+    expense.date = Date()
+    expense.notes = "Sample expense"
+    
+    return GroupedExpensesView(
+        expenses: [expense],
+        onExpenseSelected: { _ in }
+    )
+    .environmentObject(CurrencyManager.shared)
+    .padding()
+}

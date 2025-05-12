@@ -20,7 +20,7 @@ struct ExpenseDetailView: View {
     
     // MARK: - State
     @State private var showingEditSheet = false
-    @State private var showingDeleteAlert = false
+    @State private var showingDeleteConfirmation = false
     @State private var showingNotesSheet = false
     @State private var expenseUpdated = false
     
@@ -172,7 +172,7 @@ struct ExpenseDetailView: View {
                     // Delete Button
                     Section {
                         Button(role: .destructive) {
-                            showingDeleteAlert = true
+                            showingDeleteConfirmation = true
                         } label: {
                             HStack {
                                 Spacer()
@@ -223,11 +223,17 @@ struct ExpenseDetailView: View {
                         .presentationCornerRadius(32)
                         .environmentObject(tagManager)
                 }
-                .alert("Delete expense", isPresented: $showingDeleteAlert) {
+                .contextMenu {
+                    Button(role: .destructive) {
+                        showingDeleteConfirmation = true
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+                .confirmationDialog("Delete expense", isPresented: $showingDeleteConfirmation) {
                     Button("Cancel", role: .cancel) { }
                     Button("Delete", role: .destructive) {
                         onDelete()
-                        dismiss()
                     }
                 } message: {
                     Text("Are you sure you want to delete this expense? This action cannot be undone.")

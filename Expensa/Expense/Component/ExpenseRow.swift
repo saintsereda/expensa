@@ -9,7 +9,7 @@ import Foundation
 struct ExpenseRow: View {
     @EnvironmentObject private var currencyManager: CurrencyManager
     @ObservedObject var expense: Expense
-    @State private var showingDeleteAlert = false
+    @State private var showingDeleteConfirmation = false
     
     // Add delete callback
     var onDelete: (() -> Void)?
@@ -111,12 +111,12 @@ struct ExpenseRow: View {
         }
         .contextMenu {
             Button(role: .destructive) {
-                showingDeleteAlert = true
+                showingDeleteConfirmation = true
             } label: {
                 Label("Delete", systemImage: "trash")
             }
         }
-        .alert("Delete expense", isPresented: $showingDeleteAlert) {
+        .confirmationDialog("Delete expense", isPresented: $showingDeleteConfirmation) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
                 onDelete?()
