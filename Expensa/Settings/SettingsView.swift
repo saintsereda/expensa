@@ -16,6 +16,9 @@ struct SettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.managedObjectContext) private var managedObjectContext
     
+    // New state variable for Apple Pay import sheet
+    @State private var showingApplePayImport = false
+    
     // Cache these values to avoid repeated fetches
     @State private var categoryCount: Int = 0
     @State private var tagCount: Int = 0
@@ -23,9 +26,9 @@ struct SettingsView: View {
     
     var body: some View {
         List {
-          //  profileSection
             preferencesSection
             manageSection
+            importSection // New import section
             supportSection
             feedbackSection
             legalSection
@@ -37,6 +40,9 @@ struct SettingsView: View {
             NavigationView {
                 RateDebugView()
             }
+        }
+        .sheet(isPresented: $showingApplePayImport) {
+            ImportFromApplePaySheet()
         }
         .onAppear {
             // Update cached values on view appear
@@ -63,41 +69,6 @@ struct SettingsView: View {
         
         // Cache the default currency code
         defaultCurrencyCode = CurrencyManager.shared.defaultCurrency?.code ?? "Not set"
-    }
-    
-    // MARK: - Profile Section
-    private var profileSection: some View {
-        Section {
-            HStack(spacing: 16) {
-                Circle()
-                    .fill(Color.accentColor.opacity(0.1))
-                    .frame(width: 60, height: 60)
-                    .overlay(
-                        Image(systemName: "person.crop.circle.fill")
-                            .font(.system(size: 30))
-                            .foregroundColor(.accentColor)
-                    )
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Free Plan")
-                        .font(.headline)
-                    Text("Upgrade for more features")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.secondary)
-            }
-            .padding(.vertical, 8)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                showCurrentPlan()
-            }
-        }
     }
     
     // MARK: - Preferences Section
@@ -260,6 +231,24 @@ struct SettingsView: View {
         }
     }
     
+    // MARK: - Import Section (New)
+    private var importSection: some View {
+        Section {
+            Button(action: {
+                showingApplePayImport = true
+            }) {
+                NavigationRow(
+                    title: "Import from Apple Pay",
+                    subtitle: "Sync your Apple Pay transactions",
+                    icon: "apple.logo",
+                    color: .black
+                )
+            }
+        } header: {
+            SectionHeader(text: "Import")
+        }
+    }
+    
     // MARK: - Support Section
     private var supportSection: some View {
         Section {
@@ -345,13 +334,14 @@ struct SettingsView: View {
                 )
             }
             
-            NavigationRow(
-                title: "Support Development",
-                subtitle: "Help keep Expensa free",
-                icon: "heart.fill",
-                color: .red
-            ) {
-                showDonateOptions()
+            // NEW: Tip Jar Navigation Link
+            NavigationLink(destination: TipJarView().toolbar(.hidden, for: .tabBar)) {
+                NavigationRow(
+                    title: "Tip Jar",
+                    subtitle: "Support development with a tip",
+                    icon: "cup.and.saucer.fill",
+                    color: .pink
+                )
             }
         } header: {
             SectionHeader(text: "Connect")

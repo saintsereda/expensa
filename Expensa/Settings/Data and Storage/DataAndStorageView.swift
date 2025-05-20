@@ -1,8 +1,9 @@
 //
-//  eraseAllData.swift
+//  DataAndStorageView.swift - Updated with ImportSheet
 //  Expensa
 //
 //  Created by Andrew Sereda on 02.11.2024.
+//  Updated on 16.05.2025.
 //
 
 import SwiftUI
@@ -32,6 +33,7 @@ struct DataAndStorageView: View {
     @State private var showingExportSuccess = false
     @State private var isExporting = false
     @State private var isImporting = false
+    @State private var showingImportSheet = false  // New state for Import Sheet
     @State private var isErasing = false
     @State private var importResult = ImportResult(success: true, message: "", count: 0)
     
@@ -126,9 +128,9 @@ struct DataAndStorageView: View {
                                 .presentationBackground(.clear) // Important: use clear background
                         }
                         
-                        // Import Data Button
+                        // Import Data Button - Updated to show ImportSheet
                         Button(action: {
-                            isImporting = true
+                            showingImportSheet = true // Show the new import sheet instead
                         }) {
                             HStack(spacing: 16) {
                                 ZStack {
@@ -158,31 +160,8 @@ struct DataAndStorageView: View {
                             }
                         }
                         .buttonStyle(ActionButtonStyle())
-                        .sheet(isPresented: $isImporting) {
-                            DocumentPickerView { url in
-                                if let url = url {
-                                    // Show loading sheet
-                                    isImporting = false
-                                    showingImportSuccessSheet = true
-                                    
-                                    // Import data with completion handler
-                                    importData(from: url, context: viewContext) { success, count in
-                                        if success {
-                                            importResult = ImportResult(
-                                                success: true,
-                                                message: "\(count) expenses imported successfully",
-                                                count: count
-                                            )
-                                        } else {
-                                            importResult = ImportResult(
-                                                success: false,
-                                                message: "Failed to import data. Please check the file format.",
-                                                count: 0
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                        .sheet(isPresented: $showingImportSheet) {
+                            ImportSheet()
                         }
                         
                         Divider()
@@ -324,6 +303,34 @@ struct DataAndStorageView: View {
     }
 }
 
+// MARK: - Supporting Views
+
+struct ActionButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .contentShape(Rectangle())
+            .opacity(configuration.isPressed ? 0.7 : 1.0)
+    }
+}
+
+struct InfoRow: View {
+    let icon: String
+    let text: String
+    let color: Color
+    
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .foregroundColor(color)
+                .font(.system(size: 16, weight: .semibold))
+            
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+        }
+    }
+}
+
 // Wrapper for UIDocumentPickerViewController
 struct DocumentPickerView: UIViewControllerRepresentable {
     var onFilePicked: (URL?) -> Void
@@ -354,34 +361,6 @@ struct DocumentPickerView: UIViewControllerRepresentable {
 
         func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
             onFilePicked(nil)
-        }
-    }
-}
-
-// MARK: - Supporting Views
-
-struct ActionButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .contentShape(Rectangle())
-            .opacity(configuration.isPressed ? 0.7 : 1.0)
-    }
-}
-
-struct InfoRow: View {
-    let icon: String
-    let text: String
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .foregroundColor(color)
-                .font(.system(size: 16, weight: .semibold))
-            
-            Text(text)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
         }
     }
 }

@@ -74,6 +74,9 @@
             ReferencedContainer = "container:Expensa.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../../Expensa/Settings/Tip jar/TestTipJar.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

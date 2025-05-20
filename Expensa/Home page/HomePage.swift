@@ -191,6 +191,9 @@ struct HomePage: View {
                 WeeklyRecapView()
                     .toolbar(.hidden, for: .tabBar)
                     .environmentObject(currencyManager)
+            case .settings:
+                SettingsView()
+                    .toolbar(.visible, for: .tabBar)
             }
         }
         .sheet(item: $selectedExpense) { _ in
@@ -233,4 +236,5 @@ enum NavigationDestination {
     case budgetview
     case uncategorizedExpenses
     case weeklyRecap
+    case settings
 }

@@ -8,6 +8,7 @@
 import SwiftUI
 import BackgroundTasks
 import CoreData
+import StoreKit
 
 @main
 struct ExpensaApp: App {
@@ -148,4 +149,62 @@ struct ExpensaApp: App {
             print("❌ Could not schedule CloudKit sync task: \(error)")
         }
     }
+}
+
+// Extension to add StoreKit configuration to the app
+extension ExpensaApp {
+    // Initialize StoreKit
+    func configureStoreKit() {
+        // Initialize the StoreManager
+        _ = StoreManager.shared
+        
+        #if DEBUG
+        // Set up transaction observer for debug purposes
+        Task {
+            // Process any pending transactions
+            for await verification in Transaction.unfinished {
+                if case .verified(let transaction) = verification {
+                    await transaction.finish()
+                }
+            }
+            
+            // Print debug info
+            print("StoreKit configured! Available products:")
+            do {
+                let products = try await Product.products(for: TipProductID.all)
+                for product in products {
+                    print(" - \(product.id): \(product.displayPrice) - \(product.displayName)")
+                }
+            } catch {
+                print("Failed to load products: \(error)")
+            }
+            
+            // Print purchase history
+            StoreManager.shared.printPurchaseHistory()
+        }
+        #endif
+    }
+    
+    #if DEBUG
+    // Add a debug method for testing StoreKit
+    func testStoreKit() {
+        print("=== Testing StoreKit Configuration ===")
+        
+        Task {
+            do {
+                let products = try await Product.products(for: TipProductID.all)
+                print("Successfully loaded \(products.count) products:")
+                for product in products {
+                    print("- \(product.displayName): \(product.displayPrice)")
+                }
+                
+                print("\nPurchase History:")
+                StoreManager.shared.printPurchaseHistory()
+                
+            } catch {
+                print("StoreKit test failed: \(error)")
+            }
+        }
+    }
+    #endif
 }

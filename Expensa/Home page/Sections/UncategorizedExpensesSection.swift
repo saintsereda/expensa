@@ -150,18 +150,25 @@ struct UncategorizedExpensesListView: View {
     }
     
     var body: some View {
-        List {
-            ForEach(uncategorizedExpenses) { expense in
-                ExpenseRow(expense: expense)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        selectedExpense = expense
-                    }
+        ScrollView {
+            VStack(spacing: 16) {
+                if uncategorizedExpenses.isEmpty {
+                    emptyStateView
+                } else {
+                    // Use GroupedExpensesView to display expenses grouped by date
+                    GroupedExpensesView(
+                        expenses: Array(uncategorizedExpenses),
+                        onExpenseSelected: { expense in
+                            selectedExpense = expense
+                        }
+                    )
+                    .padding(.horizontal)
+                }
             }
+            .padding(.top)
         }
         .navigationTitle("Uncategorized Expenses")
-        .listStyle(PlainListStyle())
-        .sheet(item: $selectedExpense) { _ in
+        .sheet(item: $selectedExpense) { expense in
             ExpenseDetailView(
                 expense: $selectedExpense,
                 onDelete: {
@@ -173,5 +180,30 @@ struct UncategorizedExpensesListView: View {
             )
             .environmentObject(currencyManager)
         }
+    }
+    
+    // Empty state view when no uncategorized expenses exist
+    private var emptyStateView: some View {
+        VStack(spacing: 16) {
+            Spacer()
+            
+            Image(systemName: "tag.slash")
+                .font(.system(size: 60))
+                .foregroundColor(.secondary.opacity(0.5))
+                .padding(.bottom, 16)
+            
+            Text("No Uncategorized Expenses")
+                .font(.title3)
+                .fontWeight(.bold)
+            
+            Text("All your expenses have been properly categorized. Great job managing your finances!")
+                .multilineTextAlignment(.center)
+                .foregroundColor(.secondary)
+                .padding(.horizontal, 32)
+            
+            Spacer()
+        }
+        .padding()
+        .frame(minHeight: 300)
     }
 }

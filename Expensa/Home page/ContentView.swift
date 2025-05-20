@@ -117,14 +117,13 @@ struct ContentView: View {
                     }
                     
                     ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            HapticFeedback.play()
-                            isPresentingSettingsView = true
-                        }) {
-                            // Using custom image from assets
+                        NavigationLink(value: NavigationDestination.settings) {
                             Image("settings")
                                 .renderingMode(.template)
                                 .foregroundColor(.white)
+                        }
+                        .onTapGesture {
+                            HapticFeedback.play()
                         }
                     }
                 }
@@ -152,13 +151,6 @@ struct ContentView: View {
         .sheet(isPresented: $isPresentingBudgetView) {
             BudgetView()
             .presentationCornerRadius(32)
-        }
-        .sheet(isPresented: $isPresentingSettingsView) {
-            NavigationStack {
-                SettingsView()
-                .presentationCornerRadius(32)
-            }
-            .preferredColorScheme(themeManager.selectedTheme.colorScheme)
         }
     }
     

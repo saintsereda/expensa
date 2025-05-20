@@ -50,7 +50,6 @@ struct CategoryListView: View {
     }
     
     var body: some View {
-        NavigationStack {
             ZStack {
                 ScrollView {
                     VStack(spacing: 0) {
@@ -209,7 +208,6 @@ struct CategoryListView: View {
                 )
             }
             .ignoresSafeArea(.keyboard)
-        }
     }
     
     private func resetUIAfterCategoryDeletion() {

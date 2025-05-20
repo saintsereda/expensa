@@ -1,5 +1,5 @@
 //
-//  ExpensesByCategory.swift
+//  ExpensesByCategoryView.swift
 //  Expensa
 //
 //  Created by Andrew Sereda on 31.10.2024.
@@ -45,10 +45,13 @@ struct ExpensesByCategoryView: View {
     // MARK: - State
     @State private var selectedSorting: ExpenseSorting = .dateNewest
     @State private var selectedExpense: Expense?
+    @State private var categoryBudget: CategoryBudget?
+    @State private var budget: Budget?
     
     // MARK: - Properties
     let category: Category
     private let analytics = ExpenseAnalytics.shared
+    private let budgetManager = BudgetManager.shared
     
     // MARK: - Fetch Request for category expenses
     @FetchRequest private var expenses: FetchedResults<Expense>
@@ -167,12 +170,16 @@ struct ExpensesByCategoryView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onChange(of: filterManager.selectedDate) { _, _ in
             updateFetchRequestPredicate()
+            fetchCategoryBudget()
         }
         .onChange(of: filterManager.endDate) { _, _ in
             updateFetchRequestPredicate()
         }
         .onChange(of: filterManager.isRangeMode) { _, _ in
             updateFetchRequestPredicate()
+        }
+        .onAppear {
+            fetchCategoryBudget()
         }
     }
     
@@ -199,9 +206,26 @@ struct ExpensesByCategoryView: View {
             
             VStack(spacing: 8) {
                 ZStack {
-                    Circle()
-                        .fill(Color(UIColor.systemGray6))
-                        .frame(width: 60, height: 60)
+                    // Add budget circular progress if available and not in multi-month mode
+                    let hasLimit = categoryBudget?.budgetAmount?.decimalValue != nil
+                    let isPeriodMode = filterManager.isMultiMonthPeriod()
+                    
+                    if hasLimit && !isPeriodMode, let limit = categoryBudget?.budgetAmount?.decimalValue {
+                        // Show progress circle for single month with budget
+                        let percentage = Double(truncating: (totalAmountForPeriod / limit) as NSDecimalNumber)
+                        CircularProgressView(
+                            progress: percentage,
+                            isOverBudget: totalAmountForPeriod > limit
+                        )
+                        
+                        Circle()
+                            .fill(Color(UIColor.systemGray6))
+                            .frame(width: 60, height: 60)
+                    } else {
+                        Circle()
+                            .fill(Color(UIColor.systemGray6))
+                            .frame(width: 60, height: 60)
+                    }
                     
                     Text(category.icon ?? "❓")
                         .font(.system(size: 30))
@@ -221,6 +245,43 @@ struct ExpensesByCategoryView: View {
                     ))
                     .font(.title3)
                     .foregroundColor(.secondary)
+                    
+                    // Display budget information if available and not in multi-month mode
+                    if let categoryBudget = categoryBudget, !filterManager.isMultiMonthPeriod(),
+                       let limit = categoryBudget.budgetAmount?.decimalValue,
+                       let budgetCurrency = categoryBudget.budgetCurrency ?? currencyManager.defaultCurrency {
+                        
+                        let remaining = limit - totalAmountForPeriod
+                        
+                        HStack(spacing: 4) {
+                            Text("Budget:")
+                                .foregroundColor(.secondary)
+                            
+                            Text(currencyManager.currencyConverter.formatAmount(
+                                limit,
+                                currency: budgetCurrency
+                            ))
+                            .foregroundColor(.secondary)
+                            
+                            Text("•")
+                                .foregroundColor(.secondary)
+                            
+                            if remaining < 0 {
+                                Text("\(currencyManager.currencyConverter.formatAmount(abs(remaining), currency: budgetCurrency)) over")
+                                    .foregroundColor(.red)
+                            } else {
+                                Text("\(currencyManager.currencyConverter.formatAmount(remaining, currency: budgetCurrency)) left")
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .font(.subheadline)
+                        
+                        // Add percentage display
+                        let percentage = Double(truncating: (totalAmountForPeriod / limit) as NSDecimalNumber) * 100
+                        Text("\(BudgetManager.shared.formatPercentage(percentage)) of budget")
+                            .font(.caption)
+                            .foregroundColor(percentage > 100 ? .red : .secondary)
+                    }
                     
                     if let maxDay = maxExpenseDay {
                         HStack(spacing: 4) {
@@ -246,7 +307,7 @@ struct ExpensesByCategoryView: View {
     }
     
     private var expensesList: some View {
-        VStack(alignment: .leading, spacing: 8) {            
+        VStack(alignment: .leading, spacing: 8) {
             GroupedExpensesView(
                 expenses: sortedExpenses,
                 onExpenseSelected: { expense in
@@ -280,6 +341,37 @@ struct ExpensesByCategoryView: View {
             interval.start as NSDate,
             interval.end as NSDate
         )
+    }
+    
+    private func fetchCategoryBudget() {
+        // Only fetch budget when not in multi-month period
+        if !filterManager.isMultiMonthPeriod() {
+            Task {
+                // Get the budget for the selected month
+                let monthBudget = await budgetManager.getBudgetFor(month: filterManager.selectedDate)
+                
+                // Find the category budget if available
+                if let budget = monthBudget, let categoryBudgets = budget.categoryBudgets as? Set<CategoryBudget> {
+                    let catBudget = categoryBudgets.first { $0.category == category }
+                    
+                    // Update on main thread
+                    await MainActor.run {
+                        self.budget = budget
+                        self.categoryBudget = catBudget
+                    }
+                } else {
+                    // Clear budget info if not found
+                    await MainActor.run {
+                        self.budget = nil
+                        self.categoryBudget = nil
+                    }
+                }
+            }
+        } else {
+            // Clear budget info when in multi-month mode
+            self.budget = nil
+            self.categoryBudget = nil
+        }
     }
 }
 

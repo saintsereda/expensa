@@ -43,7 +43,6 @@ struct TagListView: View {
     }
     
     var body: some View {
-        NavigationStack {
             ZStack {
                 VStack(spacing: 0) {
                     // Search bar - always visible when there are tags in the system
@@ -168,7 +167,6 @@ struct TagListView: View {
                 )
             }
             .ignoresSafeArea(.keyboard)
-        }
     }
     
     // TagSquare Component
