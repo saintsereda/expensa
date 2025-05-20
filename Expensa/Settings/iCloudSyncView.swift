@@ -1,3 +1,10 @@
+//
+//  iCloudSyncView.swift
+//  Expensa
+//
+//  Created by Andrew Sereda on 05.01.2025.
+//
+
 import SwiftUI
 import CloudKit
 import CoreData
