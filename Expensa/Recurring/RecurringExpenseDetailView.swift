@@ -63,16 +63,6 @@ struct RecurringExpenseDetailView: View {
             
             try viewContext.save()
             
-            // Save to CloudKit (if needed)
-            Task {
-                do {
-                    try await CloudKitManager().saveRecord(templateToDelete)
-                    print("✅ Template status updated in CloudKit")
-                } catch {
-                    print("❌ Failed to update template in CloudKit: \(error)")
-                }
-            }
-            
             print("✅ Successfully deactivated template and deleted future expenses")
             onDelete()
             template = nil

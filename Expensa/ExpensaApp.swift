@@ -21,9 +21,6 @@ struct ExpensaApp: App {
     @StateObject private var categoryManager = CategoryManager.shared
     @StateObject private var recurringManager = RecurringExpenseManager.shared
     @StateObject private var tagManager = TagManager.shared
-    @StateObject private var cloudKitManager = CloudKitManager()
-    @StateObject private var cloudKitSyncManager = CloudKitSyncManager.shared // Add sync manager
-
     
     // MARK: - State
     @State private var isPasscodeSet = KeychainHelper.shared.getPasscode() != nil
@@ -54,8 +51,6 @@ struct ExpensaApp: App {
                 PasscodeEntryView(isPasscodeEntered: $isPasscodeEntered)
             } else {
                 ContentView()
-                    .environmentObject(cloudKitManager)
-                    .environmentObject(cloudKitSyncManager) // Add sync manager to environment
                     .environmentObject(categoryManager)
                     .preferredColorScheme(themeManager.selectedTheme.colorScheme)
                     .environmentObject(themeManager)
@@ -68,9 +63,6 @@ struct ExpensaApp: App {
                         setupAfterViewLoad()
                         Task {
                             await recurringManager.generateUpcomingExpenses()
-                            
-                            // Check iCloud status
-                            await cloudKitManager.getiCloudStatus()
                         }
                         if categoryManager.categories.isEmpty {
                             print("⚠️ Categories empty on ContentView appear, attempting reload")
@@ -81,14 +73,7 @@ struct ExpensaApp: App {
                         Task {
                             await recurringManager.generateUpcomingExpenses()
                             try? await BudgetManager.shared.createNextMonthBudgetIfNeeded()
-                            
-                            // Force sync when app becomes active if there are pending changes
-                            cloudKitSyncManager.forceSyncNow()
                         }
-                    }
-                    .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
-                        // Optionally, force sync when app is going to background
-                        // cloudKitSyncManager.forceSyncNow()
                     }
             }
         }
@@ -108,46 +93,8 @@ struct ExpensaApp: App {
     
     // MARK: - Background Tasks
     private func registerBackgroundTasks() {
-        // Register a background task for CloudKit sync
-        BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.sereda.Expensa.cloudKitSync", using: nil) { task in
-            handleCloudKitSyncTask(task as! BGProcessingTask)
-        }
-    }
-    
-    private func handleCloudKitSyncTask(_ task: BGProcessingTask) {
-        // Create a task that forces a sync
-        let syncTask = Task {
-            cloudKitSyncManager.forceSyncNow()
-        }
-        
-        // Setup expiration handler to cancel the task if needed
-        task.expirationHandler = {
-            syncTask.cancel()
-            task.setTaskCompleted(success: false)
-        }
-        
-        // Wait for the sync to complete
-        Task {
-            // Wait for a moment to ensure sync completes
-            try? await Task.sleep(nanoseconds: 5 * 1_000_000_000) // 5 seconds
-            task.setTaskCompleted(success: true)
-            
-            // Schedule the next background task
-            scheduleCloudKitSyncTask()
-        }
-    }
-    
-    private func scheduleCloudKitSyncTask() {
-        let request = BGProcessingTaskRequest(identifier: "com.sereda.Expensa.cloudKitSync")
-        request.requiresNetworkConnectivity = true
-        request.requiresExternalPower = false
-        
-        do {
-            try BGTaskScheduler.shared.submit(request)
-            print("✅ Scheduled background CloudKit sync task")
-        } catch {
-            print("❌ Could not schedule CloudKit sync task: \(error)")
-        }
+        // Other background tasks (not CloudKit related)
+        // Keep any recurring expense or budgeting tasks you need
     }
 }
 

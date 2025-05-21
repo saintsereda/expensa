@@ -13,7 +13,6 @@ import Combine
 class TagManager: ObservableObject {
     static let shared = TagManager()
     private var context = CoreDataStack.shared.context
-    private let cloudKitManager = CloudKitManager()
     
     @Published private(set) var tags: [Tag] = []
     private var cancellables = Set<AnyCancellable>()
@@ -70,16 +69,6 @@ class TagManager: ObservableObject {
         
         do {
             try context.save()
-            
-            // Save to CloudKit
-            Task {
-                do {
-                    try await cloudKitManager.saveTag(tag)
-                    print("✅ Tag saved to CloudKit")
-                } catch {
-                    print("❌ Failed to save tag to CloudKit: \(error)")
-                }
-            }
             postTagsUpdatedNotification()
             return tag
         } catch {
@@ -116,16 +105,6 @@ class TagManager: ObservableObject {
                 tag.name = name
                 tag.color = tempTag.color ?? generateRandomColor()
                 tag.createdAt = Date()
-                
-                // Save to CloudKit
-                Task {
-                    do {
-                        try await cloudKitManager.saveTag(tag)
-                        print("✅ Temp tag saved to CloudKit")
-                    } catch {
-                        print("❌ Failed to save temp tag to CloudKit: \(error)")
-                    }
-                }
             }
         }
         postTagsUpdatedNotification()

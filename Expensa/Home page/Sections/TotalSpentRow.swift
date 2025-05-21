@@ -21,6 +21,9 @@ struct TotalSpentRow: View {
     // Cache the total spent value
     @State private var cachedTotalSpent: Decimal = 0
     
+    // Use a UUID that will change when we want to force a refresh
+    @State private var refreshID = UUID()
+    
     // MARK: - Computed Properties
     private var totalSpent: Decimal {
         // Use cached value, we'll update this when necessary
@@ -66,21 +69,48 @@ struct TotalSpentRow: View {
             amountText()
                 .frame(maxWidth: .infinity, alignment: .center)
         }
+        .id(refreshID) // Force view refresh when refreshID changes
         .onAppear {
             updateTotalSpent()
             
-            // Add notification observer for currency changes
-            NotificationCenter.default.addObserver(
-                forName: Notification.Name("DefaultCurrencyChanged"),
-                object: nil,
-                queue: .main
-            ) { _ in
-                updateTotalSpent()
-            }
+            // Setup notification observers
+            setupNotificationObservers()
         }
         .onChange(of: expenses.count) { _, _ in
-            // Recalculate only when expense count changes
+            // Recalculate when expense count changes
             updateTotalSpent()
+        }
+    }
+    
+    // Setup notification observers
+    private func setupNotificationObservers() {
+        // Remove existing observers to avoid duplicates
+        NotificationCenter.default.removeObserver(self)
+        
+        // Add notification observer for currency changes
+        NotificationCenter.default.addObserver(
+            forName: Notification.Name("DefaultCurrencyChanged"),
+            object: nil,
+            queue: .main
+        ) { _ in
+            updateTotalSpent()
+        }
+        
+        // Add observer for CoreData context saves
+        NotificationCenter.default.addObserver(
+            forName: NSNotification.Name.NSManagedObjectContextDidSave,
+            object: nil,
+            queue: .main
+        ) { notification in
+            // Check if any expenses were updated
+            if let updatedObjects = notification.userInfo?[NSUpdatedObjectsKey] as? Set<NSManagedObject>,
+               !updatedObjects.isEmpty {
+                // If we have updated objects, force refresh
+                updateTotalSpent()
+                
+                // Generate new ID to force view refresh
+                refreshID = UUID()
+            }
         }
     }
     

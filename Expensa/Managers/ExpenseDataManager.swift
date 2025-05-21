@@ -13,7 +13,6 @@ class ExpenseDataManager: ObservableObject {
     @Published private(set) var isConverting = false
     private let context: NSManagedObjectContext
     private let tagManager = TagManager.shared
-    private let syncManager = CloudKitSyncManager.shared
 
     private init(context: NSManagedObjectContext = CoreDataStack.shared.context) {
         self.context = context
@@ -156,8 +155,7 @@ class ExpenseDataManager: ObservableObject {
         
         do {
             try context.save()
-            syncManager.queueExpenseForSync(newExpense)
-            print("📋 Added expense and queued for sync")
+            print("📋 Added expense")
             return true
         } catch {
             print("❌ Error saving expense: \(error)")
@@ -226,8 +224,7 @@ class ExpenseDataManager: ObservableObject {
         
         do {
             try context.save()
-            syncManager.queueExpenseForSync(expense)
-            print("📋 Added expense and queued for sync")
+            print("📋 Updated expense")
                     return true
         } catch {
             print("❌ Error updating expense: \(error)")
@@ -249,13 +246,8 @@ class ExpenseDataManager: ObservableObject {
             return []
         }
     }
-
+    
     func deleteExpense(_ expense: Expense) {
-        if let expenseID = expense.id {
-            // Queue the deletion for CloudKit sync
-            syncManager.queueExpenseDeletion(expenseID)
-            print("🗑️ Expense deletion queued for sync: \(expenseID.uuidString)")
-        }
         context.delete(expense)
         saveContext()
     }

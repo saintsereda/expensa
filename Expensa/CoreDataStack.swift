@@ -1,11 +1,22 @@
 import CoreData
+import CloudKit
 
 class CoreDataStack {
     static let shared = CoreDataStack()
     
-    lazy var persistentContainer: NSPersistentContainer = {
-        print("CoreDataStack: Setting up persistent container...")
-        let container = NSPersistentContainer(name: "DataModel")
+    lazy var persistentContainer: NSPersistentCloudKitContainer = {
+        print("CoreDataStack: Setting up persistent cloud kit container...")
+        let container = NSPersistentCloudKitContainer(name: "DataModel")
+        
+        // Configure the CloudKit container options
+        guard let description = container.persistentStoreDescriptions.first else {
+            fatalError("Failed to retrieve a persistent store description.")
+        }
+        
+        description.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
+            containerIdentifier: "iCloud.com.sereda.Expensa"
+        )
+        
         container.loadPersistentStores { (storeDescription, error) in
             if let error = error as NSError? {
                 print("CoreDataStack: Error loading store: \(error), \(error.userInfo)")
@@ -13,6 +24,11 @@ class CoreDataStack {
             }
             print("CoreDataStack: Successfully loaded store at: \(storeDescription.url?.path ?? "unknown")")
         }
+        
+        // Enable automatic CloudKit sync
+        container.viewContext.automaticallyMergesChangesFromParent = true
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
+        
         return container
     }()
     
