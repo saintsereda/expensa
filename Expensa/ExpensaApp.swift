@@ -28,6 +28,7 @@ struct ExpensaApp: App {
     
     // MARK: - Initialization
     init() {
+        
         // Ensure CoreData stack is initialized first
         _ = persistenceController.context
         
