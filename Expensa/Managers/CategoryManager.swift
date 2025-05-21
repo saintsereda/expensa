@@ -7,6 +7,7 @@
 
 import CoreData
 import Foundation
+import UIKit
 
 class CategoryManager: ObservableObject {
     static let shared = CategoryManager()
@@ -30,14 +31,47 @@ class CategoryManager: ObservableObject {
             self.loadInitialCategories()
         }
     }
-    
+
     private func loadInitialCategories() {
-        guard !hasInitialized else { return }
+        // Check if already loaded (prevents double initialization)
+        guard !hasInitialized else {
+            print("📱 CategoryManager already initialized, skipping load")
+            return
+        }
         
-        print("📱 Loading initial categories...")
-        addPredefinedCategories()
+        // Get device ID for tracking
+        let deviceId = getDeviceIdentifier()
+        let deviceInitKey = "categoriesInitialized-\(deviceId)"
+        
+        if UserDefaults.standard.bool(forKey: deviceInitKey) {
+            print("📱 Categories already initialized on this device")
+            // Just reload existing categories without recreating them
+            reloadCategories()
+            hasInitialized = true
+            return
+        }
+        
+        print("📱 First initialization on this device")
+        // Don't call addPredefinedCategories here - let AppSetupManager handle this
+        // We'll just reload from the database
         reloadCategories()
         hasInitialized = true
+        
+        // If empty after reload, AppSetupManager will handle creation of defaults
+    }
+
+    // Helper method to get device identifier
+    private func getDeviceIdentifier() -> String {
+        let key = "device-unique-id"
+        
+        if let existingId = UserDefaults.standard.string(forKey: key) {
+            return existingId
+        }
+        
+        // Create a new UUID
+        let newId = UUID().uuidString
+        UserDefaults.standard.set(newId, forKey: key)
+        return newId
     }
     
     func getCategories() -> [Category] {
@@ -117,11 +151,21 @@ class CategoryManager: ObservableObject {
             return
         }
         
-        let defaults = UserDefaults.standard
-        let hasLoadedDefaults = defaults.bool(forKey: "hasLoadedDefaultCategories")
+        // Get device-specific key
+        let deviceId = getDeviceIdentifier()
+        let hasLoadedDefaults = UserDefaults.standard.bool(forKey: "hasLoadedDefaultCategories-\(deviceId)")
         
         guard !hasLoadedDefaults else {
-            print("📱 Predefined categories already loaded")
+            print("📱 Predefined categories already loaded on this device")
+            return
+        }
+        
+        // Double check that we don't already have categories from CloudKit
+        let count = countExistingCategories()
+        if count > 0 {
+            print("📱 Found \(count) existing categories, skipping default creation")
+            UserDefaults.standard.set(true, forKey: "hasLoadedDefaultCategories-\(deviceId)")
+            reloadCategories()
             return
         }
         
@@ -151,29 +195,43 @@ class CategoryManager: ObservableObject {
             for (categoryName, icon) in predefinedCategories {
                 let fetchRequest: NSFetchRequest<Category> = Category.fetchRequest()
                 fetchRequest.predicate = NSPredicate(format: "name == %@", categoryName)
+                fetchRequest.fetchLimit = 1
 
-                do {
-                    let result = try context.fetch(fetchRequest)
-                    if result.isEmpty {
-                        let newCategory = Category(context: context)
-                        newCategory.id = UUID()
-                        newCategory.name = categoryName
-                        newCategory.icon = icon
-                        newCategory.createdAt = Date()
-                        print("✅ Added category: \(categoryName) with icon: \(icon)")
-                    }
-                } catch {
-                    print("❌ Error checking existing category: \(error.localizedDescription)")
+                // Only create if it doesn't already exist
+                let count = (try? context.count(for: fetchRequest)) ?? 0
+                if count == 0 {
+                    let newCategory = Category(context: context)
+                    newCategory.id = UUID()
+                    newCategory.name = categoryName
+                    newCategory.icon = icon
+                    newCategory.createdAt = Date()
+                    print("✅ Added category: \(categoryName) with icon: \(icon)")
+                } else {
+                    print("📱 Category '\(categoryName)' already exists")
                 }
             }
             
             saveContext()
-            defaults.set(true, forKey: "hasLoadedDefaultCategories")
+            UserDefaults.standard.set(true, forKey: "hasLoadedDefaultCategories-\(deviceId)")
         }
         
         print("📱 Finished adding predefined categories")
         reloadCategories()
     }
+
+    // Helper to count existing categories
+    private func countExistingCategories() -> Int {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Category")
+        fetchRequest.resultType = .countResultType
+        
+        do {
+            return try context.count(for: fetchRequest)
+        } catch {
+            print("❌ Error counting categories: \(error)")
+            return 0
+        }
+    }
+    
     
     func getNoCategoryCategory() -> Category? {
         print("⚠️ Warning: getNoCategoryCategory() is deprecated. This function now returns nil by design.")

@@ -37,6 +37,13 @@
 <key>CKSharingSupported</key>
 <true/>
 
+<key>UIBackgroundModes</key>
+<array>
+    <string>remote-notification</string>
+    <string>processing</string>
+    <string>fetch</string>
+</array>
+
 <!-- Register the app's scene delegate to handle URL schemes -->
 <key>UIApplicationSceneManifest</key>
 <dict>

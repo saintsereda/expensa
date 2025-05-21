@@ -13,10 +13,9 @@ import ConfettiSwiftUI
 struct CategoryListView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @State private var searchText = ""
-    @FetchRequest(
-        entity: Category.entity(),
-        sortDescriptors: [NSSortDescriptor(keyPath: \Category.name, ascending: true)]
-    ) var categories: FetchedResults<Category>
+    
+    @StateObject private var categoryManager = CategoryManager.shared
+    @State private var categories: [Category] = []
     
     @State private var isEditing = false
     @State private var selectedCategories = Set<Category>()
@@ -37,6 +36,10 @@ struct CategoryListView: View {
     @State private var showSuccessSheet = false
     @State private var isProcessingDeletion = false
     @State private var deletionCount = 0
+    
+    private func loadCategories() {
+        categories = categoryManager.getCategories()
+    }
     
     var filteredCategories: [Category] {
         if searchText.isEmpty {
@@ -130,6 +133,14 @@ struct CategoryListView: View {
                 }
             }
             .navigationTitle("Categories")
+            .onAppear {
+                // Load categories from CategoryManager
+                loadCategories()
+            }
+            .onChange(of: categoryManager.categories) { _, _ in
+                // Update our local copy when CategoryManager's list changes
+                categories = categoryManager.categories
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack(spacing: 16) {

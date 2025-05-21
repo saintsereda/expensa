@@ -85,42 +85,74 @@ public class CurrencyManager: ObservableObject {
         }
     }
     
-    func resetAndInitializeCurrencies() {
+    // Method to add to CurrencyManager.swift
+    private func resetAndInitializeCurrencies() {
+        // Get device-specific initialization key
+        let deviceId = UserDefaults.standard.string(forKey: "deviceIdentifier") ?? UUID().uuidString
+        let currencyInitKey = "hasLoadedDefaultCurrencies-\(deviceId)"
+        
+        // Skip if already initialized on this device
+        guard !UserDefaults.standard.bool(forKey: currencyInitKey) else {
+            print("📱 Currencies already initialized on this device")
+            return
+        }
+        
         let savedPreference = UserDefaults.standard.string(forKey: "defaultCurrencyCode")
-        let fetchRequest: NSFetchRequest<NSFetchRequestResult> = Currency.fetchRequest()
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
+        
+        // Check existing currencies before adding
+        let existingCurrencyCodes = getExistingCurrencyCodes()
+        var currenciesToAdd: [(String, String, String, String)] = []
+        
+        for currencyData in commonCurrencies {
+            if !existingCurrencyCodes.contains(currencyData.0) {
+                currenciesToAdd.append(currencyData)
+            }
+        }
+        
+        if !currenciesToAdd.isEmpty {
+            context.performAndWait {
+                for (code, name, symbol, flag) in currenciesToAdd {
+                    let currency = Currency(context: context)
+                    currency.id = UUID()
+                    currency.code = code
+                    currency.name = name
+                    currency.symbol = symbol
+                    currency.flag = flag
+                    currency.lastUpdated = Date()
+                }
+                try? context.save()
+            }
+        }
+        
+        // Mark as initialized on this device
+        UserDefaults.standard.set(true, forKey: currencyInitKey)
+        
+        // Reload currencies
+        loadAvailableCurrencies()
+        
+        // Set default currency
+        if let previousCode = savedPreference,
+           let previousCurrency = fetchCurrency(withCode: previousCode) {
+            self.defaultCurrency = previousCurrency
+        } else if let usdCurrency = fetchCurrency(withCode: "USD") {
+            self.defaultCurrency = usdCurrency
+            UserDefaults.standard.set("USD", forKey: "defaultCurrencyCode")
+        }
+        
+        isInitialized = true
+    }
+
+    // Helper function to get existing currency codes
+    private func getExistingCurrencyCodes() -> Set<String> {
+        let request: NSFetchRequest<Currency> = Currency.fetchRequest()
+        request.propertiesToFetch = ["code"]
         
         do {
-            try context.execute(deleteRequest)
-            context.reset()
-            
-            // Create currencies synchronously
-            for (code, name, symbol, flag) in commonCurrencies {
-                let currency = Currency(context: context)
-                currency.id = UUID()
-                currency.code = code
-                currency.name = name
-                currency.symbol = symbol
-                currency.flag = flag
-                currency.lastUpdated = Date()
-            }
-            try context.save()
-            
-            // Reload currencies
-            loadAvailableCurrencies()
-            
-            // Set default currency
-            if let previousCode = savedPreference,
-               let previousCurrency = fetchCurrency(withCode: previousCode) {
-                self.defaultCurrency = previousCurrency
-            } else if let usdCurrency = fetchCurrency(withCode: "USD") {
-                self.defaultCurrency = usdCurrency
-                UserDefaults.standard.set("USD", forKey: "defaultCurrencyCode")
-            }
-            
-            isInitialized = true
+            let results = try context.fetch(request)
+            return Set(results.compactMap { $0.code })
         } catch {
-            print("Error during currency reset: \(error)")
+            print("Error fetching currency codes: \(error)")
+            return []
         }
     }
     

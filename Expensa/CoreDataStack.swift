@@ -4,6 +4,7 @@ import CloudKit
 class CoreDataStack {
     static let shared = CoreDataStack()
     
+    // In CoreDataStack.swift
     lazy var persistentContainer: NSPersistentCloudKitContainer = {
         print("CoreDataStack: Setting up persistent cloud kit container...")
         let container = NSPersistentCloudKitContainer(name: "DataModel")
@@ -17,6 +18,9 @@ class CoreDataStack {
             containerIdentifier: "iCloud.com.sereda.Expensa"
         )
         
+        // Set merge policy to favor server changes
+        description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        
         container.loadPersistentStores { (storeDescription, error) in
             if let error = error as NSError? {
                 print("CoreDataStack: Error loading store: \(error), \(error.userInfo)")
@@ -25,8 +29,10 @@ class CoreDataStack {
             print("CoreDataStack: Successfully loaded store at: \(storeDescription.url?.path ?? "unknown")")
         }
         
-        // Enable automatic CloudKit sync
+        // Configure view context for CloudKit sync
         container.viewContext.automaticallyMergesChangesFromParent = true
+        
+        // Use merge policy that prevents duplicate unique attributes
         container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         
         return container
