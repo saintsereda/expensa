@@ -165,6 +165,19 @@ class DeduplicationManager {
                     }
                 }
                 
+                // Check for any currency with relationships and prioritize it
+                let currenciesWithRelationships = duplicates.filter { currency in
+                    let hasRelationships =
+                        (currency.budgets?.count ?? 0) > 0 ||
+                        (currency.categoryBudgets?.count ?? 0) > 0 ||
+                        (currency.currency != nil)
+                    return hasRelationships
+                }
+                
+                if !currenciesWithRelationships.isEmpty {
+                    bestCurrency = currenciesWithRelationships.first!
+                }
+                
                 // Transfer data from all duplicates to the best one
                 for duplicate in duplicates {
                     if duplicate == bestCurrency { continue }
@@ -173,6 +186,7 @@ class DeduplicationManager {
                     if let budgets = duplicate.budgets as? Set<Budget> {
                         for budget in budgets {
                             budget.budgetCurrency = bestCurrency
+                            print("✳️ Transferred budget to best currency")
                         }
                     }
                     
@@ -180,17 +194,71 @@ class DeduplicationManager {
                     if let categoryBudgets = duplicate.categoryBudgets as? Set<CategoryBudget> {
                         for budget in categoryBudgets {
                             budget.budgetCurrency = bestCurrency
+                            print("✳️ Transferred category budget to best currency")
                         }
                     }
                     
                     // Transfer exchange rate history
                     if let exchangeRateHistory = duplicate.currency {
                         exchangeRateHistory.currency = bestCurrency
+                        print("✳️ Transferred exchange rate history to best currency")
+                    }
+                    
+                    // Ensure best currency has complete data
+                    if bestCurrency.name == nil && duplicate.name != nil {
+                        bestCurrency.name = duplicate.name
+                    }
+                    if bestCurrency.symbol == nil && duplicate.symbol != nil {
+                        bestCurrency.symbol = duplicate.symbol
+                    }
+                    if bestCurrency.flag == nil && duplicate.flag != nil {
+                        bestCurrency.flag = duplicate.flag
+                    }
+                    if bestCurrency.lastUpdated == nil && duplicate.lastUpdated != nil {
+                        bestCurrency.lastUpdated = duplicate.lastUpdated
                     }
                     
                     // Delete the duplicate
                     context.delete(duplicate)
                     mergedCount += 1
+                }
+            }
+            
+            // Also check for invalid currencies (missing required fields)
+            for currency in allCurrencies {
+                var needsUpdate = false
+                
+                if currency.id == nil {
+                    currency.id = UUID()
+                    needsUpdate = true
+                    print("⚠️ Fixed missing ID for currency: \(currency.code ?? "unknown")")
+                }
+                
+                if currency.code == nil || currency.code!.isEmpty {
+                    // Skip deletion of malformed currencies, just log them
+                    print("⚠️ Found currency with missing code, will be skipped in views")
+                }
+                
+                if currency.name == nil {
+                    currency.name = currency.code ?? "Unknown Currency"
+                    needsUpdate = true
+                    print("⚠️ Fixed missing name for currency: \(currency.code ?? "unknown")")
+                }
+                
+                if currency.symbol == nil {
+                    currency.symbol = currency.code ?? "$"
+                    needsUpdate = true
+                    print("⚠️ Fixed missing symbol for currency: \(currency.code ?? "unknown")")
+                }
+                
+                if currency.flag == nil {
+                    currency.flag = "🌐"
+                    needsUpdate = true
+                    print("⚠️ Fixed missing flag for currency: \(currency.code ?? "unknown")")
+                }
+                
+                if needsUpdate {
+                    print("✅ Updated currency with missing fields: \(currency.code ?? "unknown")")
                 }
             }
             

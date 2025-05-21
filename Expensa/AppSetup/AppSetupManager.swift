@@ -41,6 +41,10 @@ class AppSetupManager {
                     
                     // Reload managers if anything was cleaned up
                     CategoryManager.shared.reloadCategories()
+                    // Force a reload of currencies
+                    Task {
+                        await CurrencyManager.shared.ensureInitialized()
+                    }
                     self.printEntityCounts()
                 }
             }
@@ -52,31 +56,37 @@ class AppSetupManager {
         }
         
         // First-time setup - need to wait for CloudKit
-        CloudKitSyncMonitor.shared.waitForInitialSync { [weak self] syncSucceeded in
-            guard let self = self else { return }
-            
-            // First run deduplication to clean up any CloudKit duplicates
-            DeduplicationManager.shared.cleanupDuplicates { categoryCount, currencyCount in
-                print("🧹 Initial deduplication complete: cleaned \(categoryCount) categories and \(currencyCount) currencies")
+        print("📱 First-time setup - initializing local data first")
+
+        // First, setup initial data without waiting for CloudKit
+        if !checkForExistingData() {
+            print("📱 No existing data found, adding initial hardcoded data")
+            setupInitialData() // Add hardcoded categories first
+        }
+
+        // Then setup initial currencies
+        setupCurrencyTasks()
+
+        // Now wait for CloudKit in the background
+        Task {
+            await CloudKitSyncMonitor.shared.waitForInitialSync { [weak self] syncSucceeded in
+                guard let self = self else { return }
                 
-                // Now check if we already have data
-                if self.checkForExistingData() {
-                    print("📱 Found existing data from CloudKit, skipping initial data creation")
-                } else {
-                    print("📱 No existing data found, adding initial data")
-                    self.setupInitialData()
+                // Run deduplication to clean up any CloudKit duplicates
+                DeduplicationManager.shared.cleanupDuplicates { categoryCount, currencyCount in
+                    print("🧹 Post-sync deduplication complete: cleaned \(categoryCount) categories and \(currencyCount) currencies")
+                    
+                    // Reload categories and currencies after sync
+                    CategoryManager.shared.reloadCategories()
+                    
+                    // Print diagnostic info
+                    self.printEntityCounts()
                 }
-                
-                // Continue with other tasks
-                self.setupCurrencyTasks()
-                
-                // Mark setup as completed for this device
-                UserDefaults.standard.set(true, forKey: initKey)
-                
-                // Print diagnostic info
-                self.printEntityCounts()
             }
         }
+
+        // Mark setup as completed for this device
+        UserDefaults.standard.set(true, forKey: initKey)
     }
     
     // In AppSetupManager.setupInitialData()

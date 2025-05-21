@@ -16,6 +16,7 @@ struct DefaultCurrencyView: View {
     @State private var showingActionSheet = false
     @State private var selectedCurrency: Currency?
     @State private var hasExpenses: Bool = false
+    @State private var isLoading: Bool = true
     
     private let preferredCurrencyCodes = ["EUR", "USD", "PLN", "UAH"]
     private let restrictedSearchTerms = ["russian", "russia", "ruble", "rub"]
@@ -165,12 +166,20 @@ struct DefaultCurrencyView: View {
         VStack {
             searchBar
             
-            if isSearchingRestrictedCurrency {
+            if isLoading {
+                VStack {
+                    ProgressView()
+                        .padding()
+                    Text("Loading currencies...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if isSearchingRestrictedCurrency {
                 notSupportedView
             } else {
                 List {
                     if searchText.isEmpty {
-                        LastUpdatedBanner()
                         Section(header: Text("Suggested")) {
                             ForEach(preferredCurrencies) { currency in
                                 currencyRow(currency)
@@ -200,8 +209,22 @@ struct DefaultCurrencyView: View {
         } message: { currency in
             Text("Changing your default currency to \(currency.code ?? "") will convert all existing expenses to the new currency.")
         }
-        .onAppear {
+        .task {
+            // Ensure currencies are initialized before showing the view
+            await currencyManager.ensureInitialized()
             checkForExistingExpenses()
+            isLoading = false
+        }
+    }
+}
+
+// Preview provider for SwiftUI preview
+struct DefaultCurrencyView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            DefaultCurrencyView()
+                .environmentObject(CurrencyManager.shared)
+                .environment(\.managedObjectContext, CoreDataStack.shared.context)
         }
     }
 }

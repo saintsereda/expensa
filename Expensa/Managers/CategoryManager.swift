@@ -39,25 +39,29 @@ class CategoryManager: ObservableObject {
             return
         }
         
+        // First, attempt to load existing categories from database
+        reloadCategories()
+        
         // Get device ID for tracking
         let deviceId = getDeviceIdentifier()
         let deviceInitKey = "categoriesInitialized-\(deviceId)"
         
-        if UserDefaults.standard.bool(forKey: deviceInitKey) {
-            print("📱 Categories already initialized on this device")
-            // Just reload existing categories without recreating them
-            reloadCategories()
-            hasInitialized = true
-            return
+        // Check if categories were loaded successfully
+        if categories.isEmpty {
+            // No categories found, add predefined categories immediately
+            print("📱 No categories found, adding default categories")
+            addPredefinedCategories()
+            reloadCategories() // Reload after adding
+            
+            // Mark this device as initialized
+            UserDefaults.standard.set(true, forKey: deviceInitKey)
+        } else {
+            // Categories already exist (either from initial creation or CloudKit)
+            print("📱 Found \(categories.count) existing categories")
+            UserDefaults.standard.set(true, forKey: deviceInitKey)
         }
         
-        print("📱 First initialization on this device")
-        // Don't call addPredefinedCategories here - let AppSetupManager handle this
-        // We'll just reload from the database
-        reloadCategories()
         hasInitialized = true
-        
-        // If empty after reload, AppSetupManager will handle creation of defaults
     }
 
     // Helper method to get device identifier
@@ -160,34 +164,26 @@ class CategoryManager: ObservableObject {
             return
         }
         
-        // Double check that we don't already have categories from CloudKit
-        let count = countExistingCategories()
-        if count > 0 {
-            print("📱 Found \(count) existing categories, skipping default creation")
-            UserDefaults.standard.set(true, forKey: "hasLoadedDefaultCategories-\(deviceId)")
-            reloadCategories()
-            return
-        }
-        
+        // NO CloudKit CHECK - just add hardcoded categories
         print("📱 Adding predefined categories...")
         
         let predefinedCategories: [String: String] = [
             // Housing
-                "Rent": "🏠",
-                "Groceries": "🛒",
-                "Utilities": "💡",
-                "Transportation": "🚗",
-                "Healthcare": "🩺",
-                "Insurance": "🛡️",
-                "Personal Care": "🧴",
-                "Clothing": "👕",
-                "Education": "🎓",
-                "Entertainment": "🎉",
-                "Pets": "🐾",
-                "Gifts & Donations": "🎁",
-                "Debt Repayment": "💳",
-                "Travel": "✈️",
-                "Home Maintenance": "🛠️",
+            "Rent": "🏠",
+            "Groceries": "🛒",
+            "Utilities": "💡",
+            "Transportation": "🚗",
+            "Healthcare": "🩺",
+            "Insurance": "🛡️",
+            "Personal Care": "🧴",
+            "Clothing": "👕",
+            "Education": "🎓",
+            "Entertainment": "🎉",
+            "Pets": "🐾",
+            "Gifts & Donations": "🎁",
+            "Debt Repayment": "💳",
+            "Travel": "✈️",
+            "Home Maintenance": "🛠️",
             "Other": "♾️"
         ]
 

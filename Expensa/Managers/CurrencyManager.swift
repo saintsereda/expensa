@@ -2,8 +2,6 @@
 //  CurrencyManager.swift
 //  Expensa
 //
-//  Created by Andrew Sereda on 26.10.2024.
-//
 
 import Foundation
 import CoreData
@@ -15,6 +13,7 @@ public class CurrencyManager: ObservableObject {
     @Published public private(set) var availableCurrencies: [Currency] = []
     
     private var isInitialized = false
+    private var isInitializing = false
     
     var currencyConverter: CurrencyConverter {
         CurrencyConverter.shared
@@ -22,12 +21,24 @@ public class CurrencyManager: ObservableObject {
     
     private init() {
         self.context = CoreDataStack.shared.context
-        // Initialize synchronously to ensure data is ready when views load
-        initializeCurrencies()
+        // Initialize asynchronously to prevent blocking while ensuring data is ready
+        Task {
+            await initializeCurrencies()
+        }
     }
     
-    private func initializeCurrencies() {
-        guard !isInitialized else { return }
+    @MainActor
+    private func initializeCurrencies() async {
+        // Prevent multiple concurrent initializations
+        guard !isInitialized && !isInitializing else { return }
+        isInitializing = true
+        
+        print("📱 Initializing currencies...")
+        
+        // Wait for CloudKit sync to complete first
+        await CloudKitSyncMonitor.shared.waitForInitialSync { success in
+            print("📱 CloudKit sync completed with status: \(success), continuing with currency initialization")
+        }
         
         // Load currencies synchronously
         loadAvailableCurrencies()
@@ -36,6 +47,17 @@ public class CurrencyManager: ObservableObject {
         if availableCurrencies.isEmpty {
             resetAndInitializeCurrencies()
             loadAvailableCurrencies()
+        } else {
+            // Run deduplication to ensure no duplicate currencies
+            await withCheckedContinuation { continuation in
+                DeduplicationManager.shared.cleanupDuplicates { _, currencyCount in
+                    if currencyCount > 0 {
+                        print("📱 Cleaned up \(currencyCount) duplicate currencies")
+                        self.loadAvailableCurrencies() // Reload after cleanup
+                    }
+                    continuation.resume()
+                }
+            }
         }
         
         // Check if this is first launch
@@ -51,6 +73,7 @@ public class CurrencyManager: ObservableObject {
                     UserDefaults.standard.set(localeCode, forKey: "defaultCurrencyCode")
                     UserDefaults.standard.set(true, forKey: "hasLaunchedBefore")
                     isInitialized = true
+                    isInitializing = false
                     return
                 }
             }
@@ -61,6 +84,7 @@ public class CurrencyManager: ObservableObject {
            let savedCurrency = fetchCurrency(withCode: savedCurrencyCode) {
             self.defaultCurrency = savedCurrency
             isInitialized = true
+            isInitializing = false
             return
         }
         
@@ -69,8 +93,12 @@ public class CurrencyManager: ObservableObject {
             self.defaultCurrency = usdCurrency
             UserDefaults.standard.set("USD", forKey: "defaultCurrencyCode")
             isInitialized = true
+            isInitializing = false
             return
         }
+        
+        isInitialized = true
+        isInitializing = false
     }
     
     private func loadAvailableCurrencies() {
@@ -79,11 +107,22 @@ public class CurrencyManager: ObservableObject {
         
         do {
             self.availableCurrencies = try context.fetch(request)
+            print("📱 Loaded \(self.availableCurrencies.count) currencies")
         } catch {
-            print("Error loading currencies: \(error)")
+            print("❌ Error loading currencies: \(error)")
             self.availableCurrencies = []
         }
     }
+    
+    // Public method to ensure currencies are initialized before displaying
+    public func ensureInitialized() async {
+        if !isInitialized {
+            await initializeCurrencies()
+        }
+    }
+    
+    // The rest of your existing code remains unchanged
+    // Only adding the new method above and modifying the init and initializeCurrencies methods
     
     // Method to add to CurrencyManager.swift
     private func resetAndInitializeCurrencies() {
@@ -394,7 +433,7 @@ public class CurrencyManager: ObservableObject {
         ("ZAR", "South African Rand", "R", "🇿🇦"),
         ("ZMW", "Zambian Kwacha", "ZK", "🇿🇲")
     ]
-
+    
     func saveCurrencyUpdates() {
         do {
             try context.save()

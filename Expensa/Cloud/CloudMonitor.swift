@@ -66,18 +66,28 @@ class CloudKitSyncMonitor {
         
         print("⏳ Waiting for initial CloudKit sync...")
         
-        // Add completion handler to the queue
-        syncCompletionHandlers.append(completion)
-        
-        // Set up a timeout
-        DispatchQueue.main.asyncAfter(deadline: .now() + timeout) { [weak self] in
-            guard let self = self else { return }
-            
-            // If sync still hasn't completed by timeout, force continuation
-            if !self.hasInitialSyncCompleted {
-                print("⚠️ CloudKit sync timeout - continuing anyway")
+        // Check account status first
+        checkAccountStatus { isAvailable in
+            if !isAvailable {
+                print("⚠️ CloudKit account not available, continuing without sync")
                 self.hasInitialSyncCompleted = true
-                self.notifyCompletionHandlers(success: false)
+                completion(false)
+                return
+            }
+            
+            // Add completion handler to the queue
+            self.syncCompletionHandlers.append(completion)
+            
+            // Set up a timeout
+            DispatchQueue.main.asyncAfter(deadline: .now() + timeout) { [weak self] in
+                guard let self = self else { return }
+                
+                // If sync still hasn't completed by timeout, force continuation
+                if !self.hasInitialSyncCompleted {
+                    print("⚠️ CloudKit sync timeout - continuing anyway")
+                    self.hasInitialSyncCompleted = true
+                    self.notifyCompletionHandlers(success: false)
+                }
             }
         }
     }
