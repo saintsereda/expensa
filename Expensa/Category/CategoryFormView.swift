@@ -65,7 +65,7 @@ struct EmojiTextFieldRepresentable: UIViewRepresentable {
 
 struct CategoryFormView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var categoryName: String = ""
+    @State private var categoryName: String
     @State private var selectedEmoji: String
     @State private var isValid = false
     @State private var showAnimation = false
@@ -78,7 +78,6 @@ struct CategoryFormView: View {
     private let isEditing: Bool
     private let showCancelButton: Bool
     
-    
     var onSave: ((String) -> Void)?
     
     private static let placeholderEmojis = [
@@ -86,155 +85,169 @@ struct CategoryFormView: View {
         "📚", "✈️", "🎵", "🏥", "🎁", "👕", "🐶", "🎨", "💼", "🏦"
     ]
     
-    init(showCancelButton: Bool = true) { // Add parameter with default value
-         let randomEmoji = Self.placeholderEmojis.randomElement() ?? "😀"
-         _selectedEmoji = State(initialValue: randomEmoji)
-         self.editingCategory = nil
-         self.isEditing = false
-         self.showCancelButton = showCancelButton // Set the property
-     }
-     
-     init(category: Category, showCancelButton: Bool = true) { // Add parameter with default value
-         _selectedEmoji = State(initialValue: category.icon ?? "😀")
-         _categoryName = State(initialValue: category.name ?? "")
-         self.editingCategory = category
-         self.isEditing = true
-         self.showCancelButton = showCancelButton // Set the property
-     }
-     
-     init(onSave: @escaping (String) -> Void, showCancelButton: Bool = true) { // Add parameter with default value
-         let randomEmoji = Self.placeholderEmojis.randomElement() ?? "😀"
-         _selectedEmoji = State(initialValue: randomEmoji)
-         self.editingCategory = nil
-         self.isEditing = false
-         self.onSave = onSave
-         self.showCancelButton = showCancelButton // Set the property
-     }
+    // Default initializer
+    init(showCancelButton: Bool = true) {
+        let randomEmoji = Self.placeholderEmojis.randomElement() ?? "😀"
+        _selectedEmoji = State(initialValue: randomEmoji)
+        _categoryName = State(initialValue: "")
+        self.editingCategory = nil
+        self.isEditing = false
+        self.showCancelButton = showCancelButton
+    }
     
+    // Initializer with initial category name (for pre-filling from search)
+    init(initialCategoryName: String, showCancelButton: Bool = true) {
+        let randomEmoji = Self.placeholderEmojis.randomElement() ?? "😀"
+        _selectedEmoji = State(initialValue: randomEmoji)
+        _categoryName = State(initialValue: initialCategoryName)
+        self.editingCategory = nil
+        self.isEditing = false
+        self.showCancelButton = showCancelButton
+    }
+    
+    // Initializer for editing existing category
+    init(category: Category, showCancelButton: Bool = true) {
+        _selectedEmoji = State(initialValue: category.icon ?? "😀")
+        _categoryName = State(initialValue: category.name ?? "")
+        self.editingCategory = category
+        self.isEditing = true
+        self.showCancelButton = showCancelButton
+    }
+    
+    // Initializer with onSave callback
+    init(onSave: @escaping (String) -> Void, showCancelButton: Bool = true) {
+        let randomEmoji = Self.placeholderEmojis.randomElement() ?? "😀"
+        _selectedEmoji = State(initialValue: randomEmoji)
+        _categoryName = State(initialValue: "")
+        self.editingCategory = nil
+        self.isEditing = false
+        self.onSave = onSave
+        self.showCancelButton = showCancelButton
+    }
     
     var body: some View {
-            VStack(spacing: 24) {
-                // Emoji input
-                ZStack {
-                    EmojiTextFieldRepresentable(text: $selectedEmoji)
-                        .onChange(of: selectedEmoji) { _, newValue in
-                            if !newValue.isEmpty {
-                                showAnimation = false
-                                
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
-                                    selectedEmoji = String(newValue.suffix(1))
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                        showAnimation = true
-                                    }
+        VStack(spacing: 24) {
+            // Emoji input
+            ZStack {
+                EmojiTextFieldRepresentable(text: $selectedEmoji)
+                    .onChange(of: selectedEmoji) { _, newValue in
+                        if !newValue.isEmpty {
+                            showAnimation = false
+                            
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                                selectedEmoji = String(newValue.suffix(1))
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    showAnimation = true
                                 }
                             }
                         }
-                        .blurAnimation(isAnimating: showAnimation)
-                        .onAppear {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                showAnimation = true
-                            }
+                    }
+                    .blurAnimation(isAnimating: showAnimation)
+                    .onAppear {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            showAnimation = true
                         }
-                }
-                .frame(width: 120, height: 120)
-                .background(Color(UIColor.systemGray6))
-                .cornerRadius(60)
+                    }
+            }
+            .frame(width: 120, height: 120)
+            .background(Color(UIColor.systemGray6))
+            .cornerRadius(60)
+            
+            // Category name input
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Category name")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 4)
                 
-                // Category name input
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Category name")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .padding(.horizontal, 4)
-                    
-                    TextField("", text: $categoryName)
-                        .textFieldStyle(.plain)
-                        .font(.body)
-                        .padding(12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(UIColor.systemBackground))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(
-                                            isNameFieldFocused ?
-                                            Color.accentColor.opacity(0.5) :
-                                            Color(UIColor.systemGray4),
-                                            lineWidth: 1
-                                        )
-                                )
-                        )
-                        .focused($isNameFieldFocused)
-                        .onChange(of: categoryName) {
-                            validateInput()
-                        }
+                TextField("", text: $categoryName)
+                    .textFieldStyle(.plain)
+                    .font(.body)
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(Color(UIColor.systemBackground))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(
+                                        isNameFieldFocused ?
+                                        Color.accentColor.opacity(0.5) :
+                                        Color(UIColor.systemGray4),
+                                        lineWidth: 1
+                                    )
+                            )
+                    )
+                    .focused($isNameFieldFocused)
+                    .onChange(of: categoryName) {
+                        validateInput()
+                    }
+            }
+            .padding(.horizontal)
+            .padding(.top, 12)
+            
+            Spacer()
+            
+            // Delete button (only shown when editing)
+            if isEditing {
+                Button(action: {
+                    showDeleteConfirmation = true
+                }) {
+                    Text("Delete Category")
+                        .foregroundColor(.red)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
                 }
+                .background(Color.red.opacity(0.1))
+                .cornerRadius(8)
                 .padding(.horizontal)
-                .padding(.top, 12)
-                
-                Spacer()
-                
-                // Delete button (only shown when editing)
-                if isEditing {
-                    Button(action: {
-                        showDeleteConfirmation = true
-                    }) {
-                        Text("Delete Category")
-                            .foregroundColor(.red)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                    }
-                    .background(Color.red.opacity(0.1))
-                    .cornerRadius(8)
-                    .padding(.horizontal)
-                    .padding(.bottom)
-                }
-            }
-            .padding(.top, 32)
-            .navigationTitle(isEditing ? "Edit category" : "New category")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if showCancelButton { // Only show cancel button if needed
-                    ToolbarItem(placement: .cancellationAction) {
-                        Button("Cancel") {
-                            dismiss()
-                        }
-                    }
-                }
-                
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(isEditing ? "Update" : "Save") {
-                        saveCategory()
-                    }
-                    .disabled(!isValid)
-                }
-            }
-            .ignoresSafeArea(.keyboard)
-            .onAppear {
-                validateInput()
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    showAnimation = true
-                }
-                // Set focus to the name field when the view appears
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    isNameFieldFocused = true
-                }
-            }
-            .onTapGesture {
-                // Dismiss keyboard when tapping outside of text fields
-                isNameFieldFocused = false
-            }
-            .alert(isPresented: $showDeleteConfirmation) {
-                Alert(
-                    title: Text("Delete category?"),
-                    message: Text("All related transactions will remain uncategorized."),
-                    primaryButton: .destructive(Text("Delete")) {
-                        deleteCategory()
-                    },
-                    secondaryButton: .cancel()
-                )
+                .padding(.bottom)
             }
         }
+        .padding(.top, 32)
+        .navigationTitle(isEditing ? "Edit category" : "New category")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if showCancelButton {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
+            
+            ToolbarItem(placement: .confirmationAction) {
+                Button(isEditing ? "Update" : "Save") {
+                    saveCategory()
+                }
+                .disabled(!isValid)
+            }
+        }
+        .ignoresSafeArea(.keyboard)
+        .onAppear {
+            validateInput()
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                showAnimation = true
+            }
+            // Set focus to the name field when the view appears
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                isNameFieldFocused = true
+            }
+        }
+        .onTapGesture {
+            // Dismiss keyboard when tapping outside of text fields
+            isNameFieldFocused = false
+        }
+        .alert(isPresented: $showDeleteConfirmation) {
+            Alert(
+                title: Text("Delete category?"),
+                message: Text("All related transactions will remain uncategorized."),
+                primaryButton: .destructive(Text("Delete")) {
+                    deleteCategory()
+                },
+                secondaryButton: .cancel()
+            )
+        }
+    }
     
     private func validateInput() {
         isValid = !categoryName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty

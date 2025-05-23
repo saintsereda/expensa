@@ -165,7 +165,6 @@ struct DefaultCurrencyView: View {
     var body: some View {
         VStack {
             searchBar
-            
             if isLoading {
                 VStack {
                     ProgressView()
@@ -178,6 +177,7 @@ struct DefaultCurrencyView: View {
             } else if isSearchingRestrictedCurrency {
                 notSupportedView
             } else {
+                LastUpdatedBanner()
                 List {
                     if searchText.isEmpty {
                         Section(header: Text("Suggested")) {

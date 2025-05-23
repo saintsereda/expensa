@@ -14,6 +14,9 @@ class AllExpensesViewModel: ObservableObject {
     // Core Data context
     private let viewContext: NSManagedObjectContext
     
+    // Preselected tag (if any)
+    private let preselectedTag: Tag?
+    
     // Published properties for UI updates
     @Published var searchText: String = ""
     @Published var selectedCategories: Set<Category> = []
@@ -67,11 +70,12 @@ class AllExpensesViewModel: ObservableObject {
             }
         }
         
-        // Tag filtering
-        if !selectedTags.isEmpty {
+        // Tag filtering (includes preselected tag)
+        let allSelectedTags = selectedTags.union(preselectedTag.map { Set([$0]) } ?? Set())
+        if !allSelectedTags.isEmpty {
             result = result.filter { expense in
                 guard let tags = expense.tags as? Set<Tag> else { return false }
-                return !tags.isDisjoint(with: selectedTags)
+                return !tags.isDisjoint(with: allSelectedTags)
             }
         }
         
@@ -90,13 +94,15 @@ class AllExpensesViewModel: ObservableObject {
     }
     
     var tagButtonLabel: String {
-        if selectedTags.isEmpty {
+        let allSelectedTags = selectedTags.union(preselectedTag.map { Set([$0]) } ?? Set())
+        
+        if allSelectedTags.isEmpty {
             return "Tags"
         }
-        if selectedTags.count == 1 {
-            return "#\(selectedTags.first?.name ?? "")"
+        if allSelectedTags.count == 1 {
+            return "#\(allSelectedTags.first?.name ?? "")"
         }
-        return "\(selectedTags.count) tags"
+        return "\(allSelectedTags.count) tags"
     }
     
     var dateButtonLabel: String {
@@ -109,8 +115,14 @@ class AllExpensesViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     // Initialization
-    init(context: NSManagedObjectContext = CoreDataStack.shared.context) {
+    init(context: NSManagedObjectContext = CoreDataStack.shared.context, preselectedTag: Tag? = nil) {
         self.viewContext = context
+        self.preselectedTag = preselectedTag
+        
+        // If we have a preselected tag, add it to selected tags
+        if let tag = preselectedTag {
+            selectedTags.insert(tag)
+        }
         
         // Initial data fetch
         fetchAllExpenses()
@@ -164,8 +176,16 @@ class AllExpensesViewModel: ObservableObject {
         let fetchRequest: NSFetchRequest<Expense> = Expense.fetchRequest()
         fetchRequest.sortDescriptors = [NSSortDescriptor(keyPath: \Expense.date, ascending: false)]
         
-        // We fetch all expenses up to the current date
-        fetchRequest.predicate = NSPredicate(format: "date <= %@", Date() as NSDate)
+        // Base predicate for date filtering
+        var predicates: [NSPredicate] = [NSPredicate(format: "date <= %@", Date() as NSDate)]
+        
+        // If we have a preselected tag, add it to the fetch request for better performance
+        if let preselectedTag = preselectedTag {
+            predicates.append(NSPredicate(format: "ANY tags == %@", preselectedTag))
+        }
+        
+        // Combine predicates
+        fetchRequest.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: predicates)
         
         // Set up pagination
         fetchRequest.fetchLimit = itemsPerPage
@@ -203,7 +223,14 @@ class AllExpensesViewModel: ObservableObject {
     
     func resetFilters() {
         selectedCategories.removeAll()
-        selectedTags.removeAll()
+        
+        // If we have a preselected tag, keep it selected
+        if let preselectedTag = preselectedTag {
+            selectedTags = Set([preselectedTag])
+        } else {
+            selectedTags.removeAll()
+        }
+        
         searchText = ""
         isDateFilterActive = false
         checkForTags()
@@ -233,6 +260,9 @@ class AllExpensesViewModel: ObservableObject {
     }
     
     func toggleTagFilter() {
+        // Don't allow toggling if there's a preselected tag
+        guard preselectedTag == nil else { return }
+        
         if !selectedTags.isEmpty {
             selectedTags.removeAll()
             objectWillChange.send()

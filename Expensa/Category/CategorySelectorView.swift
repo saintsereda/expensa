@@ -186,8 +186,12 @@ struct CategorySelectorView: View {
                 updateCategories()
             }
             .navigationDestination(isPresented: $navigateToNewCategory) {
-                CategoryFormView(showCancelButton: false)
-                    .environmentObject(categoryManager)
+                // Pass the search text as the initial category name
+                CategoryFormView(
+                    initialCategoryName: searchText.trimmingCharacters(in: .whitespacesAndNewlines),
+                    showCancelButton: false
+                )
+                .environmentObject(categoryManager)
             }
         }
     }

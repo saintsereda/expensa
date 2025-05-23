@@ -10,7 +10,21 @@ import CoreData
 
 struct AllExpensesView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @StateObject private var viewModel = AllExpensesViewModel()
+    @StateObject private var viewModel: AllExpensesViewModel
+    
+    private let preselectedTag: Tag?
+    
+    // Default initializer for normal use
+    init() {
+        self.preselectedTag = nil
+        self._viewModel = StateObject(wrappedValue: AllExpensesViewModel())
+    }
+    
+    // Initializer with preselected tag
+    init(preselectedTag: Tag) {
+        self.preselectedTag = preselectedTag
+        self._viewModel = StateObject(wrappedValue: AllExpensesViewModel(preselectedTag: preselectedTag))
+    }
     
     var body: some View {
         ScrollView {
@@ -34,6 +48,8 @@ struct AllExpensesView: View {
                                     isSelected: !viewModel.selectedTags.isEmpty,
                                     action: viewModel.toggleTagFilter
                                 )
+                                .disabled(preselectedTag != nil) // Disable when there's a preselected tag
+                                .opacity(preselectedTag != nil ? 0.6 : 1.0) // Visual feedback for disabled state
                             }
                             
                             // Date filter button
@@ -47,6 +63,25 @@ struct AllExpensesView: View {
                     }
                 }
                 .padding(.horizontal)
+                
+                // Show preselected tag info if applicable
+                if let tag = preselectedTag {
+                    HStack {
+                        Image(systemName: "info.circle")
+                            .foregroundColor(.blue)
+                        
+                        Text("Showing expenses tagged with #\(tag.name ?? "unknown")")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    .padding(.vertical, 8)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(8)
+                    .padding(.horizontal)
+                }
                 
                 // Main content
                 if viewModel.filteredExpenses.isEmpty {
@@ -90,9 +125,11 @@ struct AllExpensesView: View {
             .padding(.top, 16)
         }
         .coordinateSpace(name: "scroll")
-        .navigationTitle("All expenses")
+        .navigationTitle(navigationTitle)
         .onAppear {
-            viewModel.resetFilters()
+            if preselectedTag == nil {
+                viewModel.resetFilters()
+            }
         }
         .sheet(item: $viewModel.selectedExpense) { _ in
             if let expense = viewModel.selectedExpense {
@@ -130,6 +167,13 @@ struct AllExpensesView: View {
                 }
             )
         }
+    }
+    
+    private var navigationTitle: String {
+        if let tag = preselectedTag {
+            return "#\(tag.name ?? "unknown")"
+        }
+        return "All expenses"
     }
     
     private func determineEmptyStateType() -> EmptyStateView.EmptyStateType {
@@ -222,5 +266,6 @@ struct FilterButton: View {
             .foregroundColor(isSelected ? .primary : .secondary)
             .cornerRadius(999)
         }
+        .buttonStyle(PlainButtonStyle()) // Prevents disabled styling from interfering
     }
 }

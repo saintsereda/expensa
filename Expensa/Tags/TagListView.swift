@@ -31,6 +31,7 @@ struct TagListView: View {
     @State private var confettiEmoji = "#️⃣"
     @State private var isPresented = false
     @State private var selectedTagForEdit: Tag? = nil
+    @State private var showNewTagSheet = false
     
     var filteredTags: [Tag] {
         if searchText.isEmpty {
@@ -56,9 +57,22 @@ struct TagListView: View {
                     if filteredTags.isEmpty {
                         // Empty state
                         if searchText.isEmpty {
-                            ContentUnavailableView("No tags found",
-                                                  systemImage: "tag.slash",
-                                                  description: Text("Add a tag to get started"))
+                            VStack(spacing: 20) {
+                                ContentUnavailableView("No tags found",
+                                                      systemImage: "tag.slash",
+                                                      description: Text("Add a tag to get started"))
+                                
+                                Button(action: {
+                                    showNewTagSheet = true
+                                }) {
+                                    Label("Add Your First Tag", systemImage: "plus.circle.fill")
+                                        .font(.headline)
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .background(Color.accentColor)
+                                        .cornerRadius(12)
+                                }
+                            }
                         } else {
                             ContentUnavailableView.search(text: searchText)
                         }
@@ -117,8 +131,16 @@ struct TagListView: View {
             .navigationTitle("Tags")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    if !filteredTags.isEmpty {
-                        HStack(spacing: 16) {
+                    HStack(spacing: 16) {
+                        // Add button - always visible
+                        Button(action: {
+                            showNewTagSheet = true
+                        }) {
+                            Image(systemName: "plus")
+                        }
+                        
+                        // Edit button - only visible when there are tags
+                        if !filteredTags.isEmpty {
                             Button(action: {
                                 isEditing.toggle()
                                 if !isEditing {
@@ -132,11 +154,13 @@ struct TagListView: View {
                 }
             }
             .sheet(item: $selectedTagForEdit) { tag in
-                // Implement tag editing view
-                NavigationStack {
-                    Text("Edit tag: #\(tag.name ?? "")")
-                    // Replace with actual tag form view
-                }
+                TagDetailSheet(tag: tag)
+                    .presentationDetents([.medium])
+                    .environmentObject(tagManager)
+            }
+            .sheet(isPresented: $showNewTagSheet) {
+                NewTagSheet()
+                    .environmentObject(tagManager)
             }
             .ignoresSafeArea(.keyboard)
             // Success sheet
@@ -325,39 +349,6 @@ struct TagListView: View {
         .edgesIgnoringSafeArea(.bottom)
         .transition(.move(edge: .bottom))
     }
-    
-//    private var emptyStateView: some View {
-//        VStack(spacing: 0) {
-//            Spacer()
-//            
-//            VStack(spacing: 16) {
-//                Image(systemName: "tag.slash")
-//                    .font(.system(size: 48))
-//                    .foregroundColor(Color(UIColor.systemGray4))
-//                
-//                Text("No tags found")
-//                    .font(.headline)
-//                    .foregroundColor(.gray)
-//                    .multilineTextAlignment(.center)
-//                
-//                if !searchText.isEmpty {
-//                    Text("Try a different search")
-//                        .font(.subheadline)
-//                        .foregroundColor(Color(UIColor.systemGray))
-//                        .multilineTextAlignment(.center)
-//                } else {
-//                    Text("Add a tag to get started")
-//                        .font(.subheadline)
-//                        .foregroundColor(Color(UIColor.systemGray))
-//                        .multilineTextAlignment(.center)
-//                }
-//            }
-//            .padding(.horizontal)
-//            
-//            Spacer()
-//        }
-//        .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
-//    }
     
     struct BlurView: UIViewRepresentable {
         var style: UIBlurEffect.Style

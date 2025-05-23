@@ -337,28 +337,23 @@ class ExpenseAnalytics {
             return calendar.startOfDay(for: date)
         }
         
-        // Calculate total amount for each day
-        var dailyTotals = groupedByDay.mapValues { expenses in
+        // Calculate total amount for each day that has expenses
+        let dailyTotals = groupedByDay.mapValues { expenses in
             expenseDataManager.calculateTotalAmount(for: expenses)
         }
         
-        // Create a set of all days in the week
-        var allDaysInWeek = Set<Date>()
-        var currentDate = weekInterval.start
-        while currentDate <= weekInterval.end {
-            allDaysInWeek.insert(calendar.startOfDay(for: currentDate))
-            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? weekInterval.end
+        // Filter out days with no expenses (we only want days with at least 1 transaction)
+        let daysWithExpenses = dailyTotals.filter { _, amount in
+            amount > 0
         }
         
-        // Add days with zero spending
-        for day in allDaysInWeek {
-            if dailyTotals[day] == nil {
-                dailyTotals[day] = 0
-            }
+        // If no days have expenses, return nil
+        guard !daysWithExpenses.isEmpty else {
+            return nil
         }
         
-        // Find the day with lowest spending
-        if let (minDay, minAmount) = dailyTotals.min(by: { $0.value < $1.value }) {
+        // Find the day with lowest spending among days that have expenses
+        if let (minDay, minAmount) = daysWithExpenses.min(by: { $0.value < $1.value }) {
             return DaySpendingData(
                 date: minDay,
                 amount: minAmount,
