@@ -72,6 +72,18 @@ a:hover {
     color: #d1d1d6;
 }
 
+.content ul {
+    font-size: 16px;
+    line-height: 1.65;
+    color: #d1d1d6;
+    padding-left: 20px;
+    margin-top: 12px;
+}
+
+.content ul li {
+    margin-bottom: 8px;
+}
+
 /* Footer */
 .site-footer {
     border-top: 1px solid #1d1d1f;

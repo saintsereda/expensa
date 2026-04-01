@@ -18,28 +18,35 @@
 
         <h2>Overview</h2>
         <p>
-            Your privacy is important to us. This Privacy Policy explains how Expensa collects, uses, and protects your information when you use our app.
+            Expensa is a personal finance app that helps you track expenses, income, and budgets. All financial data you enter is stored locally on your device and synced to your personal iCloud account — it is never transmitted to or stored on Expensa's servers. We are committed to keeping your data private and under your control.
         </p>
 
         <h2>Data We Collect</h2>
         <p>
-            [Placeholder: Describe what data the app collects, e.g. expense entries, categories, account information stored locally or in iCloud.]
+            Expensa stores only the data you explicitly enter: transactions (amount, date, merchant name, notes, category, tags), accounts, budgets, recurring rules, and app preferences such as your base currency and display settings. When you use the receipt scanning feature, photos are processed locally on-device using Apple's Vision framework, or optionally sent to OpenAI's API if the AI-assisted scan feature is enabled. The app uses your device location solely to suggest a default currency when adding a transaction; precise location is never stored or shared. No analytics, advertising identifiers, or behavioral data are collected.
         </p>
 
         <h2>How We Use Data</h2>
         <p>
-            [Placeholder: Explain how collected data is used, e.g. to provide app functionality, sync across devices, generate reports.]
+            Your financial data is used exclusively to provide the features of the app: displaying transaction history, calculating budgets, generating spending summaries, and syncing across your devices. Currency exchange rates are fetched from external services (described below) to convert between currencies; your transaction data is never included in those requests. If you choose to share a Space with other iCloud users, only the data within that shared Space becomes visible to those specific collaborators.
         </p>
 
         <h2>Data Storage</h2>
         <p>
-            [Placeholder: Describe where data is stored, e.g. on-device Core Data, iCloud CloudKit sync. Clarify if any data is stored on external servers.]
+            All app data is stored locally on your device using Core Data and synced end-to-end via Apple iCloud (CloudKit). Apple encrypts data in transit and at rest in iCloud; Expensa has no access to your iCloud data. Currency exchange rates are cached locally on-device for up to 24 hours. Subscription status is managed by RevenueCat using an anonymous, app-assigned user ID — no personal identifiers are linked to it.
         </p>
 
         <h2>Third Parties</h2>
         <p>
-            [Placeholder: List any third-party services used, e.g. currency exchange rate APIs. State whether any data is shared with third parties.]
+            Expensa uses the following third-party services:
         </p>
+        <ul>
+            <li><strong>Apple iCloud / CloudKit</strong> — device-to-device data sync. Your data is governed by Apple's Privacy Policy.</li>
+            <li><strong>OpenExchangeRates</strong> — fetches current currency exchange rates. Only a standard HTTPS request is made; no personal or financial data is sent.</li>
+            <li><strong>Supabase</strong> — used as a cache layer for historical currency rate snapshots. Only anonymous read requests for exchange rate data are made; no user data is sent.</li>
+            <li><strong>RevenueCat</strong> — manages in-app subscription entitlements using an anonymous app user ID and Apple receipt data to verify purchases.</li>
+            <li><strong>OpenAI</strong> (optional) — if the AI-assisted receipt scan feature is used, a photo of a receipt is sent to OpenAI's API for parsing. No other app data is sent.</li>
+        </ul>
 
         <h2>Contact</h2>
         <p>
