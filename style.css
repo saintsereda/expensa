@@ -84,6 +84,16 @@ a:hover {
     margin-bottom: 8px;
 }
 
+.mobile-break {
+    display: none;
+}
+
+@media (max-width: 480px) {
+    .mobile-break {
+        display: block;
+    }
+}
+
 .colourful-text {
     display: inline;
 }
