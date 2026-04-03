@@ -84,6 +84,16 @@ a:hover {
     margin-bottom: 8px;
 }
 
+.colourful-text {
+    display: inline;
+}
+
+.colourful-text span {
+    display: inline-block;
+    white-space: pre;
+    will-change: transform, opacity, filter, color;
+}
+
 /* Footer */
 .site-footer {
     border-top: 1px solid #1d1d1f;
