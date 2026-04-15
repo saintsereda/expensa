@@ -1,0 +1,56 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import EndCTA from '../components/EndCTA.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  date: Date;
+  readingTime: string;
+  canonicalUrl?: string;
+}
+
+const { title, description, date, readingTime, canonicalUrl } = Astro.props;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+---
+
+<BaseLayout title={`${title} — Expensa Blog`} description={description} canonicalUrl={canonicalUrl}>
+  <article class="prose post">
+    <header class="post-header">
+      <h1>{title}</h1>
+      <p class="post-meta">{formattedDate} · {readingTime}</p>
+      <hr />
+    </header>
+
+    <slot />
+
+    <EndCTA />
+  </article>
+</BaseLayout>
+
+<style>
+  .post {
+    padding-top: 56px;
+    padding-bottom: 0;
+  }
+  .post-header {
+    margin-bottom: 40px;
+  }
+  .post-meta {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 10px;
+    margin-bottom: 32px;
+    opacity: 1;
+  }
+  hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+</style>

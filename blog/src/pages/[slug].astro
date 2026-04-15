@@ -1,0 +1,37 @@
+---
+import PostLayout from '../layouts/PostLayout.astro';
+import AppStoreCTA from '../components/AppStoreCTA.astro';
+import { getCollection } from 'astro:content';
+import { readingTime } from '../utils/index.ts';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+const rt = readingTime(post.body);
+const canonicalUrl = `https://expensa.andrewsereda.com/blog/${post.slug}/`;
+---
+
+<PostLayout
+  title={post.data.title}
+  description={post.data.description}
+  date={post.data.date}
+  readingTime={rt}
+  canonicalUrl={canonicalUrl}
+>
+  <div class="prose-body">
+    <Content components={{ AppStoreCTA }} />
+  </div>
+</PostLayout>
+
+<style>
+  .prose-body {
+    margin-top: 40px;
+  }
+</style>

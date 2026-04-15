@@ -1,0 +1,125 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: blog/package-lock.json
+
+      - name: Install blog dependencies
+        working-directory: blog
+        run: npm ci
+
+      - name: Build blog
+        working-directory: blog
+        run: npm run build
+
+      - name: Assemble deploy directory
+        run: |
+          mkdir -p _site/blog
+
+          # Copy root site files
+          cp index.html _site/
+          cp style.css _site/
+          cp privacy.html _site/
+          cp terms.html _site/
+          cp robots.txt _site/
+          cp CNAME _site/
+          cp google3207982b30289325.html _site/
+          cp expensa-logo-3d.mp4 _site/
+
+          # Copy Astro blog build output into /blog/
+          cp -r blog/dist/. _site/blog/
+
+      - name: Generate combined sitemap
+        run: |
+          SITE="https://expensa.andrewsereda.com"
+          TODAY=$(date -u +%Y-%m-%d)
+
+          # Start sitemap
+          cat > _site/sitemap.xml << 'SITEMAP_HEADER'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+          SITEMAP_HEADER
+
+          # Root pages
+          cat >> _site/sitemap.xml << SITEMAP_ROOT
+            <url>
+              <loc>${SITE}/</loc>
+              <lastmod>${TODAY}</lastmod>
+              <changefreq>weekly</changefreq>
+              <priority>1.0</priority>
+            </url>
+            <url>
+              <loc>${SITE}/privacy.html</loc>
+              <lastmod>${TODAY}</lastmod>
+              <changefreq>monthly</changefreq>
+              <priority>0.3</priority>
+            </url>
+            <url>
+              <loc>${SITE}/terms.html</loc>
+              <lastmod>${TODAY}</lastmod>
+              <changefreq>monthly</changefreq>
+              <priority>0.3</priority>
+            </url>
+            <url>
+              <loc>${SITE}/blog/</loc>
+              <lastmod>${TODAY}</lastmod>
+              <changefreq>weekly</changefreq>
+              <priority>0.8</priority>
+            </url>
+          SITEMAP_ROOT
+
+          # Blog post pages — find all index.html files under blog/dist/<slug>/
+          for post_dir in blog/dist/*/; do
+            slug=$(basename "$post_dir")
+            # Skip non-post directories (rss, etc.)
+            if [ -f "$post_dir/index.html" ] && [ "$slug" != "blog" ]; then
+              echo "    <url>" >> _site/sitemap.xml
+              echo "      <loc>${SITE}/blog/${slug}/</loc>" >> _site/sitemap.xml
+              echo "      <lastmod>${TODAY}</lastmod>" >> _site/sitemap.xml
+              echo "      <changefreq>monthly</changefreq>" >> _site/sitemap.xml
+              echo "      <priority>0.7</priority>" >> _site/sitemap.xml
+              echo "    </url>" >> _site/sitemap.xml
+            fi
+          done
+
+          echo "</urlset>" >> _site/sitemap.xml
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

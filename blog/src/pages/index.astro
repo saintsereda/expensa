@@ -1,0 +1,91 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { formatDate, readingTime } from '../utils/index.ts';
+
+const posts = (await getCollection('posts')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<BaseLayout
+  title="Blog — Expensa"
+  description="Personal finance tips to help you track spending, stick to a budget, and build better money habits."
+  canonicalUrl="https://expensa.andrewsereda.com/blog/"
+>
+  <div class="listing">
+    <h1 class="listing-title">Blog</h1>
+    <p class="listing-subtitle">Personal finance tips that actually work.</p>
+
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li class="post-item">
+          <a href={`${import.meta.env.BASE_URL}/${post.slug}/`} class="post-link">
+            <span class="post-title">{post.data.title}</span>
+            <span class="post-meta">
+              {formatDate(post.data.date)} · {readingTime(post.body)}
+            </span>
+            <span class="post-excerpt">{post.data.description}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</BaseLayout>
+
+<style>
+  .listing {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 56px 24px 0;
+  }
+  .listing-title {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .listing-subtitle {
+    font-size: 16px;
+    color: var(--muted);
+    margin-bottom: 56px;
+  }
+  .post-list {
+    list-style: none;
+    padding: 0;
+  }
+  .post-item {
+    border-top: 1px solid var(--border);
+  }
+  .post-item:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+  .post-link {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 28px 0;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.15s;
+  }
+  .post-link:hover {
+    opacity: 0.7;
+  }
+  .post-title {
+    font-size: 18px;
+    font-weight: 550;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  .post-meta {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .post-excerpt {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-top: 2px;
+  }
+</style>

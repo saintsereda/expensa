@@ -1,0 +1,53 @@
+---
+// End-of-post CTA — appended automatically by PostLayout
+const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO: update with real App Store ID
+---
+
+<div class="end-cta">
+  <p class="end-cta-heading">Ready to take control of your finances?</p>
+  <p class="end-cta-body">
+    Expensa tracks your spending, scans receipts with AI, and gives you
+    clarity on where your money goes — automatically.
+  </p>
+  <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" class="end-cta-btn">
+    Download Expensa on the App Store →
+  </a>
+</div>
+
+<style>
+  .end-cta {
+    margin-top: 56px;
+    padding: 32px;
+    border: 1px solid rgba(120, 115, 255, 0.3);
+    border-radius: 16px;
+    background: rgba(120, 115, 255, 0.05);
+    text-align: center;
+  }
+  .end-cta-heading {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .end-cta-body {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.6;
+    max-width: 440px;
+    margin: 0 auto 24px;
+  }
+  .end-cta-btn {
+    display: inline-block;
+    padding: 12px 24px;
+    background: rgb(120, 115, 255);
+    color: #fff;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: opacity 0.15s;
+  }
+  .end-cta-btn:hover {
+    opacity: 0.85;
+  }
+</style>
