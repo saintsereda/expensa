@@ -1,0 +1,92 @@
+---
+title: "How to Set Up Apple Pay Sync in Expensa"
+description: "Automatically import every Apple Pay transaction into Expensa the moment you pay — no manual entry, no missed purchases. Takes about 2 minutes to set up."
+date: 2026-04-15
+---
+
+import YouTubeEmbed from '../../components/YouTubeEmbed.astro';
+import AppStoreCTA from '../../components/AppStoreCTA.astro';
+
+<YouTubeEmbed videoId="YOUR_VIDEO_ID" title="How to set up Apple Pay Sync in Expensa" />
+
+Every time you tap to pay with Apple Pay, Expensa can log it automatically — merchant name, amount, date — without you touching your phone. The trick is a one-time automation in the iOS Shortcuts app. Here's exactly how to do it.
+
+## What you'll need
+
+- iPhone with Apple Pay configured
+- [Expensa](https://apps.apple.com/app/expensa/id0000000000) installed
+- Shortcuts app (built into iOS — no download needed)
+
+The whole setup takes about 2 minutes.
+
+---
+
+## Step 1: Open the Shortcuts app
+
+Find the **Shortcuts** app on your iPhone and open it. It comes pre-installed on every iPhone running iOS 13 or later — if you've never opened it, it's probably in the Utilities folder.
+
+![Shortcuts app on iPhone home screen](/blog/images/apple-pay-setup/step-1-shortcuts-app.png)
+
+## Step 2: Go to the Automation tab and tap +
+
+At the bottom of the screen, tap the **Automation** tab. Then tap the **+** button in the top-right corner to create a new automation.
+
+![Automation tab in Shortcuts](/blog/images/apple-pay-setup/step-2-automation-tab.png)
+
+## Step 3: Select "Transaction" under Wallet
+
+Scroll down to find the **Wallet** section and select **Transaction** — specifically the trigger **"When I tap any payment card"**. This fires the automation every time you use Apple Pay.
+
+![Selecting the Wallet Transaction trigger](/blog/images/apple-pay-setup/step-3-wallet-trigger.png)
+
+## Step 4: Disable "Ask Before Running"
+
+Toggle off **Ask Before Running**. This is important — without it, Shortcuts will ask for your confirmation every single time you pay, which defeats the whole point. With it off, the automation runs silently in the background.
+
+![Disabling Ask Before Running](/blog/images/apple-pay-setup/step-4-ask-before-running.png)
+
+## Step 5: Tap "New Blank Automation"
+
+When prompted to choose what the automation does, tap **New Blank Automation**. This opens the action editor where you'll add the Expensa action.
+
+![New Blank Automation screen](/blog/images/apple-pay-setup/step-5-new-blank-automation.png)
+
+## Step 6: Search for and add the Expensa action
+
+Tap **+** to add an action. In the search bar, type **Tap to Pay Automation** and select it from the results. This is the Expensa action that receives the transaction data.
+
+![Searching for the Expensa action](/blog/images/apple-pay-setup/step-6-search-action.png)
+
+## Step 7: Map the transaction fields
+
+Now connect the Apple Pay data to the Expensa fields. For each field in the action, tap it → select **Variable** → then **Shortcut Input**, and choose the matching field:
+
+- **Transaction Amount** → Amount
+- **Merchant Name** → Merchant Name
+- **Transaction Date** → Date *(optional)*
+
+![Mapping transaction fields to variables](/blog/images/apple-pay-setup/step-7-map-fields.png)
+
+## Step 8: Tap "Done" to save
+
+Tap **Done** in the top-right corner. Your automation is live.
+
+From this point on, every Apple Pay payment will silently log itself to Expensa — amount, merchant, and date — with no action needed from you.
+
+![Completed automation](/blog/images/apple-pay-setup/step-8-done.png)
+
+---
+
+<AppStoreCTA />
+
+## Choosing which space transactions go to
+
+By default, Apple Pay transactions import into your current active space. You can change this in Expensa under **Settings → Apple Pay Sync** — pick any space you want imported transactions saved to, such as a dedicated "Card" or "Daily" space.
+
+## Troubleshooting
+
+**The automation asks for confirmation every time** — go back into the automation, tap the three-dot menu, and make sure "Ask Before Running" is off.
+
+**Transactions aren't appearing** — check that the Expensa action is the one with all three fields mapped. If any field says "No Variable", tap it and reassign it.
+
+**I can't find the "Tap to Pay Automation" action** — make sure Expensa is installed and open it at least once before searching. iOS needs to register the app's actions in Shortcuts.

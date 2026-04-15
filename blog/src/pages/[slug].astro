@@ -1,6 +1,8 @@
 ---
 import PostLayout from '../layouts/PostLayout.astro';
 import AppStoreCTA from '../components/AppStoreCTA.astro';
+import YouTubeEmbed from '../components/YouTubeEmbed.astro';
+import Screenshot from '../components/Screenshot.astro';
 import { getCollection } from 'astro:content';
 import { readingTime } from '../utils/index.ts';
 
@@ -26,7 +28,7 @@ const canonicalUrl = `https://expensa.andrewsereda.com/blog/${post.slug}/`;
   canonicalUrl={canonicalUrl}
 >
   <div class="prose-body">
-    <Content components={{ AppStoreCTA }} />
+    <Content components={{ AppStoreCTA, YouTubeEmbed }} />
   </div>
 </PostLayout>
 
