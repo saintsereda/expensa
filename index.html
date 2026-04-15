@@ -113,12 +113,43 @@
 
     document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll(".colourful-text").forEach(el => initColourfulText(el));
+
+        // Logo hover color effect
+        const logo = document.getElementById("site-logo");
+        if (logo) {
+            let hoverInterval;
+            const randomColor = () =>
+                `hsl(${Math.random() * 360}, ${70 + Math.random() * 30}%, ${50 + Math.random() * 20}%)`;
+
+            logo.addEventListener("mouseenter", () => {
+                logo.style.color = randomColor();
+                hoverInterval = setInterval(() => {
+                    logo.style.color = randomColor();
+                }, 200);
+            });
+            logo.addEventListener("mouseleave", () => {
+                clearInterval(hoverInterval);
+                logo.style.color = "";
+            });
+        }
     });
     </script>
 </head>
 <body>
     <header class="site-header">
-        <a href="/">Expensa</a>
+        <a href="/" class="site-logo" id="site-logo">
+            <svg width="24" height="24" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_header)">
+                    <path d="M128 -0.000244141C198.692 -0.000244141 256 57.3075 256 128H128V-0.000244141Z" fill="currentColor"/>
+                    <path d="M63.9992 128C63.9992 163.347 92.6531 192 127.999 192C145.964 192 162.195 184.593 173.818 172.673L220.163 216.807C196.881 240.964 164.2 256.001 127.999 256.001C57.3067 256.001 -0.000976562 198.693 -0.000976562 128H63.9992Z" fill="currentColor"/>
+                </g>
+                <defs>
+                    <clipPath id="clip0_header">
+                        <rect width="256" height="256" fill="white"/>
+                    </clipPath>
+                </defs>
+            </svg>
+        </a>
     </header>
 
     <main class="content" style="text-align: center; padding-top: 120px;">

@@ -55,7 +55,19 @@ const {
 
   <body>
     <header class="site-header">
-      <a href="https://expensa.andrewsereda.com" class="site-logo">Expensa</a>
+      <a href="https://expensa.andrewsereda.com" class="site-logo" id="site-logo">
+        <svg width="24" height="24" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g clip-path="url(#clip0_blog)">
+            <path d="M128 -0.000244141C198.692 -0.000244141 256 57.3075 256 128H128V-0.000244141Z" fill="currentColor"/>
+            <path d="M63.9992 128C63.9992 163.347 92.6531 192 127.999 192C145.964 192 162.195 184.593 173.818 172.673L220.163 216.807C196.881 240.964 164.2 256.001 127.999 256.001C57.3067 256.001 -0.000976562 198.693 -0.000976562 128H63.9992Z" fill="currentColor"/>
+          </g>
+          <defs>
+            <clipPath id="clip0_blog">
+              <rect width="256" height="256" fill="white"/>
+            </clipPath>
+          </defs>
+        </svg>
+      </a>
       <button id="theme-toggle" aria-label="Toggle light/dark mode">
         <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
@@ -83,6 +95,25 @@ const {
         document.documentElement.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
       });
+
+      // Logo hover color effect
+      const logo = document.getElementById('site-logo');
+      if (logo) {
+        let hoverInterval: ReturnType<typeof setInterval>;
+        const randomColor = () =>
+          `hsl(${Math.random() * 360}, ${70 + Math.random() * 30}%, ${50 + Math.random() * 20}%)`;
+
+        logo.addEventListener('mouseenter', () => {
+          logo.style.color = randomColor();
+          hoverInterval = setInterval(() => {
+            logo.style.color = randomColor();
+          }, 200);
+        });
+        logo.addEventListener('mouseleave', () => {
+          clearInterval(hoverInterval);
+          logo.style.color = '';
+        });
+      }
     </script>
   </body>
 </html>
@@ -145,14 +176,14 @@ const {
     transition: background 0.2s, border-color 0.2s;
   }
   .site-logo {
-    font-size: 15px;
-    font-weight: 600;
+    display: flex;
+    align-items: center;
     color: var(--text);
     text-decoration: none;
-    letter-spacing: -0.01em;
+    transition: color 0.3s ease;
   }
   .site-logo:hover {
-    opacity: 0.7;
+    text-decoration: none;
   }
   #theme-toggle {
     background: none;
