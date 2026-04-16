@@ -47,8 +47,8 @@ a:hover {
     align-items: center;
     justify-content: space-between;
     padding: 0 24px;
-    border-bottom: 1px solid var(--border);
     background: var(--bg);
+    border-bottom: 1px solid var(--border);
     backdrop-filter: blur(8px);
     transition: background 0.2s, border-color 0.2s;
 }
