@@ -4,13 +4,33 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
 ---
 
 <div class="end-cta">
-  <p class="end-cta-heading">Ready to take control of your finances?</p>
-  <p class="end-cta-body">
-    Expensa tracks your spending, scans receipts with AI, and gives you
-    clarity on where your money goes — automatically.
-  </p>
+  <div class="end-cta-content">
+    <span class="end-cta-logo">
+      <svg width="32" height="32" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="256" height="256" rx="56" fill="#0033FF"/>
+        <g clip-path="url(#clip0_end)">
+          <path d="M128 48C168.317 48 201 80.683 201 121H128V48Z" fill="white"/>
+          <path d="M91.5 121C91.5 141.158 107.842 157.5 128 157.5C138.24 157.5 147.49 153.285 154.112 146.5L180.5 171.65C167.24 185.4 148.63 194 128 194C87.683 194 55 161.317 55 121H91.5Z" fill="white"/>
+        </g>
+        <defs>
+          <clipPath id="clip0_end">
+            <rect x="55" y="48" width="146" height="146" fill="white"/>
+          </clipPath>
+        </defs>
+      </svg>
+    </span>
+    <div class="end-cta-text">
+      <p class="end-cta-heading">Expensa does this for you.</p>
+      <p class="end-cta-body">
+        Receipt scanning, budget tracking, Apple Pay sync — your spending, organized without the work.
+      </p>
+    </div>
+  </div>
   <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" class="end-cta-btn">
-    Download Expensa on the App Store →
+    Download for iPhone
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 17L17 7M17 7H7M17 7v10"/>
+    </svg>
   </a>
 </div>
 
@@ -18,36 +38,95 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
   .end-cta {
     margin-top: 56px;
     padding: 32px;
-    border: 1px solid rgba(120, 115, 255, 0.3);
-    border-radius: 16px;
-    background: rgba(120, 115, 255, 0.05);
-    text-align: center;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, #0033FF 5%, var(--bg)) 0%,
+        var(--bg) 60%
+      );
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
   }
+
+  [data-theme="dark"] .end-cta {
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, #0033FF 8%, var(--bg)) 0%,
+        var(--bg) 60%
+      );
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .end-cta-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .end-cta-logo {
+    flex-shrink: 0;
+    line-height: 0;
+    margin-top: 2px;
+  }
+
+  .end-cta-text {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
   .end-cta-heading {
-    font-size: 20px;
+    font-size: 17px;
     font-weight: 600;
+    letter-spacing: -0.01em;
     color: var(--text);
-    margin-bottom: 10px;
   }
+
   .end-cta-body {
-    font-size: 15px;
+    font-size: 14px;
     color: var(--muted);
-    line-height: 1.6;
-    max-width: 440px;
-    margin: 0 auto 24px;
+    line-height: 1.55;
+    max-width: 380px;
   }
+
   .end-cta-btn {
-    display: inline-block;
-    padding: 12px 24px;
-    background: rgb(120, 115, 255);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background: #0033FF;
     color: #fff;
     border-radius: 8px;
     text-decoration: none;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 500;
-    transition: opacity 0.15s;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: transform 0.15s, box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .end-cta-btn:hover {
-    opacity: 0.85;
+    box-shadow: 0 4px 16px -4px rgba(0, 51, 255, 0.4);
+  }
+  .end-cta-btn:active {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  @media (max-width: 600px) {
+    .end-cta {
+      flex-direction: column;
+      padding: 24px;
+      gap: 20px;
+    }
+    .end-cta-btn {
+      align-self: flex-start;
+    }
   }
 </style>

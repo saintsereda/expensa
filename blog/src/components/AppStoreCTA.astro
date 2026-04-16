@@ -4,8 +4,9 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
 ---
 
 <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" class="cta-inline">
+  <span class="cta-bar" />
   <span class="cta-icon">
-    <svg width="40" height="40" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="36" height="36" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
       <rect width="256" height="256" rx="56" fill="#0033FF"/>
       <g clip-path="url(#clip0_cta)">
         <path d="M128 48C168.317 48 201 80.683 201 121H128V48Z" fill="white"/>
@@ -19,29 +20,54 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
     </svg>
   </span>
   <span class="cta-text">
-    <strong>Track your expenses automatically</strong>
-    <span>Expensa — AI-powered expense tracker for iPhone</span>
+    <strong>Track spending automatically</strong>
+    <span>Expensa for iPhone — receipt scanning, budgets, Apple Pay sync.</span>
   </span>
-  <span class="cta-action">Download for free →</span>
+  <span class="cta-arrow">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 12h14M12 5l7 7-7 7"/>
+    </svg>
+  </span>
 </a>
 
 <style>
   .cta-inline {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 16px 20px;
-    margin: 32px 0;
-    border: 1px solid rgba(0, 51, 255, 0.3);
-    border-radius: 12px;
-    background: rgba(0, 51, 255, 0.05);
+    gap: 16px;
+    position: relative;
+    padding: 20px 24px;
+    margin: 36px 0;
+    border-radius: 10px;
+    background: color-mix(in srgb, #0033FF 4%, var(--bg));
+    border: 1px solid color-mix(in srgb, #0033FF 12%, transparent);
     text-decoration: none;
     color: inherit;
-    transition: border-color 0.15s, background 0.15s;
+    transition: border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                background 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.15s;
   }
   .cta-inline:hover {
-    border-color: rgba(0, 51, 255, 0.6);
-    background: rgba(0, 51, 255, 0.09);
+    border-color: color-mix(in srgb, #0033FF 30%, transparent);
+    background: color-mix(in srgb, #0033FF 7%, var(--bg));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  .cta-inline:active {
+    transform: scale(0.985);
+  }
+  .cta-bar {
+    position: absolute;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: #0033FF;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  .cta-inline:hover .cta-bar {
+    opacity: 1;
   }
   .cta-icon {
     flex-shrink: 0;
@@ -50,33 +76,41 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
   .cta-text {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 3px;
     flex: 1;
     min-width: 0;
   }
   .cta-text strong {
     font-size: 15px;
     font-weight: 600;
+    letter-spacing: -0.01em;
     color: var(--text);
   }
   .cta-text span {
     font-size: 13px;
     color: var(--muted);
+    line-height: 1.5;
   }
-  .cta-action {
-    font-size: 14px;
-    font-weight: 500;
-    color: #0033FF;
-    white-space: nowrap;
+  .cta-arrow {
     flex-shrink: 0;
+    color: #0033FF;
+    opacity: 0.5;
+    transition: opacity 0.2s, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    align-items: center;
   }
+  .cta-inline:hover .cta-arrow {
+    opacity: 1;
+    transform: translateX(3px);
+  }
+
   @media (max-width: 560px) {
     .cta-inline {
-      flex-wrap: wrap;
+      padding: 16px 20px;
+      gap: 12px;
     }
-    .cta-action {
-      width: 100%;
-      padding-left: 38px;
+    .cta-arrow {
+      display: none;
     }
   }
 </style>
