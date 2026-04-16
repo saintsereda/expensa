@@ -3,130 +3,187 @@
 const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO: update with real App Store ID
 ---
 
-<div class="end-cta">
-  <div class="end-cta-content">
-    <span class="end-cta-logo">
-      <svg width="32" height="32" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="256" height="256" rx="56" fill="#0033FF"/>
-        <g clip-path="url(#clip0_end)">
-          <path d="M128 48C168.317 48 201 80.683 201 121H128V48Z" fill="white"/>
-          <path d="M91.5 121C91.5 141.158 107.842 157.5 128 157.5C138.24 157.5 147.49 153.285 154.112 146.5L180.5 171.65C167.24 185.4 148.63 194 128 194C87.683 194 55 161.317 55 121H91.5Z" fill="white"/>
-        </g>
-        <defs>
-          <clipPath id="clip0_end">
-            <rect x="55" y="48" width="146" height="146" fill="white"/>
-          </clipPath>
-        </defs>
-      </svg>
-    </span>
-    <div class="end-cta-text">
-      <p class="end-cta-heading">Expensa does this for you.</p>
-      <p class="end-cta-body">
-        Receipt scanning, budget tracking, Apple Pay sync — your spending, organized without the work.
-      </p>
-    </div>
-  </div>
-  <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" class="end-cta-btn">
-    Download for iPhone
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M7 17L17 7M17 7H7M17 7v10"/>
+<div class="end-cta" data-end-cta>
+  <div class="end-cta-bg">
+    <svg class="end-cta-mark" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M128 -0.000244141C198.692 -0.000244141 256 57.3075 256 128H128V-0.000244141Z" fill="currentColor"/>
+      <path d="M63.9992 128C63.9992 163.347 92.6531 192 127.999 192C145.964 192 162.195 184.593 173.818 172.673L220.163 216.807C196.881 240.964 164.2 256.001 127.999 256.001C57.3067 256.001 -0.000976562 198.693 -0.000976562 128H63.9992Z" fill="currentColor"/>
     </svg>
-  </a>
+    <div class="end-cta-gradient" />
+  </div>
+
+  <div class="end-cta-content">
+    <span class="end-cta-chip">
+      <svg width="14" height="14" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M128 -0.000244141C198.692 -0.000244141 256 57.3075 256 128H128V-0.000244141Z" fill="currentColor"/>
+        <path d="M63.9992 128C63.9992 163.347 92.6531 192 127.999 192C145.964 192 162.195 184.593 173.818 172.673L220.163 216.807C196.881 240.964 164.2 256.001 127.999 256.001C57.3067 256.001 -0.000976562 198.693 -0.000976562 128H63.9992Z" fill="currentColor"/>
+      </svg>
+      Expensa
+    </span>
+    <h3 class="end-cta-heading">Stop tracking.<br/>Start knowing.</h3>
+    <p class="end-cta-body">
+      Receipts scan themselves. Budgets update in real time.
+      Apple Pay transactions log the moment you tap.
+    </p>
+    <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" class="end-cta-btn">
+      <span>Download for iPhone</span>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 17L17 7M17 7H7M17 7v10"/>
+      </svg>
+    </a>
+  </div>
 </div>
 
 <style>
   .end-cta {
-    margin-top: 56px;
-    padding: 32px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    background:
-      linear-gradient(
-        135deg,
-        color-mix(in srgb, #0033FF 5%, var(--bg)) 0%,
-        var(--bg) 60%
-      );
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 24px;
+    position: relative;
+    margin-top: 64px;
+    padding: 48px 40px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: color-mix(in srgb, #0033FF 4%, var(--bg));
+    border: 1px solid color-mix(in srgb, #0033FF 10%, transparent);
+    isolation: isolate;
   }
-
   [data-theme="dark"] .end-cta {
-    background:
-      linear-gradient(
-        135deg,
-        color-mix(in srgb, #0033FF 8%, var(--bg)) 0%,
-        var(--bg) 60%
-      );
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    background: color-mix(in srgb, #0033FF 6%, var(--bg));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.02);
   }
 
+  /* Background layer */
+  .end-cta-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .end-cta-mark {
+    position: absolute;
+    right: -10%;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 320px;
+    height: 320px;
+    color: #0033FF;
+    opacity: 0.04;
+    animation: end-cta-float 12s ease-in-out infinite;
+  }
+  [data-theme="dark"] .end-cta-mark {
+    opacity: 0.06;
+  }
+
+  @keyframes end-cta-float {
+    0%, 100% { transform: translateY(-50%) rotate(0deg); }
+    50% { transform: translateY(-52%) rotate(4deg); }
+  }
+
+  .end-cta-gradient {
+    position: absolute;
+    top: -40%;
+    left: -20%;
+    width: 60%;
+    height: 180%;
+    background: radial-gradient(
+      ellipse at center,
+      color-mix(in srgb, #0033FF 6%, transparent) 0%,
+      transparent 70%
+    );
+    animation: end-cta-pulse 8s ease-in-out infinite;
+  }
+  [data-theme="dark"] .end-cta-gradient {
+    background: radial-gradient(
+      ellipse at center,
+      color-mix(in srgb, #0033FF 10%, transparent) 0%,
+      transparent 70%
+    );
+  }
+
+  @keyframes end-cta-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.08); }
+  }
+
+  /* Content */
   .end-cta-content {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    flex: 1;
-    min-width: 0;
+    position: relative;
+    z-index: 1;
+    max-width: 420px;
   }
 
-  .end-cta-logo {
-    flex-shrink: 0;
-    line-height: 0;
-    margin-top: 2px;
-  }
-
-  .end-cta-text {
-    display: flex;
-    flex-direction: column;
+  .end-cta-chip {
+    display: inline-flex;
+    align-items: center;
     gap: 6px;
+    padding: 5px 12px 5px 8px;
+    border-radius: 100px;
+    background: color-mix(in srgb, #0033FF 8%, var(--bg));
+    border: 1px solid color-mix(in srgb, #0033FF 15%, transparent);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #0033FF;
+    margin-bottom: 20px;
+  }
+  [data-theme="dark"] .end-cta-chip {
+    background: color-mix(in srgb, #0033FF 12%, var(--bg));
+    color: #4d7aff;
   }
 
   .end-cta-heading {
-    font-size: 17px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    font-size: clamp(24px, 4vw, 30px);
+    font-weight: 650;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
     color: var(--text);
+    margin-bottom: 14px;
   }
 
   .end-cta-body {
-    font-size: 14px;
+    font-size: 15px;
     color: var(--muted);
-    line-height: 1.55;
-    max-width: 380px;
+    line-height: 1.6;
+    margin-bottom: 28px;
   }
 
   .end-cta-btn {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 10px 20px;
+    gap: 8px;
+    padding: 12px 22px;
     background: #0033FF;
     color: #fff;
-    border-radius: 8px;
+    border-radius: 10px;
     text-decoration: none;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 550;
     letter-spacing: -0.005em;
-    white-space: nowrap;
-    flex-shrink: 0;
-    transition: transform 0.15s, box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.15s;
   }
   .end-cta-btn:hover {
-    box-shadow: 0 4px 16px -4px rgba(0, 51, 255, 0.4);
+    box-shadow: 0 8px 28px -6px rgba(0, 51, 255, 0.5);
   }
   .end-cta-btn:active {
     transform: translateY(1px) scale(0.98);
   }
+  .end-cta-btn svg {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .end-cta-btn:hover svg {
+    transform: translate(2px, -2px);
+  }
 
   @media (max-width: 600px) {
     .end-cta {
-      flex-direction: column;
-      padding: 24px;
-      gap: 20px;
+      padding: 36px 24px;
     }
-    .end-cta-btn {
-      align-self: flex-start;
+    .end-cta-mark {
+      width: 220px;
+      height: 220px;
+      right: -15%;
     }
   }
 </style>
