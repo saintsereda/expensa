@@ -39,9 +39,9 @@ Scroll down to find the **Wallet** section and select **Transaction** — specif
 
 ![Selecting the Wallet Transaction trigger](/blog/images/apple-pay-setup/step-3-wallet-trigger.png)
 
-## Step 4: Select your cards and disable "Ask Before Running"
+## Step 4: Select your cards and set to Run Immediately
 
-When you tap, select the cards you want the automation to work with. Then toggle off **Ask Before Running**. This is important — without it, Shortcuts will ask for your confirmation every single time you pay, which defeats the whole point. With it off, the automation runs silently in the background.
+When you tap, select the cards you want the automation to work with. Then change the run mode to **Run Immediately**. This is important — if it's set to "Run After Confirmation", Shortcuts will ask for your approval every single time you pay, which defeats the whole point. With "Run Immediately" selected, the automation runs silently in the background.
 
 ![Disabling Ask Before Running](/blog/images/apple-pay-setup/step-4-ask-before-running.png)
 
@@ -85,7 +85,7 @@ By default, Apple Pay transactions import into your current active space. You ca
 
 ## Troubleshooting
 
-**The automation asks for confirmation every time** — go back into the automation, tap the three-dot menu, and make sure "Ask Before Running" is off.
+**The automation asks for confirmation every time** — go back into the automation, tap the three-dot menu, and make sure the run mode is set to "Run Immediately".
 
 **Transactions aren't appearing** — check that the Expensa action is the one with all three fields mapped. If any field says "No Variable", tap it and reassign it.
 
