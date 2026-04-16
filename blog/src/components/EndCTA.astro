@@ -45,7 +45,7 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
     border: 1px solid color-mix(in srgb, #0033FF 10%, transparent);
     isolation: isolate;
   }
-  [data-theme="dark"] .end-cta {
+  :global([data-theme="dark"]) .end-cta {
     background: #141416;
     border-color: rgba(255, 255, 255, 0.08);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
@@ -71,7 +71,7 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
     opacity: 0.04;
     animation: end-cta-float 12s ease-in-out infinite;
   }
-  [data-theme="dark"] .end-cta-mark {
+  :global([data-theme="dark"]) .end-cta-mark {
     opacity: 0.06;
   }
 
@@ -93,7 +93,7 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
     );
     animation: end-cta-pulse 8s ease-in-out infinite;
   }
-  [data-theme="dark"] .end-cta-gradient {
+  :global([data-theme="dark"]) .end-cta-gradient {
     background: radial-gradient(
       ellipse at center,
       color-mix(in srgb, #0033FF 6%, transparent) 0%,
@@ -127,7 +127,7 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
     color: #0033FF;
     margin-bottom: 20px;
   }
-  [data-theme="dark"] .end-cta-chip {
+  :global([data-theme="dark"]) .end-cta-chip {
     background: rgba(255, 255, 255, 0.06);
     color: #cdcdcd;
   }
@@ -147,7 +147,7 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
     line-height: 1.6;
     margin-bottom: 28px;
   }
-  [data-theme="dark"] .end-cta-body {
+  :global([data-theme="dark"]) .end-cta-body {
     color: #a0a0a0;
   }
 
