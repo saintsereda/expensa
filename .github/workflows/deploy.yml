@@ -45,6 +45,7 @@ jobs:
           cp style.css _site/
           cp privacy.html _site/
           cp terms.html _site/
+          cp apple-pay-sync-content.json _site/
           cp robots.txt _site/
           cp CNAME _site/
           cp google3207982b30289325.html _site/
