@@ -99,7 +99,7 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
     width: 180px;
     height: 180px;
     pointer-events: none;
-    color: #0033FF;
+    color: var(--text);
     opacity: 0.04;
     transition: opacity 0.4s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 0;
@@ -107,12 +107,6 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
   .cta-inline:hover .cta-watermark {
     opacity: 0.07;
     transform: translateY(-50%) scale(1.05) rotate(-3deg);
-  }
-  :global([data-theme="dark"]) .cta-watermark {
-    opacity: 0.06;
-  }
-  :global([data-theme="dark"]) .cta-inline:hover .cta-watermark {
-    opacity: 0.1;
   }
 
   .cta-content {

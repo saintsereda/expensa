@@ -67,12 +67,9 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa/id0000000000'; // TODO
     transform: translateY(-50%);
     width: 320px;
     height: 320px;
-    color: #0033FF;
+    color: var(--text);
     opacity: 0.04;
     animation: end-cta-float 12s ease-in-out infinite;
-  }
-  :global([data-theme="dark"]) .end-cta-mark {
-    opacity: 0.06;
   }
 
   @keyframes end-cta-float {
