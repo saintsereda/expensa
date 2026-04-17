@@ -1,6 +1,12 @@
 ---
 import BaseLayout from './BaseLayout.astro';
 import EndCTA from '../components/EndCTA.astro';
+import PostNav from '../components/PostNav.astro';
+
+interface NavLink {
+  slug: string;
+  title: string;
+}
 
 interface Props {
   title: string;
@@ -8,9 +14,11 @@ interface Props {
   date: Date;
   readingTime: string;
   canonicalUrl?: string;
+  prev?: NavLink;
+  next?: NavLink;
 }
 
-const { title, description, date, readingTime, canonicalUrl } = Astro.props;
+const { title, description, date, readingTime, canonicalUrl, prev, next } = Astro.props;
 
 const formattedDate = date.toLocaleDateString('en-US', {
   year: 'numeric',
@@ -28,6 +36,8 @@ const formattedDate = date.toLocaleDateString('en-US', {
     </header>
 
     <slot />
+
+    <PostNav prev={prev} next={next} />
 
     <EndCTA />
   </article>

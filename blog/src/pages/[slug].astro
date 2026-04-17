@@ -7,14 +7,25 @@ import { getCollection } from 'astro:content';
 import { readingTime } from '../utils/index.ts';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('posts');
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-    props: { post },
-  }));
+  const posts = (await getCollection('posts')).sort(
+    (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+  );
+
+  return posts.map((post, i) => {
+    const newer = posts[i - 1];
+    const older = posts[i + 1];
+    return {
+      params: { slug: post.slug },
+      props: {
+        post,
+        prev: older ? { slug: older.slug, title: older.data.title } : undefined,
+        next: newer ? { slug: newer.slug, title: newer.data.title } : undefined,
+      },
+    };
+  });
 }
 
-const { post } = Astro.props;
+const { post, prev, next } = Astro.props;
 const { Content } = await post.render();
 const rt = readingTime(post.body);
 const canonicalUrl = `https://expensa.andrewsereda.com/blog/${post.slug}/`;
@@ -26,6 +37,8 @@ const canonicalUrl = `https://expensa.andrewsereda.com/blog/${post.slug}/`;
   date={post.data.date}
   readingTime={rt}
   canonicalUrl={canonicalUrl}
+  prev={prev}
+  next={next}
 >
   <div class="prose-body">
     <Content components={{ AppStoreCTA, YouTubeEmbed }} />

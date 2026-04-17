@@ -1,0 +1,127 @@
+---
+interface NavLink {
+  slug: string;
+  title: string;
+}
+
+interface Props {
+  prev?: NavLink;
+  next?: NavLink;
+}
+
+const { prev, next } = Astro.props;
+
+if (!prev && !next) return null;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<nav class="post-nav" aria-label="Post navigation">
+  {prev ? (
+    <a href={`${base}/${prev.slug}/`} class="post-nav-link post-nav-prev">
+      <span class="post-nav-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Previous
+      </span>
+      <span class="post-nav-title">{prev.title}</span>
+    </a>
+  ) : <span />}
+
+  {next ? (
+    <a href={`${base}/${next.slug}/`} class="post-nav-link post-nav-next">
+      <span class="post-nav-label">
+        Next
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </span>
+      <span class="post-nav-title">{next.title}</span>
+    </a>
+  ) : <span />}
+</nav>
+
+<style>
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 64px;
+  }
+
+  .post-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    text-decoration: none;
+    color: inherit;
+    background: transparent;
+    transition: border-color 0.2s, background 0.2s, transform 0.2s;
+  }
+
+  .post-nav-link:hover {
+    border-color: color-mix(in srgb, var(--text) 20%, var(--border));
+    background: color-mix(in srgb, var(--text) 2%, var(--bg));
+  }
+
+  .post-nav-next {
+    align-items: flex-end;
+    text-align: right;
+    grid-column: 2;
+  }
+
+  .post-nav-prev {
+    grid-column: 1;
+  }
+
+  .post-nav-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .post-nav-prev svg {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .post-nav-next svg {
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .post-nav-prev:hover svg {
+    transform: translateX(-2px);
+  }
+  .post-nav-next:hover svg {
+    transform: translateX(2px);
+  }
+
+  .post-nav-title {
+    font-size: 15px;
+    font-weight: 550;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  @media (max-width: 600px) {
+    .post-nav {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+    .post-nav-next,
+    .post-nav-prev {
+      grid-column: 1;
+    }
+    .post-nav-next {
+      align-items: flex-start;
+      text-align: left;
+    }
+  }
+</style>
