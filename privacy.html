@@ -71,52 +71,175 @@
 
     <main class="content">
         <h1>Privacy Policy</h1>
-        <p class="updated">Last updated: [Date]</p>
+        <p class="updated">Last updated: 17 April 2026</p>
 
-        <h2>Overview</h2>
+        <h2>1. Introduction</h2>
         <p>
-            Expensa is a personal finance app that helps you track expenses, income, and budgets. All financial data you enter is stored locally on your device and synced to your personal iCloud account — it is never transmitted to or stored on Expensa's servers. We are committed to keeping your data private and under your control.
+            Expensa ("we", "our", or "us"), operated by Andrew Sereda, is committed to protecting your privacy. This Privacy Policy explains what information is collected, how it is used, how it is shared, and what rights you have when you use our mobile application and website at <strong>expensa.andrewsereda.com</strong> (collectively, the "Service").
+        </p>
+        <p>
+            Please read this policy carefully. By using the Service, you agree to the practices described here. If you do not agree, please do not use the Service.
         </p>
 
-        <h2>Data We Collect</h2>
+        <h2>2. Information We Collect</h2>
         <p>
-            Expensa stores only the data you explicitly enter: transactions (amount, date, merchant name, notes, category, tags), accounts, budgets, recurring rules, and app preferences such as your base currency and display settings. When you use AI-powered features, limited data is sent to OpenAI for processing (see the Third Parties section below for exactly what is sent in each case). The app uses your device location solely to suggest a default currency when adding a transaction; precise location is never stored or shared. No analytics, advertising identifiers, or behavioral data are collected.
-        </p>
-
-        <h2>How We Use Data</h2>
-        <p>
-            Your financial data is used exclusively to provide the features of the app: displaying transaction history, calculating budgets, generating spending summaries, and syncing across your devices. Currency exchange rates are fetched from external services (described below) to convert between currencies; your transaction data is never included in those requests. If you choose to share a Space with other iCloud users, only the data within that shared Space becomes visible to those specific collaborators.
-        </p>
-
-        <h2>Data Storage</h2>
-        <p>
-            All app data is stored locally on your device using Core Data and synced end-to-end via Apple iCloud (CloudKit). Apple encrypts data in transit and at rest in iCloud; Expensa has no access to your iCloud data. Currency exchange rates are cached locally on-device for up to 24 hours. Subscription status is managed by RevenueCat using an anonymous, app-assigned user ID — no personal identifiers are linked to it.
-        </p>
-
-        <h2>Third Parties</h2>
-        <p>
-            Expensa uses the following third-party services:
+            Expensa is designed to minimise data collection. We only process the following:
         </p>
         <ul>
-            <li><strong>Apple iCloud / CloudKit</strong> — device-to-device data sync. Your data is governed by Apple's Privacy Policy.</li>
-            <li><strong>OpenExchangeRates</strong> — fetches current currency exchange rates. Only a standard HTTPS request is made; no personal or financial data is sent.</li>
-            <li><strong>Supabase</strong> — used as a cache layer for historical currency rate snapshots. Only anonymous read requests for exchange rate data are made; no user data is sent.</li>
-            <li><strong>RevenueCat</strong> — manages in-app subscription entitlements using an anonymous app user ID and Apple receipt data to verify purchases.</li>
+            <li><strong>Data you enter</strong> — transactions (amount, date, merchant, notes, category, tags), accounts, budgets, recurring rules, custom merchant rules, and app preferences such as your base currency and display settings.</li>
+            <li><strong>Receipts and imports</strong> — photos of receipts, checks, statements, and imported files you explicitly choose to process with the AI features.</li>
+            <li><strong>Approximate location</strong> — used only to suggest a default currency when adding a transaction, if you grant the permission. Precise location is never stored.</li>
+            <li><strong>Subscription status</strong> — an anonymous app-user identifier and the Apple receipt that prove your subscription entitlement.</li>
+            <li><strong>Diagnostic information</strong> — only what Apple forwards to us from crash reports, if you have opted in to share these at the iOS level.</li>
+        </ul>
+        <p>
+            We do <strong>not</strong> collect advertising identifiers, behavioural analytics, contact lists, browsing history, or any data that would let us identify you personally.
+        </p>
+
+        <h2>3. How We Use Your Information</h2>
+        <p>
+            Your information is used exclusively to provide and improve the Service:
+        </p>
+        <ul>
+            <li>Display your transaction history, accounts, and budgets.</li>
+            <li>Sync your data across your devices using your personal iCloud account.</li>
+            <li>Convert between currencies using exchange rates fetched from external services.</li>
+            <li>Process receipts, imports, categorisation, and budget suggestions when you actively use our AI-powered features.</li>
+            <li>Manage and verify your subscription status.</li>
+        </ul>
+        <p>
+            We do not use your information to train AI models, profile you, or show ads.
+        </p>
+
+        <h2>4. Third-Party Services</h2>
+        <p>
+            We use a small set of third-party providers, each of which processes only the minimum data necessary to perform its function. Their own privacy policies apply to the data they handle on our behalf.
+        </p>
+        <ul>
+            <li><strong>Apple iCloud / CloudKit</strong> — device-to-device sync and shared Space collaboration. Data is encrypted in transit and at rest by Apple. We have no access to your iCloud data. Governed by Apple's Privacy Policy.</li>
+            <li><strong>OpenExchangeRates</strong> — current currency exchange rates. Only an anonymous HTTPS request is made; no personal or financial data is sent.</li>
+            <li><strong>Supabase</strong> — cache layer for historical currency rate snapshots. Only anonymous read requests for exchange rate data; no user data is sent.</li>
+            <li><strong>RevenueCat</strong> — verifies App Store subscription entitlements using an anonymous app-user ID and Apple receipt data.</li>
             <li>
-                <strong>OpenAI</strong> — powers several optional AI features. Data is sent to the OpenAI API only when you actively use one of these features, and only the minimum needed for the request. Specifically:
+                <strong>OpenAI</strong> — powers optional AI features. Data is sent only when you actively use a feature, and only the minimum needed:
                 <ul>
-                    <li><em>AI receipt &amp; document scan</em> — the selected receipt, check, or statement image is sent for parsing into transaction fields.</li>
-                    <li><em>File import (PDF, RTF, ODT, unstructured TXT)</em> — the extracted text of the imported document is sent so it can be converted into structured transaction rows.</li>
-                    <li><em>Merchant categorization</em> — the merchant name of a transaction, your list of category names, and an optional currency hint are sent to suggest the best-fitting category.</li>
-                    <li><em>Smart budget allocation</em> — your chosen budget amount, currency, cycle (e.g. monthly), locale, and the list of category names in that budget are sent to generate suggested allocations.</li>
+                    <li><em>AI receipt &amp; document scan</em> — the selected receipt, check, or statement image.</li>
+                    <li><em>File import (PDF, RTF, ODT, unstructured TXT)</em> — the extracted text of the imported document.</li>
+                    <li><em>Merchant categorisation</em> — the merchant name of a transaction, your list of category names, and an optional currency hint.</li>
+                    <li><em>Smart budget allocation</em> — your chosen budget amount, currency, cycle, locale, and the list of category names in that budget.</li>
                 </ul>
-                No account identifiers, full transaction history, notes, iCloud data, or personal contact information are ever sent to OpenAI. Data sent for these features is not used by Expensa for training and is subject to OpenAI's API data usage policy.
+                No account identifiers, full transaction history, notes, iCloud data, or contact information are ever sent to OpenAI. Data sent is not used by Expensa or OpenAI for model training (per OpenAI's API data usage policy).
             </li>
         </ul>
 
-        <h2>Contact</h2>
+        <h2>5. How We Share Your Information</h2>
         <p>
-            If you have any questions about this Privacy Policy, please contact us at <a href="mailto:hello@andrewsereda.com">hello@andrewsereda.com</a>.
+            We do not sell, rent, or trade your personal information. We share data only in these limited circumstances:
+        </p>
+        <ul>
+            <li><strong>With your permission</strong> — if you invite another iCloud user to a shared Space, the data in that Space becomes visible to that specific collaborator via CloudKit sharing.</li>
+            <li><strong>With the third-party services listed above</strong>, solely to operate the Service.</li>
+            <li><strong>If required by law</strong> — to respond to valid legal process, or to protect our rights, privacy, safety, or property.</li>
+        </ul>
+
+        <h2>6. Data Retention and Deletion</h2>
+        <p>
+            Financial data lives on your device and in your personal iCloud account. When you delete a transaction, account, or the entire app, it is removed locally and, via CloudKit sync, from your other devices.
+        </p>
+        <p>
+            You can erase all Expensa data from your iCloud account at any time via iOS Settings → [your name] → iCloud → Manage Account Storage → Expensa → Delete Data. Deleting the app from your device does not automatically delete its iCloud data — use the step above to remove it.
+        </p>
+        <p>
+            Exchange rate snapshots cached by us and anonymous subscription records retained by RevenueCat are kept only as long as operationally necessary.
+        </p>
+
+        <h2>7. Tracking and Advertising</h2>
+        <p>
+            Expensa does not track you across apps or websites, does not use advertising identifiers, and does not serve advertising. There are no third-party trackers embedded in the Service. The website uses only the cookies described in our <a href="/cookies.html">Cookie Policy</a>.
+        </p>
+
+        <h2>8. Your Rights and Choices</h2>
+        <p>
+            Because your financial data lives in your own iCloud account, you already have direct control over it. In addition, depending on where you live, you may have the following rights:
+        </p>
+        <ul>
+            <li><strong>Access</strong> — request a copy of any personal information we hold about you.</li>
+            <li><strong>Correction</strong> — ask us to correct inaccurate or incomplete information.</li>
+            <li><strong>Deletion</strong> — ask us to delete personal information, subject to limited legal exceptions.</li>
+            <li><strong>Portability</strong> — receive your personal information in a structured, machine-readable format.</li>
+            <li><strong>Object or restrict</strong> — object to or restrict certain processing.</li>
+            <li><strong>Withdraw consent</strong> — where processing is based on consent, you may withdraw it at any time.</li>
+        </ul>
+        <p>
+            To exercise any of these rights, contact us using the details at the bottom of this page. We will respond within 30 days.
+        </p>
+
+        <h2>9. Cookies and Website Analytics</h2>
+        <p>
+            Our website uses only strictly necessary storage (theme preference and your cookie consent choice). We do not use advertising or analytics cookies today. If that ever changes, you will be asked to consent through the banner on the site. See our <a href="/cookies.html">Cookie Policy</a> for the full list and how to change your preferences.
+        </p>
+
+        <h2>10. Data Security</h2>
+        <p>
+            We take reasonable technical and organisational measures to protect your information:
+        </p>
+        <ul>
+            <li>Data in transit is encrypted via HTTPS/TLS.</li>
+            <li>Data at rest in iCloud is encrypted by Apple.</li>
+            <li>No user financial data is ever stored on Expensa-operated servers.</li>
+            <li>API keys for third-party services are injected at build time from a secrets file that is never committed to source control.</li>
+        </ul>
+        <p>
+            No method of electronic storage is 100% secure, so we cannot guarantee absolute security. If we become aware of a breach that affects your personal information, we will notify you and the relevant authorities in line with applicable law.
+        </p>
+
+        <h2>11. International Data Transfers</h2>
+        <p>
+            Some of our third-party providers (notably OpenAI and RevenueCat) are based in the United States. When you use AI features or manage your subscription, data may be transferred to and processed in countries outside your own, including outside the European Economic Area (EEA) and the United Kingdom. These transfers are protected by the legal mechanisms each provider maintains (such as Standard Contractual Clauses). Apple iCloud data remains subject to Apple's own cross-region arrangements.
+        </p>
+
+        <h2>12. Children's Privacy</h2>
+        <p>
+            The Service is not directed to children under the age of 13 (or the equivalent minimum age in your jurisdiction, such as 16 in parts of the EEA). We do not knowingly collect personal information from children. If you believe a child has provided information to the Service, please contact us and we will delete it.
+        </p>
+
+        <h2>13. California Privacy Rights (CCPA/CPRA)</h2>
+        <p>
+            If you are a California resident, the California Consumer Privacy Act and California Privacy Rights Act give you additional rights, including:
+        </p>
+        <ul>
+            <li>The right to know what personal information is collected and how it is used.</li>
+            <li>The right to request deletion of personal information.</li>
+            <li>The right to correct inaccurate personal information.</li>
+            <li>The right to opt out of the sale or sharing of personal information.</li>
+            <li>The right to non-discrimination for exercising these rights.</li>
+        </ul>
+        <p>
+            <strong>We do not sell or share personal information for cross-context behavioural advertising.</strong> To exercise any California rights, contact us using the details below.
+        </p>
+
+        <h2>14. European Privacy Rights (GDPR / UK GDPR)</h2>
+        <p>
+            If you are in the European Economic Area, the United Kingdom, or Switzerland, the GDPR and UK GDPR apply. The lawful bases we rely on are:
+        </p>
+        <ul>
+            <li><strong>Performance of a contract</strong> — to deliver the Service and your subscription.</li>
+            <li><strong>Legitimate interests</strong> — to keep the Service secure and improve it, balanced against your rights and expectations.</li>
+            <li><strong>Consent</strong> — where required (for example, optional cookies or access to device features).</li>
+            <li><strong>Legal obligation</strong> — to comply with applicable law.</li>
+        </ul>
+        <p>
+            You have the right to lodge a complaint with your local supervisory authority. For residents of Ukraine, similar rights apply under the Law of Ukraine "On the Protection of Personal Data".
+        </p>
+
+        <h2>15. Changes to This Policy</h2>
+        <p>
+            We may update this Privacy Policy from time to time. Material changes will be notified by updating this page and, where appropriate, by an in-app or on-site notice. The "Last updated" date at the top of this page reflects the most recent change. Continued use of the Service after an update constitutes acceptance of the updated policy.
+        </p>
+
+        <h2>16. Contact Us</h2>
+        <p>
+            Questions or requests about this Privacy Policy or our data practices? Contact us at <a href="mailto:hello@andrewsereda.com">hello@andrewsereda.com</a>.
         </p>
     </main>
 
