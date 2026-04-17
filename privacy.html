@@ -80,7 +80,7 @@
 
         <h2>Data We Collect</h2>
         <p>
-            Expensa stores only the data you explicitly enter: transactions (amount, date, merchant name, notes, category, tags), accounts, budgets, recurring rules, and app preferences such as your base currency and display settings. When you use the receipt scanning feature, photos are processed locally on-device using Apple's Vision framework, or optionally sent to OpenAI's API if the AI-assisted scan feature is enabled. The app uses your device location solely to suggest a default currency when adding a transaction; precise location is never stored or shared. No analytics, advertising identifiers, or behavioral data are collected.
+            Expensa stores only the data you explicitly enter: transactions (amount, date, merchant name, notes, category, tags), accounts, budgets, recurring rules, and app preferences such as your base currency and display settings. When you use AI-powered features, limited data is sent to OpenAI for processing (see the Third Parties section below for exactly what is sent in each case). The app uses your device location solely to suggest a default currency when adding a transaction; precise location is never stored or shared. No analytics, advertising identifiers, or behavioral data are collected.
         </p>
 
         <h2>How We Use Data</h2>
@@ -102,7 +102,16 @@
             <li><strong>OpenExchangeRates</strong> — fetches current currency exchange rates. Only a standard HTTPS request is made; no personal or financial data is sent.</li>
             <li><strong>Supabase</strong> — used as a cache layer for historical currency rate snapshots. Only anonymous read requests for exchange rate data are made; no user data is sent.</li>
             <li><strong>RevenueCat</strong> — manages in-app subscription entitlements using an anonymous app user ID and Apple receipt data to verify purchases.</li>
-            <li><strong>OpenAI</strong> (optional) — if the AI-assisted receipt scan feature is used, a photo of a receipt is sent to OpenAI's API for parsing. No other app data is sent.</li>
+            <li>
+                <strong>OpenAI</strong> — powers several optional AI features. Data is sent to the OpenAI API only when you actively use one of these features, and only the minimum needed for the request. Specifically:
+                <ul>
+                    <li><em>AI receipt &amp; document scan</em> — the selected receipt, check, or statement image is sent for parsing into transaction fields.</li>
+                    <li><em>File import (PDF, RTF, ODT, unstructured TXT)</em> — the extracted text of the imported document is sent so it can be converted into structured transaction rows.</li>
+                    <li><em>Merchant categorization</em> — the merchant name of a transaction, your list of category names, and an optional currency hint are sent to suggest the best-fitting category.</li>
+                    <li><em>Smart budget allocation</em> — your chosen budget amount, currency, cycle (e.g. monthly), locale, and the list of category names in that budget are sent to generate suggested allocations.</li>
+                </ul>
+                No account identifiers, full transaction history, notes, iCloud data, or personal contact information are ever sent to OpenAI. Data sent for these features is not used by Expensa for training and is subject to OpenAI's API data usage policy.
+            </li>
         </ul>
 
         <h2>Contact</h2>
