@@ -45,6 +45,8 @@ jobs:
           cp style.css _site/
           cp privacy.html _site/
           cp terms.html _site/
+          cp cookies.html _site/
+          cp cookie-banner.js _site/
           cp apple-pay-sync-content.json _site/
           cp robots.txt _site/
           cp CNAME _site/
@@ -81,6 +83,12 @@ jobs:
             </url>
             <url>
               <loc>${SITE}/terms.html</loc>
+              <lastmod>${TODAY}</lastmod>
+              <changefreq>monthly</changefreq>
+              <priority>0.3</priority>
+            </url>
+            <url>
+              <loc>${SITE}/cookies.html</loc>
               <lastmod>${TODAY}</lastmod>
               <changefreq>monthly</changefreq>
               <priority>0.3</priority>
