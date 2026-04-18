@@ -25,9 +25,37 @@ const formattedDate = date.toLocaleDateString('en-US', {
   month: 'short',
   day: 'numeric',
 });
+
+const resolvedUrl = canonicalUrl ?? new URL(Astro.url.pathname, Astro.site).href;
+
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": title,
+  "description": description,
+  "datePublished": date.toISOString(),
+  "dateModified": date.toISOString(),
+  "url": resolvedUrl,
+  "mainEntityOfPage": { "@type": "WebPage", "@id": resolvedUrl },
+  "author": {
+    "@type": "Person",
+    "name": "Andrew Sereda",
+    "url": "https://andrewsereda.com"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Expensa",
+    "url": "https://expensa.andrewsereda.com",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://expensa.andrewsereda.com/og-image.png"
+    }
+  }
+};
 ---
 
 <BaseLayout title={`${title} — Expensa Blog`} description={description} canonicalUrl={canonicalUrl}>
+  <script type="application/ld+json" slot="head" set:html={JSON.stringify(articleSchema)} />
   <article class="prose post">
     <header class="post-header">
       <h1>{title}</h1>
