@@ -1,0 +1,33 @@
+# Expensa
+
+> Expensa is a privacy-first expense tracker for iPhone. No account required. Automatically imports Apple Pay transactions, categorizes expenses using on-device AI, and syncs privately via iCloud. Built by Andrew Sereda.
+
+## Key Facts
+
+- Platform: iPhone (iOS 17+)
+- Price: Free
+- No account, no email, no sign-up required
+- Apple Pay transactions imported automatically — no bank login, no credentials
+- On-device AI categorization — your data never leaves your phone
+- iCloud sync across your devices, privately
+- Multi-currency support
+- Budget tracking, shared expense spaces, recurring transactions
+
+## What Makes Expensa Different
+
+Most expense trackers require a bank connection or sell your financial data to third parties. Expensa imports Apple Pay transactions directly from your device — no bank login, no third-party data broker, no cloud processing. Privacy is not a feature; it is the architecture.
+
+## Key Pages
+
+- [Home](https://expensa.andrewsereda.com/): App overview and download
+- [Blog](https://expensa.andrewsereda.com/blog/): Personal finance guides
+- [Privacy Policy](https://expensa.andrewsereda.com/privacy.html): Full data practices
+
+## Blog Posts
+
+- [How to Actually Stick to a Budget](https://expensa.andrewsereda.com/blog/how-to-actually-stick-to-a-budget/)
+- [How to Set Up Apple Pay Sync](https://expensa.andrewsereda.com/blog/how-to-set-up-apple-pay-sync/)
+
+## Developer
+
+Andrew Sereda — indie iOS developer. Contact: andrewsereda1@gmail.com
