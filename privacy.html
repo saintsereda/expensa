@@ -11,6 +11,41 @@
         document.documentElement.setAttribute('data-theme', saved || system);
     </script>
 
+    <!-- Google tag (gtag.js) with Consent Mode v2 -->
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied'
+        });
+        try {
+            const stored = JSON.parse(localStorage.getItem('expensa_cookie_consent_v1') || 'null');
+            if (stored) {
+                gtag('consent', 'update', {
+                    analytics_storage: stored.analytics ? 'granted' : 'denied',
+                    ad_storage: stored.marketing ? 'granted' : 'denied',
+                    ad_user_data: stored.marketing ? 'granted' : 'denied',
+                    ad_personalization: stored.marketing ? 'granted' : 'denied'
+                });
+            }
+        } catch (_) {}
+        window.addEventListener('expensa:cookie-consent', function (e) {
+            const c = e.detail || {};
+            gtag('consent', 'update', {
+                analytics_storage: c.analytics ? 'granted' : 'denied',
+                ad_storage: c.marketing ? 'granted' : 'denied',
+                ad_user_data: c.marketing ? 'granted' : 'denied',
+                ad_personalization: c.marketing ? 'granted' : 'denied'
+            });
+        });
+        gtag('js', new Date());
+        gtag('config', 'G-7XLM35QGCQ');
+    </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7XLM35QGCQ"></script>
+
     <!-- Primary meta -->
     <title>Privacy Policy — Expensa</title>
     <meta name="description" content="Read Expensa's privacy policy. Learn how your financial data, receipts, and personal information are collected, stored, and protected in our AI-powered expense tracker." />
