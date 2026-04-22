@@ -96,6 +96,90 @@ a:hover {
     padding: 64px 24px 80px;
 }
 
+/* Hero */
+.hero {
+    min-height: calc(100vh - 56px);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 48px 24px;
+}
+
+.hero-logo {
+    width: 96px;
+    height: 96px;
+    color: var(--text);
+    margin-bottom: 32px;
+}
+
+.hero-title {
+    font-size: 56px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 40px;
+    max-width: 720px;
+}
+
+@media (max-width: 560px) {
+    .hero-title {
+        font-size: 40px;
+        margin-bottom: 32px;
+    }
+    .hero-logo {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 24px;
+    }
+}
+
+.app-store-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--text);
+    color: var(--bg);
+    padding: 10px 18px;
+    border-radius: 10px;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.app-store-btn:hover {
+    text-decoration: none;
+    opacity: 0.88;
+    transform: translateY(-1px);
+}
+
+.app-store-btn__text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.1;
+    text-align: left;
+}
+
+.app-store-btn__text small {
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    opacity: 0.85;
+}
+
+.app-store-btn__text strong {
+    font-size: 17px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+}
+
+.hero-hint {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 14px;
+}
+
 /* Legal pages */
 .content h1 {
     font-size: 32px;
