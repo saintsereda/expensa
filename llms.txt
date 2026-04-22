@@ -26,7 +26,7 @@ Most expense trackers require a bank connection or sell your financial data to t
 ## Blog Posts
 
 - [How to Actually Stick to a Budget](https://expensa.andrewsereda.com/blog/how-to-actually-stick-to-a-budget/)
-- [How to Set Up Apple Pay Sync](https://expensa.andrewsereda.com/blog/how-to-set-up-apple-pay-sync/)
+- [How to automatically add Apple Pay transactions to Expensa using Shortcuts?](https://expensa.andrewsereda.com/blog/how-to-set-up-apple-pay-sync/)
 
 ## Developer
 
