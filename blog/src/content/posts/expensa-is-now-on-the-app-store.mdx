@@ -1,0 +1,69 @@
+---
+title: "Expensa is now on the App Store"
+description: "Expensa is live on iPhone today. Here's what it does — built around the pain points that make every other expense app a chore."
+date: 2026-04-29
+---
+
+import AppStoreCTA from '../../components/AppStoreCTA.astro';
+
+Expensa is now available on the App Store.
+
+It's a personal finance app for iPhone, built for people who've tried every expense tracker on the market and quietly given up on all of them. Most apps fail in the same places: they make you type every coffee, they ask for your bank login, or they bury you in fifteen budget categories that don't reflect how you actually spend.
+
+Expensa is the response to those pain points. Each feature below exists because the alternative was annoying enough to abandon.
+
+---
+
+## "I have to manually log every transaction"
+
+The single biggest reason people stop tracking expenses is that logging them is tedious. You tap your phone at the register, then later you're supposed to remember the amount, the merchant, and the category and type it all in.
+
+Expensa fixes this with **Apple Pay sync**. Every tap-to-pay transaction logs itself — merchant, amount, date, currency — without you opening the app. It's a one-time setup using the iOS Shortcuts app and Apple's built-in transaction notifications. After that, your expense list updates the moment a charge clears. There's [a 2-minute setup guide](/how-to-set-up-apple-pay-sync/) if you want it.
+
+Real-time logging is the difference between a budget that works and one that gathers dust.
+
+## "Budgeting feels like a second job"
+
+Most budgeting apps make you allocate money across fifteen categories, then track every transaction against each one. By week two, you've stopped checking.
+
+Expensa starts you with **one number**: a single monthly target. A progress bar across the dashboard tells you where you stand. That's the whole interaction.
+
+If you want more structure, Expensa's **Smart Budget Allocation** uses AI to suggest how to split your budget across categories based on your spending history and your country's typical patterns — so you're working from real numbers, not guesses. You can override anything you don't like.
+
+<AppStoreCTA />
+
+## "I don't trust apps with my bank login"
+
+Most expense apps want read-only access to your bank account through aggregators like Plaid. That means a third party stores your credentials, sees every transaction you make, and becomes a target for breaches.
+
+Expensa doesn't ask for your bank login. **There's no aggregator. No middleman.** Your data lives in your iCloud account, encrypted by Apple, synced only between your own devices. Receipt scanning runs against OpenAI's API for the OCR step — but everything else (categorization rules, budgets, account balances, transaction history) stays on-device or in your private CloudKit container.
+
+For a finance app, that distinction matters.
+
+## "Receipts pile up and I never enter them"
+
+For the times you do pay with cash or card outside Apple Pay, **AI receipt scanning** handles it. Open the camera in Expensa, snap the receipt, and the app extracts the amount, date, currency, and merchant automatically. Or use the iOS share sheet from the Photos app to scan an image you already have — no need to open Expensa first.
+
+Receipt scanning supports invoices, bills, and bank statements in multiple languages.
+
+## "Travel breaks my expense app"
+
+Expensa supports **150+ currencies** with live exchange rates. Add a transaction in EUR while your base currency is USD, and the app stores both — original amount, converted amount, and the rate that was used at the time. No retroactive math when rates change a month later.
+
+Each financial "space" can have its own default currency, so a trip fund in JPY doesn't mess with your home budget in USD.
+
+## "My partner and I track separately"
+
+**Shared Spaces** let you invite a partner, family member, or housemate to a single space. Both phones see the same accounts, transactions, and budgets in real time, synced through iCloud. No separate logins, no exports, no spreadsheet.
+
+It works with up to several participants per space and runs on the same CloudKit infrastructure that powers Notes, Reminders, and Photos sharing on iOS.
+
+---
+
+## Free to start
+
+Expensa is free to download. The free tier includes one space, two accounts, three active recurring transactions, five lifetime receipt scans, and the full transaction-tracking experience. Premium unlocks unlimited spaces and accounts, monthly AI quotas, category budgets, the analytics tab, and shared spaces.
+
+Apple Pay sync, multi-currency tracking, and the budget progress dashboard are all free.
+
+If any of the pain points above sound familiar, the app is one tap away.
