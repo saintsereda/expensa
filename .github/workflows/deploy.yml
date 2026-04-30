@@ -58,9 +58,6 @@ jobs:
           cp favicon-32.png _site/
           cp apple-touch-icon.png _site/
 
-          # Copy .well-known (apple-app-site-association for universal links)
-          cp -r .well-known _site/
-
           # Copy Astro blog build output into /blog/
           cp -r blog/dist/. _site/blog/
 
