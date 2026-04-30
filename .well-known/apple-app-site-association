@@ -1,0 +1,18 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["4B9JB9B2KQ.sereda.ExpenseTracker"],
+        "components": [
+          {
+            "/": "/.well-known/*",
+            "exclude": true
+          },
+          {
+            "/": "/*"
+          }
+        ]
+      }
+    ]
+  }
+}
