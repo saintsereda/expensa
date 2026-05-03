@@ -1,130 +1,68 @@
 ---
 title: "How to track recurring subscriptions and bills on iPhone?"
-description: "Stop losing money to forgotten subscriptions. Here's how to track every recurring expense and income — Netflix, rent, salary, gym — automatically on iPhone, with reminders before each charge."
+description: "Set up Netflix, rent, salary, and other recurring transactions in Expensa once — they generate themselves on schedule, and you finally see what's leaving your account every month."
 date: 2026-05-03
 ---
 
 import AppStoreCTA from '../../components/AppStoreCTA.astro';
 
-Most people underestimate their subscriptions by half. Three streaming services, two cloud storage plans, a gym you stopped going to in February, a forgotten $4.99 app from 2023 — added up, the average iPhone user is bleeding $80–$200 a month on auto-renewals they can't even name.
+You have subscriptions you've forgotten about. Most people do. The point of recurring transactions in [Expensa](https://apps.apple.com/app/expensa-ai-expenses-manager/id6758392205) is to enter them once so they show up in your spending automatically — and you stop being surprised by your card statement.
 
-The fix isn't another spreadsheet. It's setting up your recurring expenses *once* in [Expensa](https://apps.apple.com/app/expensa-ai-expenses-manager/id6758392205) so every charge logs itself, every month, with a notification before it hits your card.
+## How it works
 
-## What "recurring transactions" actually means in Expensa
+A recurring transaction is a template. You set it up — Netflix, $15.99, monthly — and Expensa creates a real transaction on the right day, every period. Catch-up runs on app launch, so missed days fill in automatically the next time you open the app.
 
-A recurring transaction is a template that auto-creates a real transaction on a schedule. You set it up once — Netflix, $15.99, monthly — and Expensa generates the entry on the right day, every time, with a reminder if you want one.
+Frequencies: **daily, weekly, monthly, yearly.** Works for expenses, income, and transfers between your own accounts.
 
-It works for both directions:
+## Set one up
 
-- **Expenses:** subscriptions (Netflix, Spotify, iCloud+), bills (rent, utilities, insurance), memberships (gym, ChatGPT Plus, that newsletter you forgot)
-- **Income:** salary, freelance retainers, dividends, recurring transfers in
+You don't create recurring transactions from a separate screen — you create them from the regular **Add Transaction** flow.
 
-You pick the cadence — **daily, weekly, monthly, or yearly** — and Expensa takes it from there.
+1. Tap **+** on the dashboard to add a transaction.
+2. Pick the type — Expense (Netflix), Income (salary), or Transfer (monthly savings move).
+3. Enter the amount and currency. Pick the account that pays it and a category.
+4. Tap the **repeat** button in the form. Pick a frequency.
+5. Set the start date — this is the anchor for every future occurrence. Optionally set an end date.
+6. Save.
 
----
-
-## How to set up a recurring transaction
-
-The whole flow takes under a minute per item. Here's the process for adding your Netflix subscription.
-
-### Step 1: Open the Recurring tab
-
-From the dashboard, tap the **Recurring** section. This is the home for every recurring template — past, present, and paused.
-
-![Recurring tab in Expensa](/blog/images/recurring/step-1-recurring-tab.png)
-
-### Step 2: Tap the "+" button
-
-The plus button in the top-right opens the new recurrence form.
-
-![New recurrence form](/blog/images/recurring/step-2-new-form.png)
-
-### Step 3: Choose Expense or Income
-
-Pick **Expense** for subscriptions and bills, **Income** for salary and recurring earnings. The form adapts: expense flows into a category like "Subscriptions"; income flows into "Salary" or another income category you define.
-
-![Choosing expense vs income](/blog/images/recurring/step-3-type.png)
-
-### Step 4: Fill in the details
-
-- **Amount and currency** — e.g., 15.99 USD
-- **Category** — Subscriptions (or create a new one)
-- **Account** — which card or wallet pays it
-- **Merchant name** — "Netflix" (this is the label that shows up on every generated transaction)
-- **Notes** — optional; e.g., "Family plan, shared with sister"
-
-![Filling in transaction details](/blog/images/recurring/step-4-details.png)
-
-### Step 5: Set the frequency
-
-Pick from **Daily, Weekly, Monthly,** or **Yearly**. For Netflix, that's monthly. For rent, monthly. For an annual iCloud+ plan, yearly.
-
-![Choosing frequency](/blog/images/recurring/step-5-frequency.png)
-
-### Step 6: Set the start date
-
-Pick the next date the charge hits. Expensa uses this as the anchor — every future transaction generates relative to this date. If your Netflix renews on the 14th of every month, set the 14th.
-
-![Setting start date](/blog/images/recurring/step-6-start-date.png)
-
-### Step 7: Turn on notifications (recommended)
-
-Toggle **Notify me** and pick the timing:
-
-- **Day of due date** — wakes you up the morning of the charge
-- **Day before due date** — gives you 24 hours to cancel if you don't want to renew
-
-Day-before is the one that catches forgotten subscriptions. Worth it.
-
-![Notification settings](/blog/images/recurring/step-7-notifications.png)
-
-### Step 8: Save
-
-Tap **Save**. From now on, Expensa generates the transaction automatically on every due date, and the notification fires when you set it to.
-
----
+If the start date is today, Expensa creates today's transaction immediately and schedules the next one. If it's in the future, the first one fires on that date.
 
 <AppStoreCTA />
 
-## A 10-minute audit that will save you money
+## Manage them in the Recurring tab
 
-Here's the workflow that actually exposes how much you're spending on autopilot:
+Once a recurring transaction exists, the **Recurring** tab is where you see it. Two segments: **Expenses** and **Income**. The header shows total monthly cost across the segment — double-tap the number to switch between monthly and yearly view.
 
-1. Open your bank statement from the last two months
-2. For every recurring charge — even the $1.99 ones — add a recurring transaction in Expensa
-3. Set notifications to **day-before** for everything
-4. Open the Dashboard
+Each row shows category, account, next run date, and amount. Tap a row for the detail sheet:
 
-You'll see a single "Subscriptions" category with the real number. Most people are shocked. The next month, when the day-before notifications start firing, you'll cancel two or three of them before the charge hits.
+- **Pause** — stop generating new transactions without losing the template. Resume later with one tap.
+- **Cancel** — soft-delete. Future transactions stop; past ones stay in your history.
+- **Edit** — change amount, account, category, frequency, period, notes, or tags.
 
-That's the entire point.
+The "Started on" date is locked once the recurrence has fired at least once — but you can set the **next transaction date** directly if a charge moved.
 
-## Pro tips
+## A 10-minute audit
 
-**Use Pause instead of Cancel for seasonal stuff.** Going on a 3-month sabbatical and pausing your gym? Pause the recurring transaction. The template stays, generation stops, and you resume it with one tap when you come back. Cancel deletes it.
-
-**Separate income recurrences let you forecast cash flow.** Once your salary is recurring and your fixed expenses are recurring, the dashboard math becomes real: income minus fixed costs equals the actual budget you have left to spend. No more month-end surprises.
-
-**Custom categories beat generic ones.** Don't use "Bills" for everything. Make separate categories for "Streaming," "Software," "Memberships." When you can see *which* subcategory is bloating, you cancel the right thing.
-
-**Multi-currency works out of the box.** Got a Notion subscription billed in USD but you live in Europe? Set it in USD. Expensa stores the original amount + the exchange rate at generation time, so your reports stay accurate even when rates move.
+Open your last two bank statements. For every recurring charge, add a recurring transaction in Expensa. Then open the dashboard. The Subscriptions category total is usually the moment people cancel two or three things they hadn't thought about in a year.
 
 ## Limits
 
-The free tier supports **3 active recurring transactions**. That's enough for the basics — rent, salary, one streaming service — but not enough for a real subscription audit.
+Free plan: **3 active recurring transactions.** Enough for rent, salary, and one streamer — not enough for a real audit. Premium removes the limit.
 
-Expensa Premium unlocks **unlimited** recurring transactions, plus category budgets and analytics that pair well with this workflow. No bank login required, no data sold, no ads — your data stays in your iCloud.
+## Notes that matter
+
+**Multi-currency works as expected.** Notion in USD while your account is in EUR? Expensa stores the original amount and the rate at the time the transaction is generated, so reports stay consistent.
+
+**Notifications are app-wide.** If you want a reminder when something is due, turn on recurrence reminders in Settings → Notifications — applies to all recurring transactions, not per-template.
+
+**Catch-up is idempotent.** If you don't open the app for two weeks, the missed transactions are created on launch — no duplicates if one already exists for the same day.
+
+**Apple Pay sync pairs well with this.** Card-attached charges (most subscriptions) can also be auto-imported via [Apple Pay sync](/blog/how-to-set-up-apple-pay-sync/) — recurrences are for the predictable monthly rhythm, automation catches everything else.
 
 ## Troubleshooting
 
-**Transactions aren't generating** — open the app at least once. Recurrence catch-up runs on app launch and during background refresh. If you've been offline for a week, opening the app will create the missed transactions in one shot (no duplicates).
+**Transactions aren't generating.** Open the app. Catch-up runs on launch and during background refresh; if the device hasn't checked in for a while, opening it triggers the missed runs.
 
-**The notification didn't fire** — check Settings → Notifications and confirm permissions are granted. If iOS denied notifications, none of the day-of or day-before reminders will work.
+**Wrong amount on a future occurrence.** Edit the recurring template, not the individual transaction. Future transactions use the new amount; past ones keep the value they were created with.
 
-**I want to change the amount permanently** — open the recurring template (not an individual transaction) and edit the amount there. Future generations will use the new value. Past transactions stay at the amount they were created with.
-
-**The charge happened on a different date** — edit the start date on the template; future transactions will anchor to the new date.
-
----
-
-The point of recurring transactions isn't to automate logging. It's to make invisible spending visible. Set it up once, look at the dashboard in 30 days, and decide what you actually want to keep paying for.
+**Charge date moved.** Edit the period — if the recurrence has already started, set the next transaction date directly.
