@@ -57,6 +57,7 @@ jobs:
           cp favicon-16.png _site/
           cp favicon-32.png _site/
           cp apple-touch-icon.png _site/
+          cp og-image.png _site/
 
           # Copy Astro blog build output into /blog/
           cp -r blog/dist/. _site/blog/
