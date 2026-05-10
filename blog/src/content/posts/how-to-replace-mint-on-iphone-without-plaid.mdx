@@ -6,142 +6,80 @@ date: 2026-05-10
 
 import AppStoreCTA from '../../components/AppStoreCTA.astro';
 
-It's been two years since Intuit pulled the plug on Mint, and the replacement they pointed everyone to — Credit Karma — never actually shipped Mint's budgeting features. So a few hundred thousand people who had been quietly running their financial life on a single app suddenly had to find a new one.
+**The short answer:** Mint shut down in 2024 and Credit Karma never shipped its budgeting features. You can replicate what Mint did on iPhone in 2026 without giving any app your bank login — a one-time iOS Shortcuts automation captures every Apple Pay tap in real time, monthly CSV imports cover the rest, and a single budget number replaces 15 categories.
 
-The frustrating part: almost every "best Mint alternative" list ends up recommending Monarch, Copilot, Rocket Money, or Quicken Simplifi — and every single one of those asks you to hand over your online banking credentials to a third-party aggregator (Plaid, Yodlee, MX). Same model Mint used. Same things break. The difference is now you're paying for it.
+<AppStoreCTA />
 
-If you don't want to do that, the iPhone you already have can do most of what Mint did — without a bank connection. This post walks through the full setup.
+## Why the Plaid model isn't the only option
 
-## Why this even comes up
+Almost every "best Mint alternative" list ends with Monarch, Copilot, Rocket Money, or Quicken Simplifi — and every single one of them asks you to type your bank username and password into a form owned by Plaid, Yodlee, or MX. Same model Mint used. Same things break.
 
-Three reasons people search for a Mint replacement that doesn't link a bank:
+Three reasons people search for something else:
 
-**1. Sharing credentials feels wrong, and it kind of is.** When an aggregator "connects" to your bank, what actually happens in most cases is you type your bank username and password into a form owned by Plaid (or similar), and Plaid stores those credentials and logs in as you, repeatedly, forever. Your bank's terms of service usually forbid this. They tolerate it because the alternative — Open Banking APIs — isn't universally deployed in the US. Your liability if something goes wrong is fuzzy. A growing number of people have decided fuzzy isn't good enough.
+- **Shared credentials feel wrong.** When an aggregator "connects" to your bank, what actually happens is it stores your bank login and impersonates you, forever. Most banks' terms of service technically forbid this.
+- **The connection breaks constantly.** Every Reddit thread about Monarch and Copilot has the same complaint: *"my bank disconnected again."* Credit unions and regional banks are the worst.
+- **You can't leave the data path.** Your transaction history now lives on the aggregator's servers. If they get acquired, breached, or change their privacy policy, your history follows.
 
-**2. The connection breaks constantly.** Every Reddit thread about Monarch, Copilot, or Rocket Money has the same complaint underneath: *"my bank disconnected again."* Credit unions and regional banks are the worst — they update their login flow, the scraper breaks, you reconnect, two weeks later it breaks again. Multiply by every account.
-
-**3. There's no way out of the data path.** Even if you trust the aggregator today, your transaction history now lives on their servers. If they get acquired, breached, or change their privacy policy, that history goes wherever they go.
-
-None of this means aggregator-based trackers are bad. They're the right answer for a lot of people. But if you're searching for "Mint alternative no bank login," you've already decided you want something else. So here's something else.
+None of this makes aggregators wrong. If you specifically searched "Mint alternative no bank login," though, you've already decided. Here's the setup.
 
 ## What Mint actually did
 
-Strip away the marketing, and Mint did five things well:
+Strip away the marketing and Mint did five things:
 
-1. **Pulled every transaction into one place** so you could see total spending at a glance.
-2. **Categorized transactions automatically** — groceries, gas, restaurants, etc.
-3. **Showed a budget vs. actual progress bar** so you knew if you were on track this month.
-4. **Surfaced recurring charges** so you didn't pay for the same forgotten subscription for three years.
-5. **Did all of that with very little manual work** on your part.
+1. Pulled every transaction into one place.
+2. Auto-categorized them.
+3. Showed budget vs. actual progress.
+4. Surfaced recurring charges so you didn't pay for forgotten subscriptions for years.
+5. Did all of it with almost no manual work.
 
-The replacement plan, then, is to rebuild those five things on iPhone without an aggregator in the middle.
+The replacement plan is to rebuild those five things on iPhone — without an aggregator in the middle.
 
-## The iPhone setup, top to bottom
+## The iPhone setup in three input channels
 
-You need three input channels — that's it. Most of your spending flows through them already; you're just routing it into one place.
+You need three ways for spending to land in one place. That's the whole architecture.
 
-| Source of spending | How it lands in your tracker |
+| Where it happens | How it lands in your tracker |
 |---|---|
-| In-store Apple Pay tap | iOS Shortcuts automation (runs silently after each tap) |
-| Statements from cards Apple Pay can't see (Amex, debit, abroad) | CSV/PDF import once a month |
-| Cash, in-app subscriptions, websites that don't take Apple Pay | Receipt scan or 5-second manual entry |
+| Apple Pay tap (in-store or web) | iOS Shortcuts automation — runs silently after each tap |
+| Bank/credit card statements Apple Pay can't see | Monthly CSV or PDF import |
+| Cash, online card entry, subscriptions | Receipt scan or 5-second manual entry |
 
-Once those three are wired up, the rest is presentation: a budget, a weekly check, and a quick recurring-charges scan. We'll get to all of it.
+### 1. Capture every Apple Pay tap
 
-<AppStoreCTA />
+iOS has a Shortcuts trigger called **"When I tap a Wallet Card or Pass"**. It fires every time Apple Pay completes a payment and hands the merchant, amount, and date to an action of your choice. Wire that action to [Expensa](https://apps.apple.com/app/expensa-ai-expenses-manager/id6758392205) and every tap-to-pay charge lands in your tracker the second it clears — no bank in the loop.
 
-## Step 1: Capture every Apple Pay tap automatically
+It works with every card in Wallet: personal Visa, business credit, debit, foreign card, Apple Card. Setup is one-time and takes about two minutes — [step-by-step walkthrough with screenshots here](/blog/how-to-export-apple-pay-transactions-iphone).
 
-This is the closest thing to "auto-sync" you can get without an aggregator, and it's the part most Mint refugees miss. iOS has had a Shortcuts trigger called **"When I tap a Wallet Card or Pass"** since 2021. It fires every time a payment clears through Apple Pay — physical store, transit card, Apple Pay on the web, anywhere Wallet is involved.
+Caveat: this only captures payments that actually go through Apple Pay. Card-number entry on websites, chip insert at the gas pump, and cash all need one of the other two channels.
 
-You wire that trigger to a one-step automation that sends the merchant name, amount, and date straight to [Expensa](https://apps.apple.com/app/expensa-ai-expenses-manager/id6758392205). No bank ever sees the request. No third-party server sits in the middle. The data goes straight from iOS to the app on your phone.
+### 2. Import statements for everything Apple Pay can't see
 
-Setup takes about two minutes. There's a [full walkthrough with screenshots here](/blog/how-to-export-apple-pay-transactions-iphone), and a short video. Once it's running, you can essentially stop thinking about logging Apple Pay purchases — they're just there.
+Every US bank, credit union, and credit card lets you download your last month of activity as a CSV or PDF from their own app. Open Expensa → Import → pick the file. The column mapping screen handles whatever format your bank uses, and the AI dedupes against transactions already in the tracker.
 
-Caveat: this only captures Apple Pay payments. Card-number entry on websites, chip insert at the gas pump, and cash all need one of the other two channels.
+This takes about 30 seconds per account, once a month. For most people that's 1–3 accounts. Call it five minutes a month — the entire price of not having an aggregator.
 
-## Step 2: Pull in everything Apple Pay can't see
+### 3. Capture the leftovers without typing
 
-You probably have at least one account that Apple Pay doesn't cover end-to-end — an Amex, a checking account you use for bills, a foreign card, a brokerage cash account. For these, do the thing Mint never let you do cleanly: own the data path yourself.
-
-Every major US bank, credit union, and credit card lets you download your last month of activity as a CSV or PDF from their own app or website. It's usually two taps inside the bank's own app. Pull the file, open it in Expensa, and the import flow maps the columns to amount, date, and merchant, then deduplicates against anything already in the tracker. Same end result as Mint's "synced transactions" view — just done once a month, by you, with no credentials shared.
-
-If the CSV columns are weird, Expensa's column mapping screen lets you tell it which column is which. PDFs work too — the AI extracts the table from a statement export and produces the same row list.
-
-This step takes 30 seconds per account per month. For most people that's 1–3 accounts, so call it five minutes a month total. That's the entire price of not having an aggregator.
-
-## Step 3: Capture the leftovers without typing anything
-
-For everything else — cash, gas-pump swipes, online checkout on a site that doesn't take Apple Pay, in-app subscriptions billed through Apple ID — you've got two zero-friction options:
-
-- **Scan the receipt.** Open the tracker, tap Scan, point the camera at the paper receipt or the confirmation email. AI extracts amount, merchant, and date. Faster than typing.
-- **Add manually in ~5 seconds.** Amount, merchant, done. The keyboard pops up with the number pad already focused.
-
-Most people stop bothering with cash entirely after a few weeks because it's such a tiny share of spend on iPhone. If you do pay cash often, build a habit of scanning the receipt the moment it's in your hand. It takes longer to put it in your wallet than to scan it.
-
-## Step 4: Set one budget number, not fifteen
-
-This is where most Mint refugees over-engineer their new tracker. Mint let you set per-category budgets, so you probably had ten of them, half of which you stopped looking at by week two. Don't recreate that.
-
-Pick one number: what you want total spend to be this month. Enter it as a single budget with a monthly cycle. Whatever you spend across every category flows into one progress bar. When the bar's at 80% and you're on day 18, you know you've got margin. When it's at 95% on day 10, you know to slow down. That's the whole signal.
-
-If one specific area — food delivery, online shopping, a sports betting habit — actually runs away from you, set a second category-specific limit on that one thing. Not on fifteen things. On the one thing that leaks.
-
-Expensa's budget card uses exactly this model: a total monthly target, an optional one-category limit on top of it, and a push alert when you cross either. That's it. No envelope system to maintain, no zero-based budget spreadsheet, no monthly category-by-category planning ritual.
-
-## Step 5: Catch recurring charges before they catch you
-
-The most useful thing Mint did, quietly, was list every charge that repeated month over month. It's how a lot of people discovered the $9.99/mo thing from four years ago they thought they'd cancelled.
-
-You can do this on iPhone without a bank link too. Two paths:
-
-- **Let the tracker detect them.** With Apple Pay and CSV imports flowing in, Expensa's recurring detection scans for charges that repeat at a regular cadence (weekly, monthly, annually) and flags them. You confirm the ones that are real subscriptions, ignore the ones that aren't. Once a charge is flagged as a recurrence, you see it on a dedicated "upcoming" view next to its renewal date.
-- **Check Apple ID subscriptions directly.** Settings → \[your name\] → Subscriptions on iPhone shows every Apple-billed subscription in one screen. Most people are surprised what's in there. Cancel from that screen takes two taps.
-
-Together those two cover almost everything that quietly drains money each month. The discoveries are usually paid for many times over by the things you cancel.
-
-## Step 6: The weekly check-in (five minutes, not two hours)
-
-Mint's monthly review screen looked impressive and accomplished nothing, because the month was already over. The actually-useful version is a 5-minute check-in once a week:
-
-1. Open the app. The budget card is on the dashboard.
-2. Glance at total spent vs. target. Are you ahead of pace, on pace, or behind?
-3. Skim the last week's transactions for anything weird — a duplicate, a charge you don't recognize, a category that needs fixing.
-4. Tap any recurring detection flags. Confirm or dismiss.
-5. Close the app.
-
-That's it. Once a week, five minutes. The reason this works and monthly reviews don't is that there's still time to change behavior. Adjusting a Tuesday habit on Sunday is doable. Adjusting a whole month after it's already happened is just regret.
-
-## What you give up vs. what you gain
-
-Honest accounting of the trade-off:
-
-**Give up:**
-- Truly automatic capture for non–Apple Pay sources. CSV imports take five minutes a month. That's the cost.
-- A few transactions that don't fire the Wallet trigger — primarily online card-number entry. Those need a scan or a manual add.
-- The illusion that any tracker is fully hands-off. None of them are, including the Plaid ones — the difference is whether the manual work is "fix the broken bank connection" or "import a CSV."
-
-**Gain:**
-- No bank username or password leaves your device. Ever.
-- No third-party servers in the data path. Apple Pay transactions go iOS → Shortcuts → app. CSV imports go bank-website → file → app.
-- No connection that can break. Nothing depending on a scraper keeping up with your bank's login flow.
-- Works with banks Plaid doesn't support — small credit unions, regional banks, foreign accounts.
-- Your transaction history isn't a column in someone else's database.
-
-For a lot of people that trade is obviously worth it. For others — heavy multi-account households, business expense tracking with 20+ feeds — an aggregator probably still makes more sense, broken connections and all.
-
-If you're a Mint refugee who specifically left because of the Plaid model, this is the iPhone setup that gets you the rest of the way back.
+For cash, online card entry, and merchant-direct subscriptions: scan the receipt (camera or photo library — AI extracts amount, merchant, date) or add manually in five seconds. If you pay cash often, build a habit of scanning the moment the paper hits your hand.
 
 <AppStoreCTA />
 
-## Quick FAQ
+## The Mint features people actually miss
 
-**Will this work without Expensa?** The Apple Pay → Shortcuts → tracker pattern is generic. Any app that exposes a Shortcuts action for adding a transaction can be the destination. Expensa was built around this flow, so the setup is the smoothest, but you can wire the same trigger into a Google Sheets append, a Notion database, or any tracker with a Shortcuts action.
+Once the three channels are wired up, two more behaviors close the gap to what Mint felt like:
 
-**Can my partner see the same data?** Yes — spaces in Expensa can be shared via CloudKit, so a household budget can live in one space that both people see in real time. No aggregator on either side.
+**One budget number, not fifteen.** The biggest Mint trap was per-category budgets — ten of them, half abandoned by week two. Pick one number: total monthly spend target. The dashboard shows one progress bar. If a specific category leaks badly (food delivery, online shopping), add *one* category limit on top — not fifteen.
 
-**What about cash?** Receipt scan or manual entry. For most iPhone users this is a small share of spend; for some it isn't. If it's a big share, build the receipt-scan habit. Five seconds at the register.
+**Recurring charges, surfaced automatically.** With Apple Pay and CSV imports flowing in, Expensa scans for charges that repeat at a regular cadence and flags them. You confirm the real subscriptions, dismiss the rest. The "what am I still paying for" discovery usually pays for itself many times over. Pair it with Settings → \[your name\] → Subscriptions on iPhone for everything billed through Apple ID.
 
-**Does Apple Card already do this?** Apple Card gives you a CSV export, but only for Apple Card transactions, and only at month-end. Apple Pay transactions on other cards aren't exported anywhere. The Shortcut covers both.
+**Five-minute weekly check-in.** Mint's monthly review screen looked impressive and changed nothing — the month was already over. The version that works is once a week, five minutes: glance at total spent vs. target, skim the week's transactions for anything weird, tap any recurring flags. Adjusting a Tuesday habit on Sunday is doable. Adjusting a month after it's done is just regret.
 
-**Is this safe?** The Shortcut runs entirely on your phone — the same sandbox iOS uses for every app. Nothing leaves the device unless the destination app explicitly sends it (Expensa doesn't, unless you turn on CloudKit sync). Apple Pay never exposes your card number to any app, including the one receiving the transaction; what arrives is merchant, amount, and date.
+## The honest trade-off
+
+You give up truly automatic capture for non–Apple Pay sources (CSV imports take five minutes a month) and a handful of transactions that don't fire the Wallet trigger (mostly online card-number entry, which needs a scan or manual add).
+
+You gain: no bank credentials anywhere, no third-party servers in your data path, nothing that can break when your bank updates its login flow, support for the small credit unions and regional banks Plaid doesn't reach, and a transaction history that isn't a column in someone else's database.
+
+For most Mint refugees who left because of the aggregator model, that's the trade worth making.
+
+<AppStoreCTA />
