@@ -5,6 +5,7 @@ date: 2026-05-12
 ---
 
 import AppStoreCTA from '../../components/AppStoreCTA.astro';
+import ComparisonTable from '../../components/ComparisonTable.astro';
 
 **The short answer:** five of the six top-grossing expense trackers on iPhone solve roughly the same problem in roughly the same way — type every transaction, pick a category, hope you keep doing it. Expensa is the one that captures Apple Pay taps automatically, without a bank login or an aggregator in the middle. The rest of this post is the honest side-by-side so you can pick the right tool for how you actually spend.
 
@@ -25,20 +26,23 @@ All numbers above are pulled directly from each app's App Store listing as of Ma
 
 ## Feature comparison
 
-| Feature | Expensa | Money Manager | Monefy | Fealthy | Saldo | FinEye |
-|---|---|---|---|---|---|---|
-| **Apple Pay auto-sync** | Yes | No | No | No | No | No |
-| **AI receipt scanning** | Yes | Photo attach only | No | No | No | No |
-| **AI budget allocation** | Yes | No | No | No | No | No |
-| **AI auto-categorization** | Yes | No | No | Yes | No | Yes |
-| **Bank aggregator integration** | No (by design) | No | No | Monobank only | 700+ US/CA banks | CSV/Excel import |
-| **Multi-currency (live rates)** | 150+ currencies | Yes | Yes | No | Yes | Yes |
-| **Shared spaces (family/partner)** | Yes (CloudKit) | No | No | No | Yes | Yes |
-| **Investment tracking** | No | No | No | No | Yes | Yes |
-| **Recurring transactions** | Yes | Yes | Yes | No | Yes | Yes |
-| **Offline mode** | Yes | Yes | Yes | No | No | Yes |
-| **Privacy model** | On-device + private iCloud | On-device | Cloud sync (GDrive/Dropbox) | Server-side | Server-side | Server-side |
-| **Ads in free tier** | No | Yes | Yes | No | No | No |
+<ComparisonTable
+  apps={["Expensa", "Money Manager", "Monefy", "Fealthy", "Saldo", "FinEye"]}
+  rows={[
+    { feature: "Apple Pay auto-sync", values: ["Yes", "No", "No", "No", "No", "No"] },
+    { feature: "AI receipt scanning", values: ["Yes", "Photo attach only", "No", "No", "No", "No"] },
+    { feature: "AI budget allocation", values: ["Yes", "No", "No", "No", "No", "No"] },
+    { feature: "AI auto-categorization", values: ["Yes", "No", "No", "Yes", "No", "Yes"] },
+    { feature: "Bank aggregator integration", values: ["No (by design)", "No", "No", "Monobank only", "700+ US/CA banks", "CSV/Excel import"] },
+    { feature: "Multi-currency (live rates)", values: ["150+ currencies", "Yes", "Yes", "No", "Yes", "Yes"] },
+    { feature: "Shared spaces (family/partner)", values: ["Yes (CloudKit)", "No", "No", "No", "Yes", "Yes"] },
+    { feature: "Investment tracking", values: ["No", "No", "No", "No", "Yes", "Yes"] },
+    { feature: "Recurring transactions", values: ["Yes", "Yes", "Yes", "No", "Yes", "Yes"] },
+    { feature: "Offline mode", values: ["Yes", "Yes", "Yes", "No", "No", "Yes"] },
+    { feature: "Privacy model", values: ["On-device + private iCloud", "On-device", "Cloud sync (GDrive/Dropbox)", "Server-side", "Server-side", "Server-side"] },
+    { feature: "Ads in free tier", values: ["No", "Yes", "Yes", "No", "No", "No"] },
+  ]}
+/>
 
 ## Where each app actually wins
 
