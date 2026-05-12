@@ -6,6 +6,7 @@ interface Props {
   description: string;
   canonicalUrl?: string;
   ogImage?: string;
+  lang?: string;
 }
 
 const {
@@ -13,11 +14,14 @@ const {
   description,
   canonicalUrl = new URL(Astro.url.pathname, Astro.site).href,
   ogImage = '/og-image.png',
+  lang = 'en',
 } = Astro.props;
+
+const ogLocale = lang === 'uk' ? 'uk_UA' : 'en_US';
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -88,7 +92,7 @@ const {
     <meta property="og:image" content={new URL(ogImage, Astro.site).href} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale" content={ogLocale} />
 
     <!-- Twitter/X Card -->
     <meta name="twitter:card" content="summary_large_image" />

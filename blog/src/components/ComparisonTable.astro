@@ -8,15 +8,16 @@ interface Props {
   apps: string[];
   rows: Row[];
   highlightColumn?: number;
+  featureLabel?: string;
 }
 
-const { apps, rows, highlightColumn = 0 } = Astro.props;
+const { apps, rows, highlightColumn = 0, featureLabel = 'Feature' } = Astro.props;
 
 function classify(value: string): string {
   const v = value.toLowerCase().trim();
-  if (v === 'yes') return 'cell-yes';
-  if (v === 'no') return 'cell-no';
-  if (v.startsWith('no ')) return 'cell-no-qualified';
+  if (v === 'yes' || v === 'так') return 'cell-yes';
+  if (v === 'no' || v === 'ні') return 'cell-no';
+  if (v.startsWith('no ') || v.startsWith('ні ') || v.startsWith('ні(')) return 'cell-no-qualified';
   return 'cell-info';
 }
 ---
@@ -26,7 +27,7 @@ function classify(value: string): string {
     <table class="cmp-table">
       <thead>
         <tr>
-          <th class="cmp-feature-col">Feature</th>
+          <th class="cmp-feature-col">{featureLabel}</th>
           {apps.map((app, i) => (
             <th class={i === highlightColumn ? 'cmp-highlight' : ''}>{app}</th>
           ))}
