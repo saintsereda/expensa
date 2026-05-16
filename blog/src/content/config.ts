@@ -7,6 +7,8 @@ const posts = defineCollection({
     description: z.string(),
     date: z.date(),
     lang: z.string().optional(),
+    videoId: z.string().optional(),
+    videoTitle: z.string().optional(),
   }),
 });
 

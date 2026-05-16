@@ -2,6 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import EndCTA from '../components/EndCTA.astro';
 import PostNav from '../components/PostNav.astro';
+import YouTubeEmbed from '../components/YouTubeEmbed.astro';
 
 interface NavLink {
   slug: string;
@@ -15,11 +16,13 @@ interface Props {
   readingTime: string;
   canonicalUrl?: string;
   lang?: string;
+  videoId?: string;
+  videoTitle?: string;
   prev?: NavLink;
   next?: NavLink;
 }
 
-const { title, description, date, readingTime, canonicalUrl, lang, prev, next } = Astro.props;
+const { title, description, date, readingTime, canonicalUrl, lang, videoId, videoTitle, prev, next } = Astro.props;
 
 const APP_STORE_URL = 'https://apps.apple.com/app/expensa-ai-expenses-manager/id6758392205';
 
@@ -69,6 +72,11 @@ const articleSchema = {
           <path d="M7 17L17 7M17 7H7M17 7v10"/>
         </svg>
       </a>
+      {videoId && (
+        <div class="post-header-video">
+          <YouTubeEmbed videoId={videoId} title={videoTitle ?? title} />
+        </div>
+      )}
       <hr />
     </header>
 
