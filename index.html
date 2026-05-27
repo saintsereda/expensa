@@ -64,6 +64,9 @@
     <!-- Google Search Console verification -->
     <meta name="google-site-verification" content="aBkutxuHyxWQc7HJKVw5EnjpIFjfGr1mKf5RJiF3ZXg" />
 
+    <!-- Pinterest domain verification -->
+    <meta name="p:domain_verify" content="25c9c3bdb4d8ca82422b029ffa5f9670" />
+
     <!-- Open Graph -->
     <meta property="og:type"         content="website" />
     <meta property="og:site_name"    content="Expensa" />
@@ -263,6 +266,41 @@
         });
     </script>
 
+    <section class="phone-scroll" aria-label="See Expensa in action">
+        <div class="phone-scroll__pin">
+            <div class="phone-scroll__layout">
+                <div class="phone-scroll__device" aria-hidden="true">
+                    <canvas class="phone-scroll__canvas" width="800" height="1733"></canvas>
+                    <div class="phone-scroll__island"></div>
+                </div>
+                <div class="phone-scroll__copy phone-scroll__copy--left">
+                    <article class="phone-scroll__step" data-step="0" aria-current="true">
+                        <span class="phone-scroll__eyebrow">Dashboard</span>
+                        <h2 class="phone-scroll__heading">Your money at a glance.</h2>
+                        <p class="phone-scroll__body">One screen for what you spent, what's left, and where it went.</p>
+                    </article>
+                    <article class="phone-scroll__step" data-step="2">
+                        <span class="phone-scroll__eyebrow">Categorize</span>
+                        <h2 class="phone-scroll__heading">Smart categories, on-device.</h2>
+                        <p class="phone-scroll__body">Expensa picks the right category using on-device AI. Nothing leaves your phone.</p>
+                    </article>
+                </div>
+                <div class="phone-scroll__copy phone-scroll__copy--right">
+                    <article class="phone-scroll__step" data-step="1">
+                        <span class="phone-scroll__eyebrow">Add transaction</span>
+                        <h2 class="phone-scroll__heading">Log anything in seconds.</h2>
+                        <p class="phone-scroll__body">Apple Pay syncs automatically. Manual entries take a single tap.</p>
+                    </article>
+                    <article class="phone-scroll__step" data-step="3">
+                        <span class="phone-scroll__eyebrow">Live updates</span>
+                        <h2 class="phone-scroll__heading">Budgets that update themselves.</h2>
+                        <p class="phone-scroll__body">Every transaction rolls into your monthly view. See exactly how much room is left.</p>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <footer class="site-footer">
         <a href="/privacy.html">Privacy Policy</a>
         <a href="/terms.html">Terms of Use</a>
@@ -270,6 +308,7 @@
         <button type="button" data-cookie-settings>Cookie settings</button>
     </footer>
 
+    <script src="/scroll-phone.js" defer></script>
     <script src="/cookie-banner.js" defer></script>
 </body>
 </html>
