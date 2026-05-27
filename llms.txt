@@ -19,14 +19,14 @@ Most expense trackers require a bank connection or sell your financial data to t
 
 ## Key Pages
 
-- [Home](https://expensa.andrewsereda.com/): App overview and download
-- [Blog](https://expensa.andrewsereda.com/blog/): Personal finance guides
-- [Privacy Policy](https://expensa.andrewsereda.com/privacy.html): Full data practices
+- [Home](https://getexpensa.com/): App overview and download
+- [Blog](https://getexpensa.com/blog/): Personal finance guides
+- [Privacy Policy](https://getexpensa.com/privacy.html): Full data practices
 
 ## Blog Posts
 
-- [How to Actually Stick to a Budget](https://expensa.andrewsereda.com/blog/how-to-actually-stick-to-a-budget/)
-- [How to automatically add Apple Pay transactions to Expensa using Shortcuts?](https://expensa.andrewsereda.com/blog/how-to-set-up-apple-pay-sync/)
+- [How to Actually Stick to a Budget](https://getexpensa.com/blog/how-to-actually-stick-to-a-budget/)
+- [How to automatically add Apple Pay transactions to Expensa using Shortcuts?](https://getexpensa.com/blog/how-to-set-up-apple-pay-sync/)
 
 ## Developer
 

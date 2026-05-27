@@ -64,7 +64,7 @@ jobs:
 
       - name: Generate combined sitemap
         run: |
-          SITE="https://expensa.andrewsereda.com"
+          SITE="https://getexpensa.com"
           TODAY=$(date -u +%Y-%m-%d)
 
           # Start sitemap

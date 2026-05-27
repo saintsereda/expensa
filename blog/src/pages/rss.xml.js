@@ -9,7 +9,7 @@ export async function GET(context) {
   return rss({
     title: 'Expensa Blog',
     description: 'Personal finance tips to help you track spending, stick to a budget, and build better money habits.',
-    site: 'https://expensa.andrewsereda.com/blog',
+    site: 'https://getexpensa.com/blog',
     items: posts.map((post) => ({
       title: post.data.title,
       description: post.data.description,

@@ -28,7 +28,7 @@ export async function getStaticPaths() {
 const { post, prev, next } = Astro.props;
 const { Content } = await post.render();
 const rt = readingTime(post.body);
-const canonicalUrl = `https://expensa.andrewsereda.com/blog/${post.slug}/`;
+const canonicalUrl = `https://getexpensa.com/blog/${post.slug}/`;
 ---
 
 <PostLayout

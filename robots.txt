@@ -19,4 +19,4 @@ Allow: /
 User-agent: Google-Extended
 Allow: /
 
-Sitemap: https://expensa.andrewsereda.com/sitemap.xml
+Sitemap: https://getexpensa.com/sitemap.xml
