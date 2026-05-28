@@ -268,11 +268,30 @@
 
     <section class="reviews" aria-labelledby="reviews-title">
         <div class="reviews__head">
-            <div class="reviews__ribbon">
-                <span class="reviews__ribbon-stars" aria-hidden="true">★★★★★</span>
-                <span class="reviews__ribbon-divider" aria-hidden="true"></span>
-                <span class="reviews__ribbon-score">4.9</span>
-                <span class="reviews__ribbon-label">avg rating</span>
+            <div class="reviews__award">
+                <svg class="reviews__award-laurels" viewBox="0 0 200 150" fill="currentColor" aria-hidden="true">
+                    <defs>
+                        <g id="laurel-branch">
+                            <path d="M50.1 32.5 Q 8 80 50.1 127.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                            <path d="M0 0 Q 10 -6.5 20 0 Q 10 6.5 0 0 Z" transform="translate(46.2 123.8) rotate(165)"/>
+                            <path d="M0 0 Q 10 -6.5 20 0 Q 10 6.5 0 0 Z" transform="translate(36.3 111) rotate(180)"/>
+                            <path d="M0 0 Q 10 -6.5 20 0 Q 10 6.5 0 0 Z" transform="translate(30.1 96) rotate(195)"/>
+                            <path d="M0 0 Q 10 -6.5 20 0 Q 10 6.5 0 0 Z" transform="translate(28 80) rotate(210)"/>
+                            <path d="M0 0 Q 10 -6.5 20 0 Q 10 6.5 0 0 Z" transform="translate(30.1 64) rotate(225)"/>
+                            <path d="M0 0 Q 10 -6.5 20 0 Q 10 6.5 0 0 Z" transform="translate(36.3 49) rotate(240)"/>
+                            <path d="M0 0 Q 10 -6.5 20 0 Q 10 6.5 0 0 Z" transform="translate(46.2 36.2) rotate(255)"/>
+                            <path d="M0 0 Q 10 -6.5 20 0 Q 10 6.5 0 0 Z" transform="translate(50.6 130) rotate(150) scale(0.82)"/>
+                        </g>
+                    </defs>
+                    <use href="#laurel-branch"/>
+                    <use href="#laurel-branch" transform="translate(200 0) scale(-1 1)"/>
+                </svg>
+                <div class="reviews__award-content">
+                    <span class="reviews__award-stars" aria-hidden="true">★★★★★</span>
+                    <span class="reviews__award-score">4.9</span>
+                    <span class="reviews__award-label">avg rating</span>
+                    <span class="sr-only">Rated 4.9 average out of 5 stars.</span>
+                </div>
             </div>
             <h2 class="reviews__title" id="reviews-title">Loved on the App Store</h2>
             <p class="reviews__subtitle">Real five-star reviews from Expensa users around the world.</p>
