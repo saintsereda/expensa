@@ -47,6 +47,7 @@ jobs:
           cp terms.html _site/
           cp cookies.html _site/
           cp cookie-banner.js _site/
+          cp scroll-phone.js _site/
           cp apple-pay-sync-content.json _site/
           cp robots.txt _site/
           cp llms.txt _site/
@@ -58,6 +59,7 @@ jobs:
           cp favicon-32.png _site/
           cp apple-touch-icon.png _site/
           cp og-image.png _site/
+          cp -r assets _site/
 
           # Copy Astro blog build output into /blog/
           cp -r blog/dist/. _site/blog/
