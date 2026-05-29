@@ -54,6 +54,7 @@ jobs:
           cp CNAME _site/
           cp google3207982b30289325.html _site/
           cp expensa-logo-3d.mp4 _site/
+          cp favicon.ico _site/
           cp favicon.svg _site/
           cp favicon-16.png _site/
           cp favicon-32.png _site/
