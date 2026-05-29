@@ -51,6 +51,7 @@ jobs:
           cp apple-pay-sync-content.json _site/
           cp robots.txt _site/
           cp llms.txt _site/
+          cp app-ads.txt _site/
           cp CNAME _site/
           cp google3207982b30289325.html _site/
           cp expensa-logo-3d.mp4 _site/

@@ -1,0 +1,3 @@
+# app-ads.txt — Expensa (getexpensa.com)
+# Expensa displays no third-party ads and has no authorized digital sellers.
+# Spec: https://iabtechlab.com/app-ads-txt/
