@@ -112,7 +112,7 @@
 
     <main class="content">
         <h1>Privacy Policy</h1>
-        <p class="updated">Last updated: 20 April 2026</p>
+        <p class="updated">Last updated: 12 June 2026</p>
 
         <h2>1. Introduction</h2>
         <p>
@@ -131,7 +131,7 @@
             <li><strong>Receipts and imports</strong> — photos of receipts, checks, statements, and imported files you explicitly choose to process with the AI features.</li>
             <li><strong>Approximate location</strong> — used only to suggest a default currency when adding a transaction, if you grant the permission. Precise location is never stored.</li>
             <li><strong>Subscription status</strong> — an anonymous app-user identifier and the Apple receipt that prove your subscription entitlement.</li>
-            <li><strong>Diagnostic information</strong> — only what Apple forwards to us from crash reports, if you have opted in to share these at the iOS level.</li>
+            <li><strong>Diagnostic information</strong> — crash reports and handled-error events that help us find and fix bugs. These contain the error type, a stack trace, and basic technical context (app version, OS version, device model). They never include your financial data, account identifiers, names, amounts, or merchant details. We use Sentry for this, hosted in the European Union; you can also opt in to Apple's own crash sharing at the iOS level.</li>
         </ul>
         <p>
             We do <strong>not</strong> collect advertising identifiers, behavioural analytics, contact lists, browsing history, or any data that would let us identify you personally.
@@ -161,6 +161,7 @@
             <li><strong>OpenExchangeRates</strong> — current currency exchange rates. Only an anonymous HTTPS request is made; no personal or financial data is sent.</li>
             <li><strong>Supabase</strong> — cache layer for historical currency rate snapshots. Only anonymous read requests for exchange rate data; no user data is sent.</li>
             <li><strong>RevenueCat</strong> — verifies App Store subscription entitlements using an anonymous app-user ID and Apple receipt data.</li>
+            <li><strong>Sentry</strong> — crash and error diagnostics, processed on servers in the European Union. Receives only technical error reports (error type, stack trace, app/OS/device version). No personal data, financial data, or account identifiers are sent, and it is not used for tracking or advertising.</li>
             <li>
                 <strong>OpenAI</strong> — powers optional AI features. Data is sent only when you actively use a feature, and only the minimum needed:
                 <ul>
@@ -196,7 +197,7 @@
 
         <h2>7. Tracking and Advertising</h2>
         <p>
-            Expensa does not track you across apps or websites, does not use advertising identifiers, and does not serve advertising. The mobile app contains no third-party trackers. The website uses only the storage described in our <a href="/cookies.html">Cookie Policy</a> — this includes optional, opt-in Google Analytics 4 for anonymous usage statistics, which stays disabled until you consent through the on-site banner.
+            Expensa does not track you across apps or websites, does not use advertising identifiers, and does not serve advertising. The mobile app contains no advertising or behavioural-analytics trackers; the only third-party SDK it embeds is Sentry, used solely for the crash and error diagnostics described above. The website uses only the storage described in our <a href="/cookies.html">Cookie Policy</a> — this includes optional, opt-in Google Analytics 4 for anonymous usage statistics, which stays disabled until you consent through the on-site banner.
         </p>
 
         <h2>8. Your Rights and Choices</h2>
@@ -236,7 +237,7 @@
 
         <h2>11. International Data Transfers</h2>
         <p>
-            Some of our third-party providers (notably OpenAI and RevenueCat) are based in the United States. When you use AI features or manage your subscription, data may be transferred to and processed in countries outside your own, including outside the European Economic Area (EEA) and the United Kingdom. These transfers are protected by the legal mechanisms each provider maintains (such as Standard Contractual Clauses). Apple iCloud data remains subject to Apple's own cross-region arrangements.
+            Some of our third-party providers (notably OpenAI and RevenueCat) are based in the United States. When you use AI features or manage your subscription, data may be transferred to and processed in countries outside your own, including outside the European Economic Area (EEA) and the United Kingdom. These transfers are protected by the legal mechanisms each provider maintains (such as Standard Contractual Clauses). Crash and error diagnostics handled by Sentry are processed within the European Union and are not transferred outside the EEA. Apple iCloud data remains subject to Apple's own cross-region arrangements.
         </p>
 
         <h2>12. Children's Privacy</h2>
