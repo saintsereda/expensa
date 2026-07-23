@@ -1,0 +1,186 @@
+---
+interface Row {
+  usTitle: string;
+  us: string;
+  themTitle: string;
+  them: string;
+}
+
+interface Props {
+  us: string;
+  them: string;
+  usIcon?: string;
+  themIcon?: string;
+  rows: Row[];
+}
+
+const { us, them, usIcon, themIcon, rows } = Astro.props;
+---
+
+<div class="vs-wrap">
+  <div class="vs">
+    <div class="vs-row vs-header">
+      <div class="vs-head vs-head-us">
+        {usIcon && <img class="vs-icon" src={usIcon} alt={`${us} icon`} width="34" height="34" loading="lazy" />}
+        <span class="vs-name">{us}</span>
+      </div>
+      <div class="vs-head vs-head-them">
+        {themIcon && <img class="vs-icon" src={themIcon} alt={`${them} icon`} width="34" height="34" loading="lazy" />}
+        <span class="vs-name vs-name-them">{them}</span>
+      </div>
+    </div>
+
+    {rows.map((row) => (
+      <div class="vs-row">
+        <div class="vs-cell vs-us">
+          <span class="vs-label">{us}</span>
+          <h3 class="vs-title vs-title-us">{row.usTitle}</h3>
+          <p class="vs-desc">{row.us}</p>
+        </div>
+        <div class="vs-cell vs-them">
+          <span class="vs-label vs-label-them">{them}</span>
+          <h3 class="vs-title vs-title-them">{row.themTitle}</h3>
+          <p class="vs-desc vs-desc-them">{row.them}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .vs-wrap {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    padding: 0 24px;
+    box-sizing: border-box;
+  }
+  .vs {
+    max-width: 960px;
+    margin: 0 auto;
+    /* faint vertical pinstripes, like the reference */
+    background-image: repeating-linear-gradient(
+      to right,
+      color-mix(in srgb, var(--border) 45%, transparent) 0,
+      color-mix(in srgb, var(--border) 45%, transparent) 1px,
+      transparent 1px,
+      transparent 72px
+    );
+    padding: 8px 4px 4px;
+  }
+  .vs-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 56px;
+  }
+  .vs-header {
+    margin-bottom: 28px;
+  }
+  .vs-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 20px;
+  }
+  .vs-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    box-shadow: 0 0 0 1px var(--border);
+    flex-shrink: 0;
+  }
+  .vs-name {
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .vs-name-them {
+    color: var(--muted);
+  }
+  .vs-cell {
+    padding: 20px 20px 24px;
+  }
+  .vs-label {
+    display: none;
+  }
+  .vs-title {
+    font-size: 1.18rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  /* Our benefit titles: accent in light mode, neutral-light in dark mode */
+  .vs-title-us {
+    color: var(--accent);
+  }
+  :global([data-theme='dark']) .vs-title-us {
+    color: var(--text);
+  }
+  .vs-title-them {
+    color: color-mix(in srgb, var(--muted) 65%, var(--text) 35%);
+  }
+  .vs-desc {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    margin: 0;
+    color: var(--text);
+  }
+  .vs-desc-them {
+    color: var(--muted);
+  }
+
+  @media (max-width: 700px) {
+    .vs-wrap {
+      padding: 0 16px;
+    }
+    .vs {
+      background-image: none;
+      padding: 0;
+    }
+    .vs-header {
+      display: none;
+    }
+    .vs-row {
+      grid-template-columns: 1fr;
+      column-gap: 0;
+      border-top: 1px solid var(--border);
+      padding-top: 8px;
+      margin-bottom: 8px;
+    }
+    .vs-row:first-of-type {
+      border-top: none;
+    }
+    .vs-cell {
+      padding: 12px 4px 16px;
+    }
+    .vs-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+    :global([data-theme='dark']) .vs-label {
+      color: var(--text);
+    }
+    .vs-label-them {
+      color: var(--muted);
+    }
+    .vs-title {
+      font-size: 1.05rem;
+    }
+  }
+</style>

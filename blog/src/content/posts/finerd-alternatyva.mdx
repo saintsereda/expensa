@@ -6,25 +6,50 @@ lang: uk
 ---
 
 import AppStoreCTA from '../../components/AppStoreCTA.astro';
-import ComparisonTable from '../../components/ComparisonTable.astro';
+import VersusColumns from '../../components/VersusColumns.astro';
 
 **Короткий підсумок:** Finerd (новий застосунок від команди Saldo) свідомо прибрав бюджети — «прогнозуємо замість бюджетів» — не має безкоштовного тарифу і працює лише на iOS 26, а твої чеки, листи й голосові записи обробляє через OpenAI на своєму сервері. Якщо ти переходив із Saldo саме заради бюджетів — Expensa їх зберігає.
 
 <AppStoreCTA />
 
-## Що є в Expensa, чого немає в Finerd
+## Expensa проти Finerd
 
-<ComparisonTable
-  featureLabel="Функція"
-  apps={["Expensa", "Finerd"]}
-  icons={["/blog/images/apps/expensa.png", "/blog/images/apps/finerd.png"]}
+<VersusColumns
+  us="Expensa"
+  them="Finerd"
+  usIcon="/blog/images/apps/expensa.png"
+  themIcon="/blog/images/apps/finerd.png"
   rows={[
-    { feature: "Бюджети (загальні і по категоріях)", values: ["Так", "Ні — немає принципово"] },
-    { feature: "Сповіщення про перевищення бюджету", values: ["Так", "Ні"] },
-    { feature: "Безкоштовний тариф", values: ["Так", "Ні — лише платна підписка"] },
-    { feature: "Працює без iOS 26", values: ["Так", "Ні — вимагає iOS 26"] },
-    { feature: "Дані у твоєму iCloud, не на сервері", values: ["Так", "Ні — сервер + обробка в OpenAI"] },
-    { feature: "Автоматичний імпорт Apple Pay", values: ["Так", "Ні"] },
+    {
+      usTitle: "Реальні бюджети по категоріях",
+      us: "Ліміт на кожну категорію зі сповіщенням про перевищення — ядро контролю витрат.",
+      themTitle: "Бюджетів немає",
+      them: "Finerd свідомо відмовився від бюджетів на користь «прогнозів» — контролювати ліміти нічим."
+    },
+    {
+      usTitle: "Безкоштовний тариф",
+      us: "Почни користуватися безкоштовно, а підписку бери, коли захочеш більше.",
+      themTitle: "Тільки платно",
+      them: "Finerd не має безкоштовного тарифу — навіть просто подивитися не вийде без оплати."
+    },
+    {
+      usTitle: "Працює на твоєму iPhone",
+      us: "Expensa працює на iOS 17 і новіших.",
+      themTitle: "Вимагає iOS 26",
+      them: "Finerd запускається лише на iOS 26 — на старіших телефонах не працює взагалі."
+    },
+    {
+      usTitle: "Дані у твоєму iCloud",
+      us: "Історія залишається на пристрої й у твоєму iCloud, під твоїм контролем.",
+      themTitle: "Дані на сервері й в OpenAI",
+      them: "Finerd тримає дані на сервері й шле твої чеки, листи й голос у OpenAI."
+    },
+    {
+      usTitle: "Автоматичний імпорт Apple Pay",
+      us: "Оплати телефоном фіксуються самі, без доступу до банку.",
+      themTitle: "Немає Apple Pay-автоматизації",
+      them: "Finerd покладається на банк-синхронізацію через свій сервер."
+    }
   ]}
 />
 
