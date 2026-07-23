@@ -7,18 +7,25 @@ interface Row {
 interface Props {
   apps: string[];
   rows: Row[];
+  icons?: string[];
   highlightColumn?: number;
   featureLabel?: string;
 }
 
-const { apps, rows, highlightColumn = 0, featureLabel = 'Feature' } = Astro.props;
+const { apps, rows, icons = [], highlightColumn = 0, featureLabel = 'Feature' } = Astro.props;
 
-function classify(value: string): string {
-  const v = value.toLowerCase().trim();
-  if (v === 'yes' || v === 'так') return 'cell-yes';
-  if (v === 'no' || v === 'ні') return 'cell-no';
-  if (v.startsWith('no ') || v.startsWith('ні ') || v.startsWith('ні(')) return 'cell-no-qualified';
-  return 'cell-info';
+type Cell = { kind: 'yes' | 'no' | 'info'; note: string };
+
+function parseCell(value: string): Cell {
+  const v = value.trim();
+  const lower = v.toLowerCase();
+  if (lower === 'yes' || lower === 'так') return { kind: 'yes', note: '' };
+  if (lower === 'no' || lower === 'ні') return { kind: 'no', note: '' };
+  const yesMatch = v.match(/^(Так|Yes)[\s(,—-]+(.*)$/i);
+  if (yesMatch) return { kind: 'yes', note: yesMatch[2].replace(/\)$/, '') };
+  const noMatch = v.match(/^(Ні|No)[\s(,—-]+(.*)$/i);
+  if (noMatch) return { kind: 'no', note: noMatch[2].replace(/\)$/, '') };
+  return { kind: 'info', note: v };
 }
 ---
 
@@ -29,7 +36,12 @@ function classify(value: string): string {
         <tr>
           <th class="cmp-feature-col">{featureLabel}</th>
           {apps.map((app, i) => (
-            <th class={i === highlightColumn ? 'cmp-highlight' : ''}>{app}</th>
+            <th class={i === highlightColumn ? 'cmp-highlight' : ''}>
+              <div class="cmp-app-head">
+                {icons[i] && <img class="cmp-app-icon" src={icons[i]} alt={`${app} icon`} width="28" height="28" loading="lazy" />}
+                <span>{app}</span>
+              </div>
+            </th>
           ))}
         </tr>
       </thead>
@@ -38,8 +50,23 @@ function classify(value: string): string {
           <tr>
             <td class="cmp-feature-name">{row.feature}</td>
             {row.values.map((value, i) => {
-              const cls = `${classify(value)} ${i === highlightColumn ? 'cmp-highlight' : ''}`.trim();
-              return <td class={cls}>{value}</td>;
+              const cell = parseCell(value);
+              const hl = i === highlightColumn ? ' cmp-highlight' : '';
+              if (cell.kind === 'yes')
+                return (
+                  <td class={`cell-yes${hl}`}>
+                    <span class="cmp-mark cmp-mark-yes" aria-label="Так">✓</span>
+                    {cell.note && <span class="cmp-note">{cell.note}</span>}
+                  </td>
+                );
+              if (cell.kind === 'no')
+                return (
+                  <td class={`cell-no${hl}`}>
+                    <span class="cmp-mark cmp-mark-no" aria-label="Ні">✕</span>
+                    {cell.note && <span class="cmp-note">{cell.note}</span>}
+                  </td>
+                );
+              return <td class={`cell-info${hl}`}>{value}</td>;
             })}
           </tr>
         ))}
@@ -81,10 +108,24 @@ function classify(value: string): string {
     text-align: left;
     font-weight: 600;
     color: var(--text);
-    padding: 14px 16px;
+    padding: 12px 16px;
     background: var(--code-bg);
     border-bottom: 1px solid var(--border);
     white-space: nowrap;
+    vertical-align: bottom;
+  }
+  .cmp-app-head {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .cmp-app-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    display: block;
+    box-shadow: 0 0 0 1px var(--border);
   }
   .cmp-table tbody td {
     padding: 12px 16px;
@@ -126,19 +167,30 @@ function classify(value: string): string {
     background: color-mix(in srgb, var(--accent) 16%, var(--code-bg));
     color: var(--accent);
   }
-  .cell-yes {
-    color: rgb(34, 160, 110);
-    font-weight: 600;
+  .cmp-mark {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1;
   }
-  [data-theme="dark"] .cell-yes {
+  .cmp-mark-yes {
+    color: rgb(34, 160, 110);
+  }
+  :global([data-theme="dark"]) .cmp-mark-yes {
     color: rgb(74, 222, 128);
   }
-  .cell-no {
-    color: var(--muted);
+  .cmp-mark-no {
+    color: rgb(220, 68, 68);
   }
-  .cell-no-qualified {
+  :global([data-theme="dark"]) .cmp-mark-no {
+    color: rgb(248, 113, 113);
+  }
+  .cmp-note {
+    display: block;
+    margin-top: 4px;
+    font-size: 12px;
     color: var(--muted);
-    font-style: italic;
+    font-weight: 400;
   }
   .cell-info {
     color: var(--text);
