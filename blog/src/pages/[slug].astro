@@ -33,11 +33,13 @@ const canonicalUrl = `https://getexpensa.com/blog/${post.slug}/`;
 
 <PostLayout
   title={post.data.title}
+  titleTag={post.data.titleTag}
   description={post.data.description}
   date={post.data.date}
   readingTime={rt}
   canonicalUrl={canonicalUrl}
   lang={post.data.lang}
+  campaign={post.slug}
   videoId={post.data.videoId}
   videoTitle={post.data.videoTitle}
   prev={prev}

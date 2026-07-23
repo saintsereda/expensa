@@ -11,6 +11,7 @@ interface NavLink {
 
 interface Props {
   title: string;
+  titleTag?: string;
   description: string;
   date: Date;
   readingTime: string;
@@ -18,11 +19,15 @@ interface Props {
   lang?: string;
   videoId?: string;
   videoTitle?: string;
+  campaign?: string;
   prev?: NavLink;
   next?: NavLink;
 }
 
-const { title, description, date, readingTime, canonicalUrl, lang, videoId, videoTitle, prev, next } = Astro.props;
+const { title, titleTag, description, date, readingTime, canonicalUrl, lang, videoId, videoTitle, campaign, prev, next } = Astro.props;
+
+// SEO <title> can be shorter than the on-page H1 to avoid SERP truncation.
+const seoTitle = `${titleTag ?? title} — Expensa`;
 
 const APP_STORE_URL = 'https://apps.apple.com/app/expensa-ai-expenses-manager/id6758392205';
 
@@ -60,7 +65,7 @@ const articleSchema = {
 };
 ---
 
-<BaseLayout title={`${title} — Expensa Blog`} description={description} canonicalUrl={canonicalUrl} lang={lang}>
+<BaseLayout title={seoTitle} description={description} canonicalUrl={canonicalUrl} lang={lang}>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(articleSchema)} />
   <article class="prose post">
     <header class="post-header">
@@ -86,6 +91,27 @@ const articleSchema = {
 
     <EndCTA lang={lang} />
   </article>
+
+  <script is:inline define:vars={{ campaign }}>
+    // Attribute every App Store link on this post to the post itself:
+    // - Apple App Analytics "Campaigns" reads the ct= token (per-post download attribution)
+    // - GA4 records the web-side click so we know click-through per post
+    (function () {
+      var ct = ('blog_' + (campaign || 'post')).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
+      document.querySelectorAll('a[href*="apps.apple.com"]').forEach(function (a) {
+        try {
+          var u = new URL(a.href);
+          if (!u.searchParams.has('ct')) u.searchParams.set('ct', ct);
+          a.href = u.toString();
+        } catch (e) {}
+        a.addEventListener('click', function () {
+          if (typeof gtag === 'function') {
+            gtag('event', 'app_store_click', { campaign: ct, link_url: a.href });
+          }
+        });
+      });
+    })();
+  </script>
 </BaseLayout>
 
 <style>
