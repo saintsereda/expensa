@@ -1,6 +1,24 @@
 ---
-// Inline mid-post CTA — place anywhere in MDX with <AppStoreCTA />
+// Inline mid-post CTA — place anywhere in MDX with <AppStoreCTA /> (or <AppStoreCTA lang="uk" />)
+interface Props {
+  lang?: string;
+}
+const { lang = 'en' } = Astro.props;
 const APP_STORE_URL = 'https://apps.apple.com/app/expensa-ai-expenses-manager/id6758392205';
+
+const t = lang === 'uk'
+  ? {
+      label: 'Expensa для iPhone',
+      headline: 'Автоматичний облік витрат',
+      sub: 'Сканування чеків, бюджети, синхронізація з Apple Pay — безкоштовно в App Store.',
+      action: 'Завантажити',
+    }
+  : {
+      label: 'Expensa for iPhone',
+      headline: 'Track spending automatically',
+      sub: 'Receipt scanning, budgets, Apple Pay sync — free on the App Store.',
+      action: 'Get the app',
+    };
 ---
 
 <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" class="cta-inline" data-cta-spotlight>
@@ -12,12 +30,12 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa-ai-expenses-manager/id
     </svg>
   </span>
   <span class="cta-content">
-    <span class="cta-label">Expensa for iPhone</span>
-    <span class="cta-headline">Track spending automatically</span>
-    <span class="cta-sub">Receipt scanning, budgets, Apple Pay sync — free on the App Store.</span>
+    <span class="cta-label">{t.label}</span>
+    <span class="cta-headline">{t.headline}</span>
+    <span class="cta-sub">{t.sub}</span>
   </span>
   <span class="cta-action">
-    <span class="cta-action-text">Get the app</span>
+    <span class="cta-action-text">{t.action}</span>
     <svg class="cta-action-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M7 17L17 7M17 7H7M17 7v10"/>
     </svg>

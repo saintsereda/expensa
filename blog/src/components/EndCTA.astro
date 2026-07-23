@@ -1,6 +1,24 @@
 ---
 // End-of-post CTA — appended automatically by PostLayout
+interface Props {
+  lang?: string;
+}
+const { lang = 'en' } = Astro.props;
 const APP_STORE_URL = 'https://apps.apple.com/app/expensa-ai-expenses-manager/id6758392205';
+
+const t = lang === 'uk'
+  ? {
+      h1: 'Досить рахувати вручну.',
+      h2: 'Почни розуміти свої гроші.',
+      body: 'Чеки скануються самі. Бюджети оновлюються в реальному часі. Оплати Apple Pay записуються в момент, коли ти прикладаєш телефон.',
+      btn: 'Завантажити для iPhone',
+    }
+  : {
+      h1: 'Stop tracking.',
+      h2: 'Start knowing.',
+      body: 'Receipts scan themselves. Budgets update in real time. Apple Pay transactions log the moment you tap.',
+      btn: 'Download for iPhone',
+    };
 ---
 
 <div class="end-cta" data-end-cta>
@@ -20,13 +38,10 @@ const APP_STORE_URL = 'https://apps.apple.com/app/expensa-ai-expenses-manager/id
       </svg>
       Expensa
     </span>
-    <h3 class="end-cta-heading">Stop tracking.<br/>Start knowing.</h3>
-    <p class="end-cta-body">
-      Receipts scan themselves. Budgets update in real time.
-      Apple Pay transactions log the moment you tap.
-    </p>
+    <h3 class="end-cta-heading">{t.h1}<br/>{t.h2}</h3>
+    <p class="end-cta-body">{t.body}</p>
     <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" class="end-cta-btn">
-      <span>Download for iPhone</span>
+      <span>{t.btn}</span>
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M7 17L17 7M17 7H7M17 7v10"/>
       </svg>

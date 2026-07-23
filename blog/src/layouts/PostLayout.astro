@@ -67,7 +67,7 @@ const articleSchema = {
       <p class="post-meta">{formattedDate} · {readingTime}</p>
       <h1>{title}</h1>
       <a href={APP_STORE_URL} target="_blank" rel="noopener noreferrer" class="post-header-cta">
-        <span>Get the app</span>
+        <span>{lang === 'uk' ? 'Завантажити застосунок' : 'Get the app'}</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M7 17L17 7M17 7H7M17 7v10"/>
         </svg>
@@ -84,7 +84,7 @@ const articleSchema = {
 
     <PostNav prev={prev} next={next} />
 
-    <EndCTA />
+    <EndCTA lang={lang} />
   </article>
 </BaseLayout>
 

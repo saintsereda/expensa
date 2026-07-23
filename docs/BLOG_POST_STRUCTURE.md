@@ -25,15 +25,14 @@ Open every post with a bold paragraph that directly answers the search query in 
 
 Format: `**The short answer:** ...`
 
-### 2. Hybrid CTA pattern
+### 2. CTA pattern — keep it sparse (revised 2026-07-23)
 
-Three placements, every post:
+Every post already ships **two automatic CTAs** from the layout: a small "Get the app" pill directly under the H1 (`PostLayout`), and the big `EndCTA` banner auto-appended at the end. So the baseline is already pill (early) + banner (end) with **zero** inline banners — do not add a closing `<AppStoreCTA />`, it just duplicates `EndCTA`.
 
-1. **Inline `<AppStoreCTA />` right after the answer block** — captures readers who got their answer and are ready to act
-2. **Mid-post `<AppStoreCTA />` after the main value section** — captures readers who scrolled through the meat
-3. **Closing `<AppStoreCTA />` at the end** — captures readers who finished the whole piece
+- **Short posts (targeted "X alternative", how-to):** add **no** inline `<AppStoreCTA />`. The header pill + `EndCTA` are enough. (Owner feedback 2026-07-23: stacked banners read as spam.)
+- **Long pillar posts:** at most **one** inline `<AppStoreCTA />`, placed after the peak value section (e.g. the comparison table) — never right after the short answer block (too close to the header pill).
 
-For pillar posts with multiple sections, two CTAs (early + closing) is enough. For how-to posts where users actually need to install to follow steps, the early CTA matters most.
+**Localization:** both `AppStoreCTA` and `EndCTA` take a `lang` prop. `PostLayout` passes the post's `lang` to `EndCTA` and localizes the header pill automatically. For an inline `<AppStoreCTA />` in a Ukrainian post, write `<AppStoreCTA lang="uk" />`. Ukrainian posts must never show English CTA copy.
 
 ### 3. Mobile-first scan format
 
