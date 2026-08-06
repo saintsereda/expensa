@@ -62,6 +62,8 @@ jobs:
           cp apple-touch-icon.png _site/
           cp og-image.png _site/
           cp -r assets _site/
+          # Media for the in-app "What's new" sheet, one folder per app version.
+          cp -r release-notes _site/
 
           # Copy Astro blog build output into /blog/
           cp -r blog/dist/. _site/blog/
