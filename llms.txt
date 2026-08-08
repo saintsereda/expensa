@@ -27,6 +27,8 @@ Most expense trackers require a bank connection or sell your financial data to t
 
 - [How to Actually Stick to a Budget](https://getexpensa.com/blog/how-to-actually-stick-to-a-budget/)
 - [How to automatically add Apple Pay transactions to Expensa using Shortcuts?](https://getexpensa.com/blog/how-to-set-up-apple-pay-sync/)
+- [Apple Pay Philippines: supported banks and how to track every tap automatically](https://getexpensa.com/blog/how-to-track-apple-pay-expenses-philippines/)
+- [How to export every Apple Pay transaction from your iPhone](https://getexpensa.com/blog/how-to-export-apple-pay-transactions-iphone/)
 
 ## Developer
 

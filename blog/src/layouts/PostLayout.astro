@@ -9,6 +9,11 @@ interface NavLink {
   title: string;
 }
 
+interface FaqItem {
+  q: string;
+  a: string;
+}
+
 interface Props {
   title: string;
   titleTag?: string;
@@ -20,11 +25,12 @@ interface Props {
   videoId?: string;
   videoTitle?: string;
   campaign?: string;
+  faq?: FaqItem[];
   prev?: NavLink;
   next?: NavLink;
 }
 
-const { title, titleTag, description, date, readingTime, canonicalUrl, lang, videoId, videoTitle, campaign, prev, next } = Astro.props;
+const { title, titleTag, description, date, readingTime, canonicalUrl, lang, videoId, videoTitle, campaign, faq, prev, next } = Astro.props;
 
 // SEO <title> can be shorter than the on-page H1 to avoid SERP truncation.
 const seoTitle = `${titleTag ?? title} — Expensa`;
@@ -63,10 +69,24 @@ const articleSchema = {
     }
   }
 };
+
+const faqSchema =
+  faq && faq.length
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": faq.map((item) => ({
+          "@type": "Question",
+          "name": item.q,
+          "acceptedAnswer": { "@type": "Answer", "text": item.a },
+        })),
+      }
+    : null;
 ---
 
 <BaseLayout title={seoTitle} description={description} canonicalUrl={canonicalUrl} lang={lang}>
   <script type="application/ld+json" slot="head" set:html={JSON.stringify(articleSchema)} />
+  {faqSchema && <script type="application/ld+json" slot="head" set:html={JSON.stringify(faqSchema)} />}
   <article class="prose post">
     <header class="post-header">
       <p class="post-meta">{formattedDate} · {readingTime}</p>

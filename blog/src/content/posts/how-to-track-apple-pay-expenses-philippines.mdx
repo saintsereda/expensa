@@ -1,29 +1,65 @@
 ---
 title: "How to automatically track Apple Pay expenses in the Philippines using Expensa?"
-description: "Apple Pay launched in the Philippines on August 4, 2026. Here's how to make every tap — Jollibee, 7-Eleven, Shopee — log itself into your expense tracker automatically, with no bank logins."
+titleTag: "Apple Pay Philippines: Banks, Where It Works & Auto-Tracking"
+description: "Apple Pay is live in the Philippines since August 4, 2026. See the supported banks — UnionBank, GoTyme, Metrobank, Chinabank — where it works, and how to track every tap automatically."
 date: 2026-08-08
 videoId: "yORq6_XWLRE"
 videoTitle: "How to set up Apple Pay auto-tracking in Expensa"
+faq:
+  - q: "Is Apple Pay available in the Philippines?"
+    a: "Yes. Apple Pay officially launched in the Philippines on August 4, 2026. You can add debit and credit cards from UnionBank, GoTyme Bank, Metrobank, and Chinabank to Apple Wallet and pay with iPhone or Apple Watch anywhere contactless payments are accepted."
+  - q: "Does BDO or BPI support Apple Pay in the Philippines?"
+    a: "Not at launch. BPI has completed card tokenization and is expected to activate Apple Pay support shortly. BDO and other banks have not announced a date yet. Until your bank joins, you can still track those card expenses in Expensa manually or by importing your bank's CSV statement."
+  - q: "Does Apple Pay work with GCash or Maya?"
+    a: "No. GCash, Maya, and QR Ph payments don't go through Apple Pay, so they can't be added to Apple Wallet and won't trigger the Shortcuts automation. Log those expenses manually or import them via CSV."
+  - q: "Does the automation capture Apple Pay purchases in apps like Shopee or foodpanda?"
+    a: "Yes — as long as you check out with Apple Pay. The Wallet trigger fires for in-person taps and Apple Pay purchases in apps and on the web. If you type your card number manually at checkout, it won't fire."
+  - q: "Do I need to keep Expensa open for auto-tracking to work?"
+    a: "No. The Shortcuts automation runs silently in the background and Expensa confirms each imported transaction with a local notification, even when the app is closed."
 ---
 
 import AppStoreCTA from '../../components/AppStoreCTA.astro';
 
-Apple Pay is finally live in the Philippines. Since **August 4, 2026**, you can add cards from **UnionBank, GoTyme Bank, Metrobank, and Chinabank** to Apple Wallet and pay with your iPhone or Apple Watch — BPI has completed tokenization and is expected to follow shortly. Taps already work at Jollibee, Starbucks, 7-Eleven, Power Mac Center, ZARA, Abenson, and Ayala Malls, plus in apps like foodpanda and Shopee.
+Apple Pay is finally live in the Philippines. Since **August 4, 2026**, Filipino iPhone users can add their cards to Apple Wallet and tap to pay in stores, in apps, and on the web — no more reaching for a physical card at Jollibee or 7-Eleven.
 
-Which means Filipino iPhone users just inherited a very familiar problem: contactless payments are so effortless that by Friday you have no idea where the week's money went.
+Which also means a very familiar problem just arrived: contactless payments are so effortless that by Friday you have no idea where the week's money went. This guide covers what works at launch — supported banks, merchants, apps — and then the part nobody else is writing about: how to make **every Apple Pay tap log itself automatically** into [Expensa](https://apps.apple.com/app/expensa-ai-expenses-manager/id6758392205), a privacy-first expense tracker, with a one-time 2-minute setup.
 
-The good news — iOS has a built-in way to fix this. A one-time automation in the Shortcuts app can send **every Apple Pay tap** (merchant, amount, date) straight into [Expensa](https://apps.apple.com/app/expensa-ai-expenses-manager/id6758392205) the moment you pay. No manual entry, no bank credentials, no waiting for statements. Setup takes about 2 minutes.
+## Which banks support Apple Pay in the Philippines?
 
-## Why this beats every other tracking method in the Philippines
+At launch, four banks let you add debit and credit cards to Apple Wallet:
 
-- **No bank connection needed.** Aggregators like Plaid don't cover Philippine banks anyway. This automation runs locally on your iPhone using an official iOS trigger — your bank login never leaves your head.
-- **It's real-time.** The transaction lands in Expensa the second the terminal beeps, not at the end of the month when the statement arrives.
-- **It works with every launch bank.** UnionBank, GoTyme, Metrobank, Chinabank — the trigger fires on any card in Apple Wallet, and any bank that joins later works automatically.
-- **PHP is fully supported.** Set the Philippine peso as your base currency in Expensa; if you tap abroad or shop in USD online, amounts convert at live exchange rates.
+- **UnionBank**
+- **GoTyme Bank**
+- **Metrobank**
+- **Chinabank**
+
+**BPI** has completed card tokenization and is expected to activate support shortly after launch. **BDO**, Security Bank, and other major banks haven't announced dates yet — more issuers typically join in the months after an Apple Pay launch, as happened in every other market.
+
+Adding a card takes a minute: open **Wallet → "+" → Debit or Credit Card**, scan or enter your card, and verify via SMS or a phone call from your bank.
+
+## Where does Apple Pay work in the Philippines?
+
+Anywhere with a contactless terminal — which after years of QR Ph and tap-enabled cards is most of Metro Manila retail. Confirmed working at launch:
+
+- **In stores:** Jollibee, Starbucks, 7-Eleven, Power Mac Center, ZARA, Abenson, Ayala Malls
+- **In apps and online:** foodpanda, Shopee, Rustan's — any checkout that shows the Apple Pay button
+
+You pay by double-clicking the side button and holding your iPhone or Apple Watch near the terminal. The card number is never shared with the merchant — Apple Pay uses a device-specific token.
+
+## The problem: taps are easy, tracking is not
+
+Every tap is one less receipt, one less cash count — and one more expense you'll forget by tomorrow. The usual fixes all have catches: bank apps show transactions per-card (good luck if you tap with three cards), statements arrive monthly, and aggregators like Plaid don't cover Philippine banks at all.
+
+The good news: iOS has a built-in way to fix this, and it works with every launch bank.
+
+- **No bank connection needed.** The automation runs locally on your iPhone using an official iOS trigger — your bank login never leaves your head.
+- **It's real-time.** The transaction lands in Expensa the second the terminal beeps, not at the end of the month.
+- **It works with any card in Wallet.** UnionBank, GoTyme, Metrobank, Chinabank today — and any bank that joins later, automatically.
+- **PHP is fully supported.** Set the Philippine peso as your base currency; foreign-currency taps convert at live exchange rates.
 
 ## What you'll need
 
-- iPhone with Apple Pay set up (your card verifies via SMS or a phone call when you add it to Wallet)
+- iPhone with Apple Pay set up
 - [Expensa](https://apps.apple.com/app/expensa-ai-expenses-manager/id6758392205) installed
 - Shortcuts app (built into iOS — no download needed)
 
@@ -81,7 +117,7 @@ Connect the Apple Pay data to the Expensa fields. For each field in the action, 
 
 Tap **Done** in the top-right corner. Your automation is live.
 
-From this point on, every Apple Pay tap — the morning coffee, the Grab ride paid in-app, the groceries at the mall — silently logs itself to Expensa with merchant, amount, and date. No action needed from you.
+From this point on, every Apple Pay tap — the morning coffee, the foodpanda order, the groceries at the mall — silently logs itself to Expensa with merchant, amount, and date. No action needed from you.
 
 ![Completed automation](/blog/images/apple-pay-setup/step-8-done.png)
 
@@ -91,7 +127,7 @@ From this point on, every Apple Pay tap — the morning coffee, the Grab ride pa
 
 ## Set the peso as your base currency
 
-In Expensa, go to **Settings → Default Currency** and pick **PHP (₱)**. Every report, budget, and chart will show pesos. If you pay in another currency — a USD subscription, shopping in Hong Kong, an OFW sending money home — Expensa stores the original amount and converts it to PHP at the live rate, so your totals always make sense.
+In Expensa, go to **Settings → Default Currency** and pick **PHP (₱)**. Every report, budget, and chart will show pesos. If you pay in another currency — a USD subscription, shopping abroad, an OFW managing money across two countries — Expensa stores the original amount and converts it to PHP at the live rate, so your totals always make sense.
 
 ## Let categories sort themselves
 
@@ -99,16 +135,21 @@ Expensa recognizes merchants over time. Assign "Jollibee" to *Food & Drinks* onc
 
 ## Frequently asked questions
 
-**Does this work if my bank isn't supported by Apple Pay yet?**
-The automation only fires on Apple Pay taps. For cards that aren't in Wallet yet (BPI, BDO, and others still rolling out), add those expenses manually or import your bank's CSV statement into Expensa — then switch to auto-tracking the day your bank joins.
+**Is Apple Pay available in the Philippines?**
+Yes. Apple Pay officially launched in the Philippines on August 4, 2026. You can add debit and credit cards from UnionBank, GoTyme Bank, Metrobank, and Chinabank to Apple Wallet and pay with iPhone or Apple Watch anywhere contactless payments are accepted.
 
-**Does it capture GCash or Maya payments?**
-No — QR Ph and e-wallet payments don't go through Apple Pay, so the Wallet trigger doesn't fire. Log those manually or via CSV import.
+**Does BDO or BPI support Apple Pay in the Philippines?**
+Not at launch. BPI has completed card tokenization and is expected to activate Apple Pay support shortly. BDO and other banks have not announced a date yet. Until your bank joins, you can still track those card expenses in Expensa manually or by importing your bank's CSV statement.
 
-**Does it work when I pay inside apps like Shopee or foodpanda?**
-Yes, as long as you check out **with Apple Pay**. The trigger fires for in-person taps and Apple Pay purchases in apps and on the web. If you enter your card number manually instead, it won't fire.
+**Does Apple Pay work with GCash or Maya?**
+No. GCash, Maya, and QR Ph payments don't go through Apple Pay, so they can't be added to Apple Wallet and won't trigger the Shortcuts automation. Log those expenses manually or import them via CSV.
 
-**Do I need to keep the app open?**
-No. The automation runs silently in the background and Expensa confirms each import with a local notification — even if the app is closed.
+**Does the automation capture Apple Pay purchases in apps like Shopee or foodpanda?**
+Yes — as long as you check out with Apple Pay. The Wallet trigger fires for in-person taps and Apple Pay purchases in apps and on the web. If you type your card number manually at checkout, it won't fire.
+
+**Do I need to keep Expensa open for auto-tracking to work?**
+No. The Shortcuts automation runs silently in the background and Expensa confirms each imported transaction with a local notification, even when the app is closed.
+
+---
 
 For a deeper look at what iPhone can and can't export about your payments, see [how to export every Apple Pay transaction from your iPhone](/blog/how-to-export-apple-pay-transactions-iphone/). And if anything in the setup doesn't behave, the [full setup guide](/blog/how-to-set-up-apple-pay-sync/) has a troubleshooting section covering every common snag.

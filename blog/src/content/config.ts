@@ -10,6 +10,9 @@ const posts = defineCollection({
     lang: z.string().optional(),
     videoId: z.string().optional(),
     videoTitle: z.string().optional(),
+    faq: z
+      .array(z.object({ q: z.string(), a: z.string() }))
+      .optional(),
   }),
 });
 
